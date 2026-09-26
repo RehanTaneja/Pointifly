@@ -22,6 +22,7 @@ export function VisaMoments() {
     const onMoment = (e: Event) => {
       const m = (e as CustomEvent<VisaMoment>).detail
       clearTimeout(timers.get(m.id))
+      if (m.kind === 'dismiss') return remove(m.id)
       setMoments((all) => {
         const next = { ...m, key: ++key }
         const i = all.findIndex((x) => x.id === m.id)

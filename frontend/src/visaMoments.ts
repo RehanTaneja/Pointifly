@@ -3,7 +3,7 @@
 // A moment with the same id replaces the earlier one (e.g. "working" becomes "done").
 export type VisaMoment = {
   id: string
-  kind: 'working' | 'done' | 'held' // held: a guardrail stopped a payment
+  kind: 'working' | 'done' | 'held' | 'dismiss' // held: a guardrail stopped a payment; dismiss: remove now
   title: string
   detail?: string
   ttl?: number // ms on screen once done or held (working stays until replaced)
