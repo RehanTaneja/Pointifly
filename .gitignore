@@ -6,3 +6,7 @@ __pycache__/
 .env
 .DS_Store
 backend/app/data/raw/
+backend/secrets/
+*.pem
+*.p12
+*.key
