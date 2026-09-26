@@ -56,6 +56,15 @@ cd frontend && npm install && npm run dev
 
 Open http://localhost:5173 (Vite proxies `/api` to `:8000`). Copy `backend/.env.example` to `backend/.env` for the integrations below; everything falls back to cached or sample data without keys.
 
+## Deploy (Vultr or any Ubuntu 24.04 server)
+
+```bash
+./deploy/deploy.sh root@SERVER_IP                            # https://SERVER_IP.sslip.io
+ACCESS_PASSWORD=choose-one ./deploy/deploy.sh root@SERVER_IP  # same, behind a password (user "demo")
+```
+
+Builds the frontend, copies the code plus `backend/.env` and `backend/secrets/` over SSH, and runs the API as a single uvicorn process (plans and payment mandates are in memory) behind Caddy, which serves the frontend, proxies `/api` and gets an HTTPS certificate (browsers only allow the microphone over HTTPS). Presentation mode is on for the server. Re-run to update; the server keeps its own caches and API usage counters.
+
 ## Data sources
 
 | Data | Source | Notes |
