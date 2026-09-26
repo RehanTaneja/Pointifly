@@ -367,3 +367,30 @@ input[type='date'] { color-scheme: dark; }
   .visa-tiles { grid-template-columns: 1fr; }
   .built-on-visa span:last-child { display: none; }
 }
+
+/* ---------- Visa moments: Visa services in use, shown as they happen ---------- */
+.visa-moments { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 80; display: flex; flex-direction: column; align-items: center; gap: 10px; width: min(460px, calc(100vw - 32px)); pointer-events: none; }
+.visa-moment {
+  position: relative; overflow: hidden; width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 18px;
+  border-radius: 14px; color: #fff; border: 1px solid rgba(247, 182, 0, 0.55);
+  background: linear-gradient(135deg, #1a1f71 0%, #2430a8 70%, #3140c9 100%);
+  box-shadow: 0 14px 40px rgba(10, 14, 70, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04) inset, 0 0 28px rgba(247, 182, 0, 0.12);
+  animation: moment-in 0.5s var(--ease) both;
+}
+.visa-moment::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--visa-gold); }
+.visa-moment::after { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.16) 50%, transparent 65%); transform: translateX(-100%); animation: sheen 1.4s ease 0.2s; }
+.visa-moment.leaving { animation: moment-out 0.45s ease both; }
+.visa-moment.held { border-color: rgba(243, 194, 82, 0.8); background: linear-gradient(135deg, #1a1f71, #3a2f10 140%); }
+.visa-moment-text { min-width: 0; }
+.visa-moment-title { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.visa-moment-detail { font-size: 12.5px; color: #dfe3ff; margin-top: 2px; }
+.visa-moment .visa-chip { background: #fff; color: var(--visa-blue); box-shadow: inset 0 -2px 0 var(--visa-gold); }
+.visa-spinner { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(247, 182, 0, 0.25); border-top-color: var(--visa-gold); animation: spin 0.8s linear infinite; }
+.visa-check { flex: none; width: 34px; height: 34px; animation: pop 0.35s ease-out 0.45s both; filter: drop-shadow(0 0 10px rgba(247, 182, 0, 0.5)); }
+.visa-check-circle { fill: var(--visa-gold); stroke: var(--visa-gold); stroke-width: 2; stroke-dasharray: 151; stroke-dashoffset: 151; animation: draw 0.45s ease-out forwards, gold-fill 0.2s ease-out 0.35s both; }
+.visa-check-mark { fill: none; stroke: var(--visa-blue); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 36; stroke-dashoffset: 36; animation: draw 0.3s ease-out 0.45s forwards; }
+.visa-check.held .visa-check-circle { fill: #f3c252; stroke: #f3c252; }
+@keyframes gold-fill { from { fill: transparent; } to { fill: var(--visa-gold); } }
+@keyframes moment-in { from { opacity: 0; transform: translateY(-14px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes moment-out { to { opacity: 0; transform: translateY(-10px) scale(0.97); } }
+@media (prefers-reduced-motion: reduce) { .visa-moment, .visa-moment * { animation-duration: 0.01ms !important; animation-delay: 0s !important; } }
