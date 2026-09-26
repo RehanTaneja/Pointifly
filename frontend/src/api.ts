@@ -65,7 +65,12 @@ export type Trip = {
   cash_fares?: Partial<Record<Cabin, { price: number; fetched_at: string }>>
   outbound_date?: string
   cash_source?: { source: string; fetched_at: string }
+  custom?: boolean // entered by the user; priced live on optimize
+  custom_label?: string // a name the user typed (else the backend uses the destination city)
 }
+
+export type Airport = { code: string; name: string; city: string; country: string }
+export const searchAirports = (q: string) => request<Airport[]>(`/api/airports?q=${encodeURIComponent(q)}`)
 
 export type Dataset = {
   _note: string
@@ -181,8 +186,11 @@ export const optimize = (balances: Balance[], trips: Trip[]) =>
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       balances,
-      trip_ids: trips.map((t) => t.id),
-      cabins: Object.fromEntries(trips.map((t) => [t.id, t.cabin])),
+      trip_ids: trips.filter((t) => !t.custom).map((t) => t.id),
+      cabins: Object.fromEntries(trips.filter((t) => !t.custom).map((t) => [t.id, t.cabin])),
+      custom_trips: trips
+        .filter((t) => t.custom)
+        .map((t) => ({ origin: t.origin, destination: t.destination, date: t.outbound_date, cabin: t.cabin, label: t.custom_label })),
     }),
   })
 

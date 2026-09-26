@@ -4,6 +4,11 @@
     "rate": 0.755802,
     "source": "Visa FX rate"
   },
+  "USD->EUR": {
+    "date": "2026-09-26",
+    "rate": 0.721155,
+    "source": "Visa FX rate"
+  },
   "USD->GBP": {
     "date": "2026-09-26",
     "rate": 0.614792,

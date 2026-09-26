@@ -13,6 +13,33 @@ from .sources.http import env
 
 RAW_DIR = DATA_DIR / "raw"  # full API responses (git-ignored) so re-parsing never spends quota
 SOURCE = "Google Flights via SerpApi"
+DEFAULT_DAILY_LIMIT = 20  # live searches per UTC day from the app (override with SERPAPI_DAILY_LIMIT)
+
+
+class SearchBudgetExceeded(Exception):
+    pass
+
+
+def _usage_path():
+    return RAW_DIR / "serpapi_usage.json"
+
+
+def searches_today() -> int:
+    p = _usage_path()
+    usage = json.loads(p.read_text()) if p.exists() else {}
+    return usage.get(now()[:10], 0)
+
+
+def _record_search() -> None:
+    RAW_DIR.mkdir(exist_ok=True)
+    p = _usage_path()
+    usage = json.loads(p.read_text()) if p.exists() else {}
+    day = now()[:10]
+    _usage_path().write_text(json.dumps({day: usage.get(day, 0) + 1}))
+
+
+def daily_limit() -> int:
+    return int(env("SERPAPI_DAILY_LIMIT") or DEFAULT_DAILY_LIMIT)
 
 
 def now() -> str:
@@ -61,6 +88,9 @@ def get_fare(trip: dict, cabin: str, live: bool = True) -> dict | None:
     api_key = env("SERPAPI_KEY")
     if not live or not api_key:
         return None
+    if searches_today() >= daily_limit():
+        raise SearchBudgetExceeded(f"Daily live-search limit reached ({daily_limit()}); saved fares still work")
+    _record_search()
     fare, fetched_at = fetch(trip, cabin, api_key)
     if fare is None:
         return None

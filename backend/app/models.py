@@ -6,10 +6,19 @@ class Balance(BaseModel):
     points: int
 
 
+class CustomTrip(BaseModel):
+    origin: str  # IATA code
+    destination: str
+    date: str  # YYYY-MM-DD, one-way
+    cabin: str = "economy"
+    label: str | None = None
+
+
 class OptimizeRequest(BaseModel):
     balances: list[Balance] = []
     trip_ids: list[str] = []
     cabins: dict[str, str] = {}  # trip id -> cabin override
+    custom_trips: list[CustomTrip] = []
 
 
 class Allocation(BaseModel):

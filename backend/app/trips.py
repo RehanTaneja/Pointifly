@@ -1,13 +1,17 @@
 """Builds the trip the optimizer sees once the user has picked a cabin."""
 
 import copy
+import re
+from datetime import date, timedelta
 
 from .charts import PRICERS, airports, chart_options
-from .fares import get_fare
+from .fares import SearchBudgetExceeded, get_fare
 from .visa import fx
 
 CABINS = ["economy", "premium_economy", "business", "first"]
 RANK = {c: i for i, c in enumerate(CABINS)}
+MAX_TRIPS = 8
+MAX_DAYS_AHEAD = 330  # stay inside Google Flights' booking window
 
 
 class FareUnavailable(Exception):
@@ -22,10 +26,13 @@ def effective_trip(base: dict, cabin: str) -> dict:
     """
     trip = copy.deepcopy(base)
     trip["cabin"] = cabin
-    fare = get_fare(trip, cabin)
+    try:
+        fare = get_fare(trip, cabin)
+    except SearchBudgetExceeded as e:
+        raise FareUnavailable(str(e)) from e
     if fare:
         trip["cash_price_usd"] = fare["price"]
-    elif cabin != base["cabin"]:
+    elif cabin != base["cabin"] or base.get("cash_price_usd") is None:
         raise FareUnavailable(f"No {cabin.replace('_', ' ')} fare found for {base['label']}")
     trip["fare"] = fare
 
@@ -69,3 +76,41 @@ def _local_fx(trip: dict) -> dict | None:
         return None
     r = fx.rate("USD", currency)
     return {"currency": currency, **r} if r else None
+
+
+def _city(code: str) -> str:
+    ap = airports().get(code)
+    name = (ap[5] if ap and len(ap) > 5 and ap[5] else code) if ap else code
+    return re.sub(r"\s*\(.*\)", "", name).strip() or code
+
+
+def custom_trip(origin: str, destination: str, outbound_date: str, cabin: str, label: str | None = None) -> dict:
+    """A user-entered trip. Its id comes from route + date, so the same trip reuses its saved fare."""
+    origin, destination = origin.strip().upper(), destination.strip().upper()
+    ap = airports()
+    for code in (origin, destination):
+        if code not in ap:
+            raise ValueError(f"Unknown airport code: {code}")
+    if origin == destination:
+        raise ValueError("Origin and destination must differ")
+    if cabin not in CABINS:
+        raise ValueError(f"Unknown cabin: {cabin}")
+    try:
+        day = date.fromisoformat(outbound_date)
+    except ValueError as e:
+        raise ValueError(f"Invalid date: {outbound_date}") from e
+    today = date.today()
+    if not today < day <= today + timedelta(days=MAX_DAYS_AHEAD):
+        raise ValueError(f"Date must be between tomorrow and {MAX_DAYS_AHEAD} days from today")
+    return {
+        "id": f"c-{origin}-{destination}-{day.isoformat()}",
+        "label": (label or "").strip() or _city(destination),
+        "origin": origin,
+        "destination": destination,
+        "outbound_date": day.isoformat(),
+        "month": day.isoformat()[:7],
+        "cabin": cabin,
+        "cash_price_usd": None,  # priced from a live fare
+        "award_options": [],  # charted programs are priced automatically
+        "custom": True,
+    }

@@ -19,7 +19,7 @@ Code: `backend/app/optimizer.py` (model), `backend/app/planning.py` (explanation
 ## Layout
 
 - `backend/`: FastAPI + OR-Tools. Data in `backend/app/data/`, integrations in `app/plaid/`, `app/visa/`, `app/sources/`.
-- `frontend/`: Vite + React + TypeScript. Flow: connect cards (Plaid) → balances + trips (cabin per trip) → optimize → Greedy vs. Pointifly dashboard, Sankey, flight details, Visa travel benefits → Visa checkout for cash legs.
+- `frontend/`: Vite + React + TypeScript. Flow: connect cards (Plaid) → balances + trips (add your own route, date and cabin, or load the sample year) → optimize → Greedy vs. Pointifly dashboard, Sankey, flight details, Visa travel benefits → Visa checkout for cash legs.
 
 ## Run locally
 
@@ -44,21 +44,21 @@ Open http://localhost:5173 (Vite proxies `/api` to `:8000`). Copy `backend/.env.
 | Card detection | [Plaid](https://plaid.com/docs/) (Sandbox) | Card names map to points programs; balances stay manual (Plaid doesn't expose rewards points) |
 | Exchange rates | [Visa Foreign Exchange Rates](https://developer.visa.com/capabilities/foreign_exchange) (Sandbox) | Converts Aeroplan's $39 CAD partner booking fee into the plan; shows destination-currency rates |
 | Travel benefits | [Visa Merchant Offers Resource Center](https://developer.visa.com/capabilities/vmorc) (Sandbox) | Display only (card benefits, not flight prices) |
-| Airports | [OurAirports](https://ourairports.com/data/) (public domain) | Great-circle distance and zones for the award charts |
+| Airports | [OurAirports](https://ourairports.com/data/) (public domain) | Airport search, city names, great-circle distance and zones for the award charts |
 
 ## Keys (`backend/.env`)
 
 See `backend/.env.example`. Never commit `.env`; certificates and keys go in `backend/secrets/` (git-ignored).
 
-- **SerpApi:** `SERPAPI_KEY` (free plan). Refresh fares with `.venv/bin/python -m app.sources.refresh --fares` (skips fares fetched in the last 3 days; `--dry-run` shows the searches; `--reparse` re-reads saved responses without API calls).
+- **SerpApi:** `SERPAPI_KEY` (free plan). `SERPAPI_DAILY_LIMIT` caps live searches the app makes per day (default 20). Refresh the sample fares with `.venv/bin/python -m app.sources.refresh --fares` (skips fares fetched in the last 3 days; `--dry-run` shows the searches; `--reparse` re-reads saved responses without API calls).
 - **Plaid:** `PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV=sandbox` from https://dashboard.plaid.com. The demo profile connects American Express, Chase and Capital One (Plaid's own institution records) with cards named after real products. `PRESENTATION_MODE=1` shows a single Connect with Plaid button with no environment tags or developer controls.
 - **Visa:** a Visa Developer project with Foreign Exchange Rates and Merchant Offers Resource Center. Two-way SSL: download the certificate and private key to `backend/secrets/`, then set `VISA_USER_ID`, `VISA_PASSWORD` (the project's Two-Way SSL credentials, not your account password), `VISA_CERT_PATH`, `VISA_KEY_PATH`.
 
 ### API usage limits
 
-- **SerpApi:** 250 searches/month on the free plan; a full refresh of the sample trips uses 7.
+- **SerpApi:** 250 searches/month on the free plan; a full refresh of the sample trips uses 7. A custom trip costs 1 search per route + date + cabin, once: its fare is saved (the trip id comes from route + date), so repeats are free. The app stops live searches at `SERPAPI_DAILY_LIMIT` per day; saved fares keep working.
 - **Visa:** at most one FX call per currency pair per day and one offers call per day, cached in `app/data/visa_fx_rates.json` and `app/data/visa_offers.json` (committed, so the demo works offline). If Visa is unreachable the last cached value is used, with its date. Sandbox FX rates appear to be sample values, not current market rates.
-- **Tests never call Visa:** `backend/tests/conftest.py` replaces the Visa client with a fake for every test.
+- **Tests never call Visa or SerpApi:** `backend/tests/conftest.py` fakes both for every test and writes to temporary copies of the data files.
 
 ## Tests
 
@@ -80,5 +80,6 @@ The live Plaid Sandbox test runs when Plaid keys are set; all other external API
 | Visa FX | Built (Sandbox): fee conversion in the plan, destination rates in the UI |
 | Visa travel benefits (VMORC) | Built (Sandbox), display only |
 | Visa checkout for cash legs | UI mock; no payment is processed |
+| Custom trips | Built: any airport pair, date (within 330 days) and cabin, up to 8 trips; award prices from the charts |
 | Trip parsing from a sentence (LLM) | Not built (mock loads sample trips) |
 | ElevenLabs voice agent + knowledge base | Not built |

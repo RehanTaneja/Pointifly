@@ -1,8 +1,12 @@
-"""Every test runs against a fake Visa API (documented response shapes) with temporary caches,
-so the suite never spends real Visa calls or edits the committed cache files."""
+"""Every test runs against fake Visa and Google Flights (SerpApi) APIs with temporary caches and
+snapshot copies, so the suite never spends real API calls or edits committed data files."""
+
+import shutil
 
 import pytest
 
+from app import data_store, fares
+from app.sources import serpapi_flights
 from app.visa import client, fx, offers
 
 FAKE_RATES = {("124", "840"): "0.7200", ("840", "392"): "141.4300", ("840", "356"): "83.5000", ("840", "826"): "0.7500"}
@@ -31,3 +35,39 @@ def fake_visa(monkeypatch, tmp_path):
     monkeypatch.setattr(fx, "CACHE_PATH", tmp_path / "visa_fx_rates.json")
     monkeypatch.setattr(offers, "CACHE_PATH", tmp_path / "visa_offers.json")
     return fake
+
+
+class FakeSerpApi:
+    """Returns canned Google Flights responses; any search without one fails the test."""
+
+    def __init__(self):
+        self.responses: dict[tuple[str, str, str, int], dict] = {}
+        self.calls: list[dict] = []
+
+    def add(self, origin, destination, date, travel_class, price, airline="Test Air", cls="Economy"):
+        self.responses[(origin, destination, date, travel_class)] = {
+            "best_flights": [{"price": price, "flights": [{"airline": airline, "travel_class": cls,
+                              "departure_airport": {"id": origin}, "arrival_airport": {"id": destination}}]}],
+            "search_metadata": {"google_flights_url": "https://www.google.com/travel/flights?test"},
+        }
+
+    def __call__(self, params, api_key):
+        self.calls.append(params)
+        key = (params["departure_id"], params["arrival_id"], params["outbound_date"], params["travel_class"])
+        if key not in self.responses:
+            raise AssertionError(f"real SerpApi search blocked in tests: {key}")
+        return self.responses[key]
+
+
+@pytest.fixture(autouse=True)
+def fake_serpapi(monkeypatch, tmp_path):
+    fake = FakeSerpApi()
+    monkeypatch.setattr(serpapi_flights, "search", fake)
+    snap = tmp_path / "snapshots.json"
+    shutil.copy(data_store.SNAPSHOT_PATH, snap)  # committed fares stay readable, writes go to tmp
+    monkeypatch.setattr(data_store, "SNAPSHOT_PATH", snap)
+    monkeypatch.setattr(fares, "SNAPSHOT_PATH", snap)
+    monkeypatch.setattr(fares, "RAW_DIR", tmp_path / "raw")
+    data_store.load_dataset.cache_clear()
+    yield fake
+    data_store.load_dataset.cache_clear()

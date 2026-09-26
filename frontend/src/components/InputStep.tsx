@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AddTripForm } from './AddTripForm'
 import { TransferPartners } from './TransferPartners'
 import { CABINS, cabinLabel, fmtUsd, type Balance, type Cabin, type Dataset, type Trip } from '../api'
 
@@ -26,11 +27,13 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize }:
   const setCabin = (id: string, cabin: Cabin) =>
     setTrips((prev) => prev.map((t) => (t.id === id ? { ...t, cabin } : t)))
 
+  const removeTrip = (id: string) => setTrips((prev) => prev.filter((t) => t.id !== id))
+
   const setPoints = (holding: string, points: number) =>
     setBalances((prev) => prev.map((b) => (b.holding === holding ? { ...b, points } : b)))
 
-  // Mock parse: the LLM parse isn't wired yet, so this loads the sample trips.
-  const parse = () => setTrips(dataset.sample_trips)
+  // Mock parse: the LLM parse isn't wired yet, so this loads the sample trips (keeping custom ones).
+  const parse = () => setTrips((prev) => [...dataset.sample_trips, ...prev.filter((t) => t.custom)])
 
   return (
     <section className="card">
@@ -66,6 +69,8 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize }:
         </button>
       </div>
 
+      <AddTripForm existing={trips} max={8} onAdd={(t) => setTrips((prev) => [...prev, t])} />
+
       {trips.length > 0 && (
         <table className="table">
           <thead>
@@ -76,6 +81,7 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize }:
               <th>Cabin</th>
               <th>Cash price</th>
               <th>Price source</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -95,7 +101,12 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize }:
                     ))}
                   </select>
                 </td>
-                <CashPrice trip={t} base={dataset.sample_trips.find((b) => b.id === t.id)!} />
+                <CashPrice trip={t} base={dataset.sample_trips.find((b) => b.id === t.id)} />
+                <td>
+                  <button className="link" title="Remove trip" onClick={() => removeTrip(t.id)}>
+                    ✕
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -112,7 +123,7 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize }:
 }
 
 // Price for the selected cabin: already fetched, sample, or fetched live on optimize.
-function CashPrice({ trip, base }: { trip: Trip; base: Trip }) {
+function CashPrice({ trip, base }: { trip: Trip; base?: Trip }) {
   const fetched = trip.cash_fares?.[trip.cabin]
   if (fetched) {
     return (
@@ -125,7 +136,7 @@ function CashPrice({ trip, base }: { trip: Trip; base: Trip }) {
       </>
     )
   }
-  if (trip.cabin === base.cabin) {
+  if (base && trip.cabin === base.cabin) {
     return (
       <>
         <td>{fmtUsd(base.cash_price_usd)}</td>
