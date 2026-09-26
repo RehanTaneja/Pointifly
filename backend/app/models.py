@@ -15,8 +15,9 @@ class Allocation(BaseModel):
     trip_id: str
     trip_label: str
     method: str  # "points" | "cash"
-    source: str | None = None  # holding the points come from
     program: str | None = None  # program the award is booked in
+    cabin: str
+    sources: list[Balance] = []  # holdings the points come from (can pool several)
     points: int = 0
     cash_usd: float = 0
     value_usd: float = 0  # cash-equivalent value obtained with points

@@ -16,22 +16,35 @@ def test_dataset_shape_matches_doc():
     assert 3 <= len(ds["sample_trips"]) <= 5  # 3-5 sample trips
 
 
-def test_optimize_hits_demo_numbers():
+def test_optimize_sample_portfolio_beats_greedy():
     r = client.post("/api/optimize", json={}).json()
-    assert r["mock"] is True
-    assert r["points_saved"] == 80_000
-    assert r["value_gained_usd"] == 3_200
-    by_trip = {a["trip_id"]: a for a in r["portfolio"]["allocations"]}
-    assert by_trip["mia"]["method"] == "cash"
-    assert (by_trip["del"]["source"], by_trip["del"]["program"]) == ("amex_mr", "aeroplan")
-    assert by_trip["nrt"]["source"] == "chase_ur"
+    assert r["mock"] is False
+    assert r["points_saved"] > 0
+    assert r["value_gained_usd"] > 0
+    cash = [a for a in r["portfolio"]["allocations"] if a["method"] == "cash"]
+    assert cash and all(a["reason"] for a in cash)
 
 
 def test_optimize_without_body():
     assert client.post("/api/optimize").status_code == 200
 
 
+def test_optimize_rejects_unknown_input():
+    assert client.post("/api/optimize", json={"balances": [{"holding": "nope", "points": 1}]}).status_code == 400
+    assert client.post("/api/optimize", json={"trip_ids": ["nope"]}).status_code == 400
+
+
 def test_sankey_links_are_valid():
     s = client.post("/api/optimize", json={}).json()["sankey"]
     n = len(s["nodes"])
     assert all(0 <= l["source"] < n and 0 <= l["target"] < n and l["value"] > 0 for l in s["links"])
+
+
+def test_optimize_independent_of_balance_order_and_no_fragment_splits():
+    ds = client.get("/api/dataset").json()
+    bal = ds["sample_balances"]
+    a = client.post("/api/optimize", json={"balances": bal}).json()
+    b = client.post("/api/optimize", json={"balances": bal[::-1]}).json()
+    assert a["portfolio"] == b["portfolio"] and a["greedy"] == b["greedy"]
+    for alloc in a["portfolio"]["allocations"]:
+        assert len(alloc["sources"]) <= 2

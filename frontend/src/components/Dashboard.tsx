@@ -7,8 +7,8 @@ type Props = { result: OptimizeResponse; holdingNames: Record<string, string>; o
 
 function describe(a: Allocation, names: Record<string, string>) {
   if (a.method === 'cash') return `Pay cash · ${fmtUsd(a.cash_usd)}`
-  const route = a.source === a.program ? names[a.program!] : `${names[a.source!]} → ${names[a.program!]}`
-  return `${route} · ${fmtPts(a.points)} pts`
+  const from = a.sources.map((s) => (s.holding === a.program ? `${fmtPts(s.points)} miles` : `${names[s.holding]} ${fmtPts(s.points)}`))
+  return `${names[a.program!]} ${a.cabin} · ${from.join(' + ')}`
 }
 
 function StrategyColumn({ s, names, highlight }: { s: StrategyResult; names: Record<string, string>; highlight?: boolean }) {
@@ -52,9 +52,10 @@ export function Dashboard({ result, holdingNames, onReset }: Props) {
 
   return (
     <>
-      {result.mock && (
-        <div className="banner">Mock optimizer output on sample data: numbers are placeholders, not live prices.</div>
-      )}
+      <div className="banner">
+        {result.mock ? 'Mock optimizer output. ' : 'Computed by the optimizer on '}
+        sample data: award and cash prices are placeholders, not live quotes.
+      </div>
 
       <section className="card headline">
         <p>

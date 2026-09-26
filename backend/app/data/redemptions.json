@@ -1,5 +1,9 @@
 {
   "_note": "SAMPLE DATA for development. Award prices, cash prices and balances are placeholders, not live quotes. Verify transfer partners/ratios before the demo.",
+  "reserve_value_cpp": {
+    "_note": "ASSUMPTION: what a point is worth if kept unspent (cents/point). An award only wins if it beats this.",
+    "default": 1.0
+  },
   "currencies": [
     {
       "id": "amex_mr",
@@ -27,10 +31,10 @@
     { "id": "turkish", "name": "Turkish Airlines Miles&Smiles" }
   ],
   "sample_balances": [
-    { "holding": "amex_mr", "points": 100000 },
-    { "holding": "chase_ur", "points": 120000 },
-    { "holding": "capital_one", "points": 80000 },
-    { "holding": "united", "points": 100000 }
+    { "holding": "amex_mr", "points": 80000 },
+    { "holding": "chase_ur", "points": 60000 },
+    { "holding": "capital_one", "points": 40000 },
+    { "holding": "united", "points": 220000 }
   ],
   "sample_trips": [
     {
@@ -69,7 +73,7 @@
       "cash_price_usd": 4500,
       "award_options": [
         { "program": "aeroplan", "points": 90000 },
-        { "program": "united", "points": 90000, "cash_price_usd": 2650 }
+        { "program": "united", "points": 90000, "cabin": "economy", "cash_price_usd": 2650 }
       ]
     },
     {

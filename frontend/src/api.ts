@@ -17,6 +17,7 @@ export type Trip = {
 
 export type Dataset = {
   _note: string
+  reserve_value_cpp: { default: number }
   currencies: { id: string; name: string; transfers: Record<string, number> }[]
   programs: { id: string; name: string }[]
   sample_balances: Balance[]
@@ -27,8 +28,9 @@ export type Allocation = {
   trip_id: string
   trip_label: string
   method: 'points' | 'cash'
-  source: string | null
   program: string | null
+  cabin: string
+  sources: Balance[]
   points: number
   cash_usd: number
   value_usd: number

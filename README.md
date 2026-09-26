@@ -4,7 +4,7 @@ Award tools optimize one flight. Pointfolio optimizes your whole year of points.
 
 ## Layout
 
-- `backend/`: FastAPI. Sample redemption dataset in `app/data/redemptions.json`, mock optimizer in `app/mock_optimizer.py`.
+- `backend/`: FastAPI. Sample redemption dataset in `app/data/redemptions.json`. Optimizer (OR-Tools CP-SAT integer program) in `app/optimizer.py`; explanations and API shaping in `app/planning.py`.
 - `frontend/`: Vite + React + TypeScript. Flow: connect cards (mock Plaid) → balances + trips → optimize → Greedy vs. Pointfolio dashboard + Sankey → mock Visa checkout for cash legs.
 
 ## Run locally
@@ -30,8 +30,8 @@ cd backend && .venv/bin/python -m pytest -q
 
 | Piece | State |
 |---|---|
-| Greedy vs. portfolio optimizer (OR-Tools/PuLP) | Mock: hardcoded allocations over sample data |
-| Redemption dataset | Sample/placeholder prices, needs verification |
+| Greedy vs. portfolio optimizer | Real: exact integer program (OR-Tools CP-SAT); greedy = same model, one trip at a time |
+| Redemption dataset | Sample/placeholder prices, needs verification. Reserve value (1.0¢/pt) is an assumption |
 | Plaid Link (Sandbox) | UI mock only |
 | NL trip parse (LLM) | Mock: loads sample trips |
 | ElevenLabs voice agent + RAG | Not connected |
