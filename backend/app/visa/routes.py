@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from .. import card_rewards
+from ..sources.http import env
 from ..cybersource import checkout
 from . import client, fx, offers
 
@@ -16,7 +17,8 @@ class CheckoutRequest(BaseModel):
 
 @router.get("/status")
 def status() -> dict:
-    return {"configured": client.configured(), "checkout_configured": checkout.configured()}
+    presentation = (env("PRESENTATION_MODE") or "").lower() in ("1", "true", "yes")
+    return {"configured": client.configured(), "checkout_configured": checkout.configured(), "presentation": presentation}
 
 
 @router.post("/checkout")

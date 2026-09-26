@@ -87,7 +87,10 @@ def pay(trip_id: str, amount_usd: float) -> dict:
         raise CheckoutError("Cybersource is not configured: set CYBERSOURCE_* keys in backend/.env")
     if not 0 < amount_usd <= 20000:
         raise CheckoutError("Amount must be between $0 and $20,000")
-    status, r = _send(merchant_config(), payment_request(trip_id, amount_usd))
+    try:
+        status, r = _send(merchant_config(), payment_request(trip_id, amount_usd))
+    except Exception as e:  # network or SDK failure: report it, never crash the checkout
+        status, r = 0, {"status": "ERROR", "message": f"Gateway unreachable ({type(e).__name__})"}
     proc = r.get("processorInformation") or {}
     result = {
         "http_status": status,
@@ -98,11 +101,12 @@ def pay(trip_id: str, amount_usd: float) -> dict:
         "message": (r.get("errorInformation") or {}).get("message")
         or r.get("message")
         or (f"Cybersource returned HTTP {status}" + (": check the CYBERSOURCE_* keys" if status == 401 else "") if status >= 400 else None),
+        "authorized": (r.get("status") or "") in ("AUTHORIZED", "AUTHORIZED_PENDING_REVIEW"),
         "amount_usd": round(amount_usd, 2),
         "test_card_last4": TEST_VISA[-4:],
         "environment": "Cybersource Sandbox",
         "trigger_range_warning": TRIGGER_RANGE[0] <= amount_usd <= TRIGGER_RANGE[1],
     }
-    if result["status"] in ("AUTHORIZED", "AUTHORIZED_PENDING_REVIEW"):
+    if result["authorized"]:
         _PAID[trip_id] = result
     return result

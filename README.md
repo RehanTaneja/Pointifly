@@ -62,7 +62,7 @@ See `backend/.env.example`. Never commit `.env`; certificates and keys go in `ba
 
 - **SerpApi:** 250 searches/month on the free plan; a full refresh of the sample trips uses 7. A custom trip costs 1 search per route + date + cabin, once: its fare is saved (the trip id comes from route + date), so repeats are free. The app stops live searches at `SERPAPI_DAILY_LIMIT` per day; saved fares keep working.
 - **Visa:** at most one FX call per currency pair per day and one offers call per day, cached in `app/data/visa_fx_rates.json` and `app/data/visa_offers.json` (committed, so the demo works offline). If Visa is unreachable the last cached value is used, with its date. Sandbox FX rates appear to be sample values, not current market rates.
-- **Cybersource:** one gateway call per checkout click; a trip that's already authorized isn't charged again. Sandbox amounts $7,001–$7,145 may return canned test responses (legacy test tables).
+- **Cybersource:** one gateway call per checkout click; a trip that's already authorized isn't charged again. The checkout always completes in the UI: if the sandbox gateway fails, the same confirmation is shown, gateway ids are never invented, and the real gateway result appears (outside `PRESENTATION_MODE`) as a small developer note. As of 2026-09-26 this sandbox account returns `502 SERVER_ERROR "General system failure"` (authentication succeeds; account-side issue). Sandbox amounts $7,001–$7,145 may return canned test responses (legacy test tables).
 - **Tests never call Visa, SerpApi or Cybersource:** `backend/tests/conftest.py` fakes all three for every test and writes to temporary copies of the data files.
 
 ## Tests

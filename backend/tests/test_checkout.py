@@ -46,7 +46,7 @@ def test_non_visa_card_and_bad_amount_rejected(fake_cybersource):
 
 
 def test_not_configured(monkeypatch, fake_cybersource):
-    monkeypatch.delenv("CYBERSOURCE_SECRET_KEY")
+    monkeypatch.setenv("CYBERSOURCE_SECRET_KEY", "")  # empty overrides the real backend/.env
     assert pay().status_code == 503 and fake_cybersource.requests == []
 
 
@@ -65,3 +65,19 @@ def test_jwt_shared_secret_sandbox_config(monkeypatch):
 def test_bare_401_gets_a_helpful_message(fake_cybersource):
     fake_cybersource.response = (401, {})
     assert "check the CYBERSOURCE_* keys" in pay().json()["message"]
+
+
+def test_network_failure_is_a_result_not_a_crash(fake_cybersource, monkeypatch):
+    def boom(config, body):
+        raise ConnectionError("down")
+
+    monkeypatch.setattr(checkout, "_send", boom)
+    r = pay()
+    assert r.status_code == 200 and r.json()["authorized"] is False and "unreachable" in r.json()["message"]
+
+
+def test_authorized_flag(fake_cybersource):
+    assert pay().json()["authorized"] is True
+    fake_cybersource.response = (502, {"status": "SERVER_ERROR", "message": "Error - General system failure."})
+    r = pay(trip_id="other").json()
+    assert r["authorized"] is False and r["status"] == "SERVER_ERROR"

@@ -121,7 +121,7 @@ export function Dashboard({ result, holdingNames, currencies, onReset }: Props) 
                 {a.local_fx && <LocalRate fx={a.local_fx} />}
               </span>
               {paid.has(a.trip_id) ? (
-                <span className="tag ok">Authorized · Sandbox</span>
+                <span className="tag ok">✓ Paid</span>
               ) : (
                 <button className="primary" onClick={() => setCheckout(a)} disabled={!a.payment_card}>
                   Pay with Visa

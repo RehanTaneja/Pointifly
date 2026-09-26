@@ -123,13 +123,15 @@ export type CheckoutResult = {
   test_card_last4: string
   environment: string
   trigger_range_warning: boolean
+  authorized: boolean
   card: string
   repeat?: boolean
 }
 
 export const payWithVisa = (trip_id: string, amount_usd: number, card_id: string) =>
   post<CheckoutResult>('/api/visa/checkout', { trip_id, amount_usd, card_id })
-export const getVisaStatus = () => request<{ configured: boolean; checkout_configured: boolean }>('/api/visa/status')
+export const getVisaStatus = () =>
+  request<{ configured: boolean; checkout_configured: boolean; presentation: boolean }>('/api/visa/status')
 
 // Visa FX rate; `date` is when Pointifly retrieved it from Visa.
 export type FxRate = { currency?: string; rate: number; date: string; source: string }
