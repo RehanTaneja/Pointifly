@@ -1,0 +1,54 @@
+{
+  "offers": [
+    {
+      "id": 102552,
+      "title": "$250 Airline Fee Credit",
+      "description": "Pick your favorite airline, enjoy up to $250 in credits",
+      "merchant": "VPP UBS",
+      "cards": [
+        "Visa Infinite"
+      ],
+      "valid_to": "Nov 11, 2099 GMT",
+      "url": null,
+      "image": "https://www.visa.com/images/merchantoffers/stage/2017-09/1506711225435.112857_English_HighRes_11469207097783.AirTravelCredit_1.jpg"
+    },
+    {
+      "id": 102555,
+      "title": "Visa Luxury Hotel Collection",
+      "description": "Special Benefits at Hotels Worldwide",
+      "merchant": "Visa Luxury Hotel Collection",
+      "cards": [
+        "Visa Infinite"
+      ],
+      "valid_to": "Nov 11, 2099 GMT",
+      "url": "https://www.visainfinitehotels.com",
+      "image": "https://www.visa.com/images/merchantoffers/stage/2017-09/1506716412141.112869_English_HighRes_11469834325172.VILHC_770x430.jpg"
+    },
+    {
+      "id": 102556,
+      "title": "Visa Luxury Hotel Collection",
+      "description": "Mandarin Oriental - exquisite properties, global privileges",
+      "merchant": "Mandarin Oriental Hotel Group",
+      "cards": [
+        "Visa Infinite"
+      ],
+      "valid_to": "Nov 11, 2099 GMT",
+      "url": null,
+      "image": "https://www.visa.com/images/merchantoffers/stage/2017-09/1506719292085.12871_English_HighRes_11469215102884.Mandiran_orential_2.jpg"
+    },
+    {
+      "id": 102562,
+      "title": "Trip Cancellation / Trip Interruption",
+      "description": "Protection from the unexpected when you travel",
+      "merchant": "VPP UBS",
+      "cards": [
+        "Visa Infinite"
+      ],
+      "valid_to": "Nov 11, 2099 GMT",
+      "url": null,
+      "image": "https://www.visa.com/images/merchantoffers/stage/2017-09/1506723749998.112891_English_HighRes_11469222307546.TripCancellation_2.jpg"
+    }
+  ],
+  "date": "2026-09-26",
+  "source": "Visa Merchant Offers Resource Center"
+}

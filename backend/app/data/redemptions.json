@@ -1,0 +1,175 @@
+{
+  "_note": "SAMPLE DATA for development. Aeroplan and ANA award prices come from their official charts (award_charts.json); the award options listed here for other programs, and the balances, are sample placeholders. Cash prices here are fallbacks: live Google Flights fares from snapshots.json override them. Trips are one-way; award prices must be one-way too. Transfer ratios live in transfer_ratios.json (official issuer pages).",
+  "reserve_value_cpp": {
+    "_note": "ASSUMPTION: what a point is worth if kept unspent (cents/point). An award only wins if it beats this.",
+    "default": 1.0
+  },
+  "currencies": [
+    {
+      "id": "amex_mr",
+      "name": "Amex Membership Rewards"
+    },
+    {
+      "id": "chase_ur",
+      "name": "Chase Ultimate Rewards"
+    },
+    {
+      "id": "capital_one",
+      "name": "Capital One Miles"
+    }
+  ],
+  "programs": [
+    {
+      "id": "aeroplan",
+      "name": "Air Canada Aeroplan",
+      "match": [
+        "aeroplan"
+      ]
+    },
+    {
+      "id": "united",
+      "name": "United MileagePlus",
+      "match": [
+        "united"
+      ]
+    },
+    {
+      "id": "british_airways",
+      "name": "British Airways Club (Avios)",
+      "match": [
+        "british airways",
+        "avios"
+      ]
+    },
+    {
+      "id": "flying_blue",
+      "name": "Air France-KLM Flying Blue",
+      "match": [
+        "flying blue",
+        "air france"
+      ]
+    },
+    {
+      "id": "virgin_atlantic",
+      "name": "Virgin Atlantic Flying Club",
+      "match": [
+        "virgin atlantic"
+      ]
+    },
+    {
+      "id": "ana",
+      "name": "ANA Mileage Club",
+      "match": [
+        "all nippon",
+        "ana mileage"
+      ]
+    },
+    {
+      "id": "turkish",
+      "name": "Turkish Airlines Miles&Smiles",
+      "match": [
+        "turkish"
+      ]
+    }
+  ],
+  "sample_balances": [
+    {
+      "holding": "amex_mr",
+      "points": 80000
+    },
+    {
+      "holding": "chase_ur",
+      "points": 60000
+    },
+    {
+      "holding": "capital_one",
+      "points": 40000
+    },
+    {
+      "holding": "united",
+      "points": 220000
+    }
+  ],
+  "sample_trips": [
+    {
+      "id": "mia",
+      "label": "Miami",
+      "origin": "ATL",
+      "destination": "MIA",
+      "month": "2026-11",
+      "cabin": "economy",
+      "cash_price_usd": 180,
+      "award_options": [
+        {
+          "program": "british_airways",
+          "points": 18000,
+          "cabin": "economy"
+        },
+        {
+          "program": "united",
+          "points": 15000,
+          "cabin": "economy"
+        }
+      ],
+      "outbound_date": "2026-11-20"
+    },
+    {
+      "id": "lhr",
+      "label": "London",
+      "origin": "ATL",
+      "destination": "LHR",
+      "month": "2027-01",
+      "cabin": "economy",
+      "cash_price_usd": 750,
+      "award_options": [
+        {
+          "program": "flying_blue",
+          "points": 30000,
+          "cabin": "economy"
+        },
+        {
+          "program": "virgin_atlantic",
+          "points": 100000,
+          "cabin": "business",
+          "cash_price_usd": 3000
+        }
+      ],
+      "outbound_date": "2027-01-15"
+    },
+    {
+      "id": "del",
+      "label": "Delhi",
+      "origin": "ATL",
+      "destination": "DEL",
+      "month": "2027-03",
+      "cabin": "business",
+      "cash_price_usd": 4500,
+      "award_options": [
+        {
+          "program": "united",
+          "points": 90000,
+          "cabin": "economy",
+          "cash_price_usd": 2650
+        }
+      ],
+      "outbound_date": "2027-03-12"
+    },
+    {
+      "id": "nrt",
+      "label": "Tokyo",
+      "origin": "ATL",
+      "destination": "NRT",
+      "month": "2027-05",
+      "cabin": "business",
+      "cash_price_usd": 5280,
+      "award_options": [
+        {
+          "program": "virgin_atlantic",
+          "points": 88000,
+          "cabin": "business"
+        }
+      ],
+      "outbound_date": "2027-05-14"
+    }
+  ]
+}

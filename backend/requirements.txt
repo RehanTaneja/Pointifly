@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+pydantic
+ortools
+cybersource-rest-client-python==0.0.79
+google-genai==2.25.0

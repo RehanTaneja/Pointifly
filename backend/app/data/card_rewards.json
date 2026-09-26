@@ -1,0 +1,46 @@
+{
+  "_note": "Earn rates on airfare paid in cash, from each issuer's official page, verified 2026-09-26. Only the card's own earning is counted: MileagePlus member earning from flying United applies no matter how you pay, so it isn't credited to a card.",
+  "verified_on": "2026-09-26",
+  "cards": {
+    "chase_sapphire_preferred": {
+      "name": "Chase Sapphire Preferred",
+      "network": "visa",
+      "tier": "Visa Signature",
+      "earns": "chase_ur",
+      "match": "\\bsapphire preferred\\b",
+      "airfare": { "default": 2 },
+      "quoted": "2x points on travel worldwide, from airfare and hotels to taxis and trains (5x only when booked through Chase Travel)",
+      "source_url": "https://www.chase.com/sapphire-cards/personal/preferred"
+    },
+    "united_explorer": {
+      "name": "United Explorer Card",
+      "network": "visa",
+      "tier": "Visa Signature",
+      "earns": "united",
+      "match": "\\bunited explorer\\b",
+      "airfare": { "United": 3, "default": 1 },
+      "quoted": "3x miles on entire United purchase with United Explorer Card; 1x mile on all other purchases",
+      "source_url": "https://creditcards.chase.com/travel-credit-cards/united/united-explorer"
+    },
+    "capital_one_venture": {
+      "name": "Capital One Venture Rewards",
+      "network": "visa",
+      "tier": "Visa Signature",
+      "earns": "capital_one",
+      "match": "\\bventure rewards\\b|\\bcapital one venture\\b(?! ?x| ?one)",
+      "airfare": { "default": 2 },
+      "quoted": "unlimited 2X miles per dollar on every purchase, every day",
+      "source_url": "https://www.capitalone.com/credit-cards/venture/"
+    },
+    "amex_gold": {
+      "name": "American Express Gold Card",
+      "network": "amex",
+      "tier": null,
+      "earns": "amex_mr",
+      "match": "\\bamerican express gold\\b|\\bamex gold\\b",
+      "airfare": null,
+      "quoted": "Not a Visa card: not used to pay cash legs in Pointifly's Visa checkout",
+      "source_url": null
+    }
+  }
+}

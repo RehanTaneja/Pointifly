@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+.DS_Store
+backend/app/data/raw/
+backend/secrets/
+*.pem
+*.p12
+*.key
