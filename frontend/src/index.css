@@ -130,3 +130,4 @@ button.link:hover { color: var(--text); }
 .home-airport { display: flex; align-items: center; gap: 6px; color: var(--muted); }
 .home-airport input { width: 64px; text-transform: uppercase; }
 .notes { margin: 6px 0 0; padding-left: 18px; }
+.voice-input input { flex: 1; }

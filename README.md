@@ -7,7 +7,7 @@ Connect your cards, enter your point balances and trips, and Pointifly decides f
 ## AI and privacy
 
 - **Gemini** turns a typed or spoken sentence into balances and trips (JSON schema). Every trip is then validated like a hand-entered one.
-- **ElevenLabs** is the voice orchestrator. Its tools are *client tools* that run in the browser against the local backend (`fill_trip_plan`, `run_optimizer`, `explain_trip`), so balances, cards and trips never live on ElevenLabs; the agent only receives short summaries. The API key stays on the server; the browser gets a 15-minute signed URL.
+- **ElevenLabs** is the voice orchestrator (voice, or "Type instead" for a text chat with the same agent, tools and knowledge base). Its tools are *client tools* that run in the browser against the local backend (`fill_trip_plan`, `run_optimizer`, `explain_trip`), so balances, cards and trips never live on ElevenLabs; the agent only receives short summaries. The API key stays on the server; the browser gets a 15-minute signed URL.
 - **Knowledge base (RAG):** public reference data only (official transfer ratios, award charts, card earn rates, how the optimizer decides). A test fails if any key or user data appears in it. Credentials never go into the knowledge base.
 
 ## How the optimizer works
