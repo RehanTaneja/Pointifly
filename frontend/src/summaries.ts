@@ -68,7 +68,10 @@ export function planSummary(r: OptimizeResponse, names: Record<string, string>, 
   const head =
     r.value_gained_usd > 0
       ? `Points used: ${fmtPts(p.total_points)}, for ${fmtUsd(p.total_value_usd)} of travel: ${fmtUsd(r.value_gained_usd)} more value than booking trip by trip` +
-        (r.points_saved > 0 ? `, with ${fmtPts(r.points_saved)} fewer points.` : '.')
+        (r.points_saved > 0 ? `, with ${fmtPts(r.points_saved)} fewer points` : '') +
+        (r.greedy.cash_out_of_pocket_usd > p.cash_out_of_pocket_usd
+          ? `, and ${fmtUsd(r.greedy.cash_out_of_pocket_usd - p.cash_out_of_pocket_usd)} less cash out of pocket.`
+          : '.')
       : `Points used: ${fmtPts(p.total_points)}, for ${fmtUsd(p.total_value_usd)} of travel. Trip-by-trip booking would do the same here.`
   const trips = `Trips: ${p.allocations.map((a) => allocationLine(a, names)).join('. ')}.`
   const fx = p.allocations.filter((a) => a.local_fx).map((a) => `${a.trip_label} in ${a.local_fx!.currency}`)

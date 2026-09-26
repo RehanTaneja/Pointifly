@@ -229,10 +229,25 @@ FIRST_MESSAGE = (
 )
 
 
+# Noisy rooms (a hackathon floor): other people's voices must not cut the agent off or count as a turn.
+# - No "interruption" client event: the agent finishes what it's saying (speech meanwhile is ignored).
+# - "patient" turn eagerness: short background chatter isn't taken as the user's turn.
+# - ASR keywords: the names users actually say, so they're transcribed right.
+# (The browser SDK already turns on echo cancellation, noise suppression and auto gain for the mic.)
+CLIENT_EVENTS = ["audio", "agent_response", "user_transcript", "agent_response_correction", "agent_tool_response"]
+ASR_KEYWORDS = [
+    "Pointifly", "Amex", "Membership Rewards", "Chase", "Ultimate Rewards", "Capital One", "United",
+    "MileagePlus", "Aeroplan", "Flying Blue", "Avios", "ANA", "Visa", "Heathrow", "Haneda", "premium economy",
+]
+
+
 def agent_body(tool_ids: list[str], docs: list[dict]) -> dict:
     return {
         "name": "Pointifly",
         "conversation_config": {
+            "conversation": {"client_events": CLIENT_EVENTS},
+            "turn": {"turn_eagerness": "patient"},
+            "asr": {"keywords": ASR_KEYWORDS},
             "agent": {
                 "first_message": FIRST_MESSAGE,
                 "language": "en",

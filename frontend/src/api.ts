@@ -221,6 +221,8 @@ export const getDataset = () => request<Dataset>('/api/dataset')
 // A credit card detected through Plaid (or the mock), mapped to the points program it earns.
 export type LinkedCard = {
   product_id?: string | null // card product (for Visa earn rates), e.g. chase_sapphire_preferred
+  network?: string | null // "visa": pays cash trips through Cybersource
+  tier?: string | null // e.g. Visa Signature
   institution: string
   product: string
   holding: string | null

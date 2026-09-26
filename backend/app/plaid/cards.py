@@ -2,6 +2,7 @@
 
 import re
 
+from ..card_rewards import cards as card_products
 from ..card_rewards import product_id
 
 # (pattern on the card's official_name or name, holding id, note). First match wins, so the
@@ -39,9 +40,13 @@ def cards_from_accounts(accounts_response: dict, institution: str | None = None)
             continue
         holding, note = classify(acct)
         name = acct.get("official_name") or acct.get("name") or ""
+        pid = product_id(name)
+        known = card_products().get(pid or "", {})
         out.append(
             {
-                "product_id": product_id(name),
+                "product_id": pid,
+                "network": known.get("network"),  # "visa" cards pay cash trips through Cybersource
+                "tier": known.get("tier"),
                 "account_id": acct.get("account_id"),
                 "institution": inst,
                 "product": acct.get("official_name") or acct.get("name") or "Credit card",

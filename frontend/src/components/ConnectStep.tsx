@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { usePlaidLink } from 'react-plaid-link'
 import { plaid, type LinkedCard, type PlaidStatus } from '../api'
+import { VisaMark } from './VisaImpact'
 
 export type { LinkedCard }
 
@@ -49,6 +50,7 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
   }
 
   const mapped = cards.filter((c) => c.holding)
+  const visaCards = cards.filter((c) => c.network === 'visa').length
 
   return (
     <section className="card">
@@ -96,8 +98,9 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
               <tr key={`${c.institution}-${c.product}-${c.mask ?? ''}`} className={c.holding ? '' : 'muted'}>
                 <td>{c.institution}</td>
                 <td>
-                  {c.product}
+                  {c.network === 'visa' && <VisaMark />} {c.product}
                   {c.mask && <span className="muted"> ···{c.mask}</span>}
+                  {c.network === 'visa' && <div className="muted small">{c.tier ? `${c.tier} · ` : ''}pays your cash trips and earns points</div>}
                 </td>
                 <td>
                   {c.holding ? holdingNames[c.holding] : 'Not a program Pointifly models'}
@@ -108,6 +111,13 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
           </tbody>
         </table>
         </div>
+      )}
+
+      {visaCards > 0 && (
+        <p className="visa-note small">
+          <VisaMark /> {visaCards} Visa card{visaCards === 1 ? '' : 's'} linked: Pointifly picks the best one for each cash trip and
+          pays through Visa's Cybersource gateway.
+        </p>
       )}
 
       <div className="row end">

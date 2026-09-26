@@ -36,6 +36,9 @@ function Agent({ tools, enabled, variant }: Props) {
   const [draft, setDraft] = useState('')
   const [flash, setFlash] = useState(false)
   const [working, setWorking] = useState<string | null>(null) // the tool status shown right now
+  const [starting, setStarting] = useState(false) // mic permission + signed URL, before the SDK connects
+  const startingRef = useRef(false)
+  const [everStarted, setEverStarted] = useState(false)
   const panel = useRef<HTMLDivElement>(null)
   const orb = useRef<HTMLDivElement>(null)
   const autoStarted = useRef(false)
@@ -106,24 +109,34 @@ function Agent({ tools, enabled, variant }: Props) {
 
   // Voice first; without a microphone (denied, missing, or a loud room) the same agent, tools and
   // knowledge base run as a text chat.
+  // The session URL is fetched while the mic permission is asked, so the greeting comes sooner.
   const start = async (text: boolean) => {
+    if (startingRef.current || liveRef.current) return // never two sessions
+    startingRef.current = true
+    setStarting(true)
+    setEverStarted(true)
     setError(null)
+    const session = getVoiceSession()
+    session.catch(() => undefined) // handled below; avoids an unhandled rejection while the mic is asked
     let asText = text
-    if (!asText) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-        stream.getTracks().forEach((t) => t.stop()) // permission only; the SDK opens its own stream
-      } catch {
-        asText = true
-        log({ role: 'tool', text: 'No microphone available: type your messages below.' })
-      }
-    }
-    setTextMode(asText)
     try {
-      const { signed_url } = await getVoiceSession()
+      if (!asText) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+          stream.getTracks().forEach((t) => t.stop()) // permission only; the SDK opens its own stream
+        } catch {
+          asText = true
+          log({ role: 'tool', text: 'No microphone available: type your messages below.' })
+        }
+      }
+      setTextMode(asText)
+      const { signed_url } = await session
       conversation.startSession({ signedUrl: signed_url, textOnly: asText })
     } catch (e) {
       setError((e as Error).message)
+    } finally {
+      startingRef.current = false
+      setStarting(false)
     }
   }
   const startRef = useRef(start)
@@ -184,14 +197,28 @@ function Agent({ tools, enabled, variant }: Props) {
     setDraft('')
   }
 
-  const state = !live ? 'idle' : conversation.status === 'connecting' ? 'connecting' : working ? 'working' : conversation.isSpeaking ? 'speaking' : 'listening'
+  // Before the first start the page counts as starting, so it never asks for a tap it doesn't need.
+  const pendingAuto = variant === 'stage' && enabled && !everStarted
+  const state = !live
+    ? starting || pendingAuto
+      ? 'connecting'
+      : 'idle'
+    : conversation.status === 'connecting'
+      ? 'connecting'
+      : working
+        ? 'working'
+        : conversation.isSpeaking
+          ? 'speaking'
+          : 'listening'
   const statusText =
     state === 'idle'
-      ? enabled
-        ? 'Tap the circle to talk to Pointifly'
-        : 'Voice agent unavailable: use Manual mode'
+      ? !enabled
+        ? 'Voice agent unavailable: use Manual mode'
+        : error
+          ? "Couldn't connect · tap the circle to try again"
+          : 'Conversation ended · tap the circle to start again'
       : state === 'connecting'
-        ? 'Connecting…'
+        ? 'Starting Pointifly…'
         : state === 'working'
           ? working
           : state === 'speaking'

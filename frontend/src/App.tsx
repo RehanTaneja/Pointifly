@@ -20,6 +20,7 @@ import { Dashboard } from './components/Dashboard'
 import { InputStep, type InputApi } from './components/InputStep'
 import { PaymentToast } from './components/PaymentToast'
 import { PlanPanel } from './components/PlanPanel'
+import { BuiltOnVisa } from './components/VisaImpact'
 import { AGENT_CONTEXT, VoiceAgent, type VoiceTools } from './components/VoiceAgent'
 import { explainTrip, planSummary, programsSummary } from './summaries'
 
@@ -146,8 +147,9 @@ export default function App() {
     <>
       {intro && <Splash onDone={endIntro} />}
       <main className={onAgentPage ? 'agent-mode' : ''}>
-        <header>
+        <header className="app-header">
           <Logo />
+          <BuiltOnVisa />
         </header>
 
         {error && <div className="banner error">{error}</div>}

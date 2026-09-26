@@ -17,6 +17,7 @@ import { CheckoutModal } from './CheckoutModal'
 import { CountUp } from './CountUp'
 import { FareDetails } from './FareDetails'
 import { VisaBenefits } from './VisaBenefits'
+import { VisaImpact, VisaMark } from './VisaImpact'
 import { FlowSankey } from './FlowSankey'
 
 type Props = {
@@ -104,6 +105,8 @@ export function Dashboard({ result, holdingNames, currencies, cardIds, onReset, 
         <Headline r={result} />
       </section>
 
+      <VisaImpact result={result} />
+
       <section className="card">
         <h2>Greedy vs. Pointifly</h2>
         <div className="compare">
@@ -122,7 +125,9 @@ export function Dashboard({ result, holdingNames, currencies, cardIds, onReset, 
 
       {cashLegs.length > 0 && (
         <section className="card">
-          <h2>Cash legs</h2>
+          <h2 className="visa-heading">
+            <VisaMark /> Cash trips, paid with Visa
+          </h2>
           {cashLegs.map((a) => (
             <div key={a.trip_id} className="row between cash-leg">
               <span>
@@ -184,11 +189,25 @@ function Headline({ r }: { r: OptimizeResponse }) {
       </p>
     )
   }
+  // Pointifly spends more points here: say why it's still better, only with claims the numbers support.
+  const cashSaved = r.greedy.cash_out_of_pocket_usd - r.portfolio.cash_out_of_pocket_usd
+  const why =
+    cpp(r.portfolio) > cpp(r.greedy) ? (
+      <>
+        , and each goes further: <strong>{cpp(r.portfolio).toFixed(1)}¢</strong> vs {cpp(r.greedy).toFixed(1)}¢ per point
+      </>
+    ) : cashSaved > 0 ? (
+      <>
+        {' '}
+        where they're worth the most, so you pay <strong>{fmtUsd(cashSaved)} less cash</strong>
+      </>
+    ) : (
+      <> where they're worth the most</>
+    )
   return (
     <p>
-      Optimizing trip-by-trip gets {value} than optimizing the portfolio. Pointifly spends{' '}
-      {fmtPts(-r.points_saved)} more points, but each goes further: <strong>{cpp(r.portfolio).toFixed(1)}¢</strong>{' '}
-      vs {cpp(r.greedy).toFixed(1)}¢ per point.
+      Optimizing trip-by-trip gets {value} than optimizing the portfolio. Pointifly uses {fmtPts(-r.points_saved)} more
+      points{why}.
     </p>
   )
 }

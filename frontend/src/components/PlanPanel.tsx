@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { cabinLabel, fmtPts, fmtUsd, getAgentStatus, PAYMENTS_CHANGED, type Allocation, type OptimizeResponse } from '../api'
 import { CheckoutModal } from './CheckoutModal'
 import { CountUp } from './CountUp'
+import { VisaImpact } from './VisaImpact'
 
 // The plan on the agent page, once the agent has optimized: headline numbers, one line per trip,
 // and each cash trip's state. With autonomous payments off, the user pays with the button here.
@@ -65,6 +66,7 @@ export function PlanPanel({ result, holdingNames, autopay, onDetails }: Props) {
           )}
         </div>
       </div>
+      <VisaImpact result={result} compact />
       <ul className="plan-trips">
         {p.allocations.map((a) => (
           <li key={a.trip_id}>

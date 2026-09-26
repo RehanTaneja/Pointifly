@@ -80,6 +80,10 @@ def test_setup_creates_everything_once(fake_ai):
     agent = next(c[2] for c in fake_ai[1].calls if c[1] == "/v1/convai/agents/create")
     prompt = agent["conversation_config"]["agent"]["prompt"]
     assert prompt["rag"]["enabled"] and len(prompt["knowledge_base"]) == 4 and len(prompt["tool_ids"]) == 5
+    cc = agent["conversation_config"]
+    assert "interruption" not in cc["conversation"]["client_events"]  # background voices can't cut it off
+    assert {"audio", "agent_response", "user_transcript"} <= set(cc["conversation"]["client_events"])
+    assert cc["turn"]["turn_eagerness"] == "patient" and "Aeroplan" in cc["asr"]["keywords"]
 
 
 def test_knowledge_base_holds_only_public_reference_data():
