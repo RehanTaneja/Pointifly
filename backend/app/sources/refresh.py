@@ -2,6 +2,7 @@
 
   python -m app.sources.refresh --dry-run     # show planned calls, no keys needed
   python -m app.sources.refresh --fares       # SERPAPI_KEY: live Google Flights cash fares
+  python -m app.sources.refresh --fares --force   # re-fetch even fares fetched recently
   python -m app.sources.refresh --transfers   # REWARDSCC_KEY: transfer partners + ratios
 
 Snapshots keep the demo working offline and stretch SerpApi's 100 free searches/month.
@@ -9,7 +10,7 @@ Snapshots keep the demo working offline and stretch SerpApi's 100 free searches/
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from ..data_store import SNAPSHOT_PATH, load_base_dataset
 from . import rewardscc, serpapi_flights
@@ -30,9 +31,22 @@ def fare_searches(ds: dict) -> list[tuple[str, dict, dict]]:
     return out
 
 
-def refresh_fares(ds: dict, snap: dict, api_key: str) -> None:
+FRESH_FOR = timedelta(days=3)
+
+
+def is_fresh(entry: dict | None, params: dict) -> bool:
+    """Fetched recently with the same search, so re-fetching would only spend quota."""
+    if not entry or entry.get("params") != params:
+        return False
+    return datetime.now(timezone.utc) - datetime.fromisoformat(entry["fetched_at"]) < FRESH_FOR
+
+
+def refresh_fares(ds: dict, snap: dict, api_key: str, force: bool = False) -> None:
     fares = snap.setdefault("cash_fares", {})
     for key, trip, params in fare_searches(ds):
+        if not force and is_fresh(fares.get(key), params):
+            print(f"  {key}: fetched {fares[key]['fetched_at'][:10]}, skipping (use --force to re-fetch)")
+            continue
         fare = serpapi_flights.lowest_fare(serpapi_flights.search(params, api_key))
         if fare is None:
             print(f"  {key}: no priced itineraries, keeping previous value")
@@ -41,7 +55,7 @@ def refresh_fares(ds: dict, snap: dict, api_key: str) -> None:
         print(f"  {key}: ${fare['price']} ({', '.join(fare['airlines'])})")
 
 
-def refresh_transfers(ds: dict, snap: dict, api_key: str) -> None:
+def refresh_transfers(ds: dict, snap: dict, api_key: str, force: bool = False) -> None:
     ours = {p["id"]: p["match"] for p in ds["programs"]}
     wanted = {}
     for row in rewardscc.transfer_programs(api_key):
@@ -60,6 +74,7 @@ def main() -> None:
     ap.add_argument("--fares", action="store_true")
     ap.add_argument("--transfers", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--force", action="store_true", help="re-fetch fares fetched in the last 3 days")
     args = ap.parse_args()
     ds = load_base_dataset()
 
@@ -79,7 +94,7 @@ def main() -> None:
         if not key:
             raise SystemExit(f"{name} is not set (add it to backend/.env)")
         print(f"{fn.__name__}:")
-        fn(ds, snap, key)
+        fn(ds, snap, key, force=args.force)
     SNAPSHOT_PATH.write_text(json.dumps(snap, indent=2) + "\n")
     print(f"saved {SNAPSHOT_PATH}")
 

@@ -66,3 +66,16 @@ def test_program_match_phrases_do_not_collide():
     for name, expected in names.items():
         hits = [p["id"] for p in programs if any(n in name.lower() for n in p["match"])]
         assert hits == [expected], (name, hits)
+
+
+def test_recent_fares_are_not_refetched():
+    from datetime import datetime, timedelta, timezone
+
+    from app.sources.refresh import is_fresh
+
+    params = {"departure_id": "ATL"}
+    now = datetime.now(timezone.utc)
+    assert is_fresh({"params": params, "fetched_at": now.isoformat()}, params)
+    assert not is_fresh({"params": params, "fetched_at": (now - timedelta(days=4)).isoformat()}, params)
+    assert not is_fresh({"params": {"departure_id": "JFK"}, "fetched_at": now.isoformat()}, params)  # search changed
+    assert not is_fresh(None, params)
