@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   agentPay,
+  fmtPts,
+  fmtUsd,
   getAgentStatus,
+  getVisaBenefits,
   getAiStatus,
   PAYMENTS_CHANGED,
   setMandate,
@@ -21,11 +24,15 @@ import { InputStep, type InputApi } from './components/InputStep'
 import { PaymentToast } from './components/PaymentToast'
 import { PlanPanel } from './components/PlanPanel'
 import { BuiltOnVisa } from './components/VisaImpact'
+import { VisaMoments } from './components/VisaMoments'
 import { AGENT_CONTEXT, VoiceAgent, type VoiceTools } from './components/VoiceAgent'
 import { prefetchVoiceSession } from './voiceSession'
+import { visaMoment } from './visaMoments'
 import { explainTrip, planSummary, programsSummary } from './summaries'
 
 type Step = 'connect' | 'agent' | 'manual' | 'loading' | 'dashboard'
+
+const MIN_WORKING_MS = 1200 // a Visa call's "working" label stays long enough to be seen
 
 export default function App() {
   const [dataset, setDataset] = useState<Dataset | null>(null)
@@ -130,10 +137,43 @@ export default function App() {
     run_optimizer: async (status) => {
       const inputs = currentInputs()
       if (!inputs?.trips.length) return 'There are no trips yet: ask for the trips first.'
+      visaMoment({ id: 'fx', kind: 'working', title: 'Foreign Exchange Rates API', detail: 'Converting local fares for your trips…' })
+      const began = Date.now()
       const r = await runOptimize(inputs.balances, inputs.trips, stepRef.current === 'agent')
-      if (!r) return 'The optimizer could not run: check the trips on screen.'
+      const hold = Math.max(0, MIN_WORKING_MS - (Date.now() - began)) // saved fares are instant: keep "working" visible
+      if (!r) {
+        visaMoment({ id: 'fx', kind: 'held', title: 'Foreign Exchange Rates API', detail: 'The optimizer could not run' })
+        return 'The optimizer could not run: check the trips on screen.'
+      }
       const fx = [...new Set(r.portfolio.allocations.flatMap((a) => (a.local_fx?.currency ? [a.local_fx.currency] : [])))]
       if (fx.length) status(`Visa Foreign Exchange Rates API: USD → ${fx.join(', ')} (Sandbox sample rates)`)
+      // What Visa did in this plan, one label at a time while the agent talks it through.
+      visaMoment(
+        {
+          id: 'fx',
+          kind: 'done',
+          title: 'Foreign Exchange Rates API',
+          detail: fx.length ? `USD → ${fx.join(', ')} · Sandbox sample rates` : 'All fares already in US dollars',
+        },
+        hold,
+      )
+      const cash = r.portfolio.allocations.filter((a) => a.method === 'cash' && a.payment_card)
+      if (cash.length) {
+        const cardNames = [...new Set(cash.map((a) => a.payment_card!.name))]
+        const earned = cash.reduce((sum, a) => sum + a.payment_card!.earned_points, 0)
+        const total = cash.reduce((sum, a) => sum + a.cash_usd, 0)
+        visaMoment({ id: 'card', kind: 'done', title: 'Best Visa card for each cash trip', detail: cardNames.join(', ') }, hold + 1100)
+        visaMoment(
+          { id: 'earn', kind: 'done', title: `+${fmtPts(earned)} points earned with Visa`, detail: `${cash.length} cash trip${cash.length === 1 ? '' : 's'} · ${fmtUsd(total)} on your Visa` },
+          hold + 2200,
+        )
+      }
+      getVisaBenefits(cardIds)
+        .then(({ offers }) => {
+          if (offers.length)
+            visaMoment({ id: 'benefits', kind: 'done', title: `${offers.length} Visa travel benefit${offers.length === 1 ? '' : 's'} for your cards`, detail: offers[0].title }, hold + 3300)
+        })
+        .catch(() => undefined)
       const mandate = r.plan_id ? await getAgentStatus(r.plan_id).catch(() => null) : null
       return planSummary(r, names, mandate)
     },
@@ -142,11 +182,28 @@ export default function App() {
     pay_cash_leg: async (trip) => {
       const planId = resultRef.current?.plan_id
       if (!planId) return 'No plan yet: run the optimizer first.'
+      const id = `pay-${trip.toLowerCase()}`
+      visaMoment({ id, kind: 'working', title: 'Cybersource payment', detail: `Sending ${trip} to Visa's gateway…` })
+      const began = Date.now()
       const r = await agentPay(planId, trip).catch((e: Error) => ({ ok: false, message: e.message }) as PayResult)
+      await new Promise((done) => setTimeout(done, Math.max(0, MIN_WORKING_MS - (Date.now() - began))))
+      const label = resultRef.current?.portfolio.allocations.find((a) => a.trip_id === r.trip_id)?.trip_label ?? trip
+      if (r.decision === 'paid')
+        visaMoment({ id, kind: 'done', title: 'Paid through Cybersource', detail: `${label} · ${fmtUsd(r.amount ?? 0)} · ${r.card} · +${fmtPts(r.earned_points ?? 0)} pts` })
+      else if (r.decision === 'skipped') visaMoment({ id, kind: 'done', title: 'Already paid with Visa', detail: label })
+      else {
+        const why = r.message.replace(/^Blocked: /, '')
+        visaMoment({ id, kind: 'held', title: 'Payment held by your guardrails', detail: why.charAt(0).toUpperCase() + why.slice(1) })
+      }
       window.dispatchEvent(new CustomEvent<PayResult>(PAYMENTS_CHANGED, { detail: r }))
       return r.message
     },
   }
+
+  // Development only: lets the agent's tools be exercised without a voice session (saves credits).
+  useEffect(() => {
+    if (import.meta.env.DEV) (window as unknown as { __pointiflyTools?: VoiceTools }).__pointiflyTools = voiceTools
+  })
 
   const onAgentPage = step === 'agent'
   return (
@@ -247,6 +304,7 @@ export default function App() {
         )}
       </main>
       <PaymentToast result={result} />
+      <VisaMoments />
     </>
   )
 }
