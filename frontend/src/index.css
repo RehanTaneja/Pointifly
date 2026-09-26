@@ -89,3 +89,6 @@ a { color: var(--accent); }
 .partner-card .table { margin-top: 6px; }
 .partner-card p { margin: 6px 0 0; }
 .award-source { margin-top: 4px; }
+.benefits { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.benefit { display: flex; gap: 10px; border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+.benefit img { width: 72px; height: 54px; object-fit: cover; border-radius: 6px; flex: none; }

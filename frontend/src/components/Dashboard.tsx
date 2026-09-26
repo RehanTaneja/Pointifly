@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import {
   cabinLabel,
+  fmtMoney,
   fmtPts,
   fmtUsd,
   ratioLabel,
@@ -12,6 +13,7 @@ import {
 import { AwardSourceNote } from './AwardSourceNote'
 import { CheckoutModal } from './CheckoutModal'
 import { FareDetails } from './FareDetails'
+import { VisaBenefits } from './VisaBenefits'
 import { FlowSankey } from './FlowSankey'
 
 type Props = {
@@ -58,6 +60,7 @@ function StrategyColumn({ s, names, currencies, highlight }: ColumnProps) {
               <strong>{a.trip_label}</strong>
               {a.cents_per_point !== null && <span className="tag">{a.cents_per_point.toFixed(1)}¢/pt</span>}
             </div>
+            {a.local_fx && <LocalRate fx={a.local_fx} />}
             <div>{describe(a, names, currencies)}</div>
             <AwardSourceNote a={a} />
             <div className="muted small">{a.reason}</div>
@@ -78,7 +81,7 @@ export function Dashboard({ result, holdingNames, currencies, onReset }: Props) 
     <>
       <div className="banner">
         {result.portfolio.allocations.some((a) => a.fare)
-          ? 'Cash fares are live from Google Flights. Aeroplan and ANA award prices come from their official published charts (availability not checked); other programs use sample prices.'
+          ? 'Cash fares are live from Google Flights. Aeroplan and ANA award prices come from their official published charts (availability not checked); other programs use sample prices. Currency conversions use Visa FX rates.'
           : 'Sample data: award and cash prices are placeholders, not live quotes.'}
       </div>
 
@@ -103,13 +106,11 @@ export function Dashboard({ result, holdingNames, currencies, onReset }: Props) 
       {cashLegs.length > 0 && (
         <section className="card">
           <h2>Cash legs</h2>
-          <p className="muted small">
-            FX: Visa Foreign Exchange Rates API <span className="tag">not connected yet</span>
-          </p>
           {cashLegs.map((a) => (
             <div key={a.trip_id} className="row between cash-leg">
               <span>
                 <strong>{a.trip_label}</strong> · {fmtUsd(a.cash_usd)}
+                {a.local_fx && <LocalRate fx={a.local_fx} />}
               </span>
               {paid.has(a.trip_id) ? (
                 <span className="tag ok">Paid (demo)</span>
@@ -122,6 +123,8 @@ export function Dashboard({ result, holdingNames, currencies, onReset }: Props) 
           ))}
         </section>
       )}
+
+      <VisaBenefits />
 
       <div className="row end">
         <button onClick={onReset}>Start over</button>
@@ -163,5 +166,13 @@ function Headline({ r }: { r: OptimizeResponse }) {
       {fmtPts(-r.points_saved)} more points, but each goes further: <strong>{cpp(r.portfolio).toFixed(1)}¢</strong>{' '}
       vs {cpp(r.greedy).toFixed(1)}¢ per point.
     </p>
+  )
+}
+
+function LocalRate({ fx }: { fx: NonNullable<Allocation['local_fx']> }) {
+  return (
+    <div className="muted small">
+      Local currency: {fmtMoney(1, 'USD')} = {fmtMoney(fx.rate, fx.currency!)} · Visa rate, retrieved {fx.date}
+    </div>
   )
 }

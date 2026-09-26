@@ -92,10 +92,32 @@ export type Allocation = {
   fare: Fare | null
   award_points: number
   award_source: AwardSource | null
+  local_fx: FxRate | null
 }
 
+// Visa FX rate; `date` is when Pointfolio retrieved it from Visa.
+export type FxRate = { currency?: string; rate: number; date: string; source: string }
+
+export type Fee = { amount: number; currency: string; per: string; source_url: string; usd: (FxRate & { amount: number }) | null }
+
+export type VisaBenefit = {
+  id: number
+  title: string
+  description: string
+  merchant: string
+  cards: string[]
+  valid_to: string | null
+  url: string | null
+  image: string | null
+}
+
+export const getVisaBenefits = () => request<{ offers: VisaBenefit[]; date: string | null; source: string }>('/api/visa/benefits')
+
+export const fmtMoney = (amount: number, currency: string) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: amount >= 100 ? 0 : 2 }).format(amount)
+
 export type AwardSource =
-  | { type: 'chart'; title: string; url: string; effective: string; detail: string; notes: string }
+  | { type: 'chart'; title: string; url: string; effective: string; detail: string; notes: string; fee?: Fee }
   | { type: 'sample' }
 
 export type StrategyResult = {

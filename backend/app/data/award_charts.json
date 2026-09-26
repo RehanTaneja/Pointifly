@@ -13,7 +13,13 @@
    "Taxes and third-party charges may apply.",
    "Seats are subject to availability."
   ],
-  "partner_booking_fee": "$39 CAD per ticket (Aeroplan Flight Reward Policy)",
+  "partner_booking_fee": {
+   "amount": 39,
+   "currency": "CAD",
+   "per": "ticket",
+   "source_url": "https://www.aircanada.com/ca/en/aco/home/aeroplan/legal/aeroplan-flight-reward-policy.html",
+   "quoted": "a $39 CAD partner booking fee will apply, per ticket"
+  },
   "zone_method": "Zones are defined by the chart's map. Countries clearly inside a zone are mapped; border-area countries get no chart price.",
   "ambiguous_countries": [
    "AW",

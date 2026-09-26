@@ -2,8 +2,9 @@
 
 import copy
 
-from .charts import PRICERS, chart_options
+from .charts import PRICERS, airports, chart_options
 from .fares import get_fare
+from .visa import fx
 
 CABINS = ["economy", "premium_economy", "business", "first"]
 RANK = {c: i for i, c in enumerate(CABINS)}
@@ -29,7 +30,7 @@ def effective_trip(base: dict, cabin: str) -> dict:
     trip["fare"] = fare
 
     # Charted programs are priced from their official chart in the booked cabin; the rest are sample.
-    options = [{**o, "fare": fare, "cash_price_usd": trip["cash_price_usd"]} for o in chart_options(trip, cabin)]
+    options = [_with_fee({**o, "fare": fare, "cash_price_usd": trip["cash_price_usd"]}) for o in chart_options(trip, cabin)]
     for opt in base["award_options"]:
         if opt["program"] in PRICERS:
             continue
@@ -45,4 +46,26 @@ def effective_trip(base: dict, cabin: str) -> dict:
             continue  # no way to value this award
         options.append(opt)
     trip["award_options"] = options
+    trip["local_fx"] = _local_fx(trip)
     return trip
+
+
+def _with_fee(opt: dict) -> dict:
+    """Convert a published foreign-currency fee to USD at Visa's rate; it reduces the award's value."""
+    fee = opt.pop("fee", None)
+    if not fee:
+        return opt
+    usd = fx.convert(fee["amount"], fee["currency"], "USD")
+    opt["fees_usd"] = usd["amount"] if usd else 0
+    opt["award_source"] = {**opt["award_source"], "fee": {**fee, "usd": usd}}
+    return opt
+
+
+def _local_fx(trip: dict) -> dict | None:
+    """Visa's rate from USD into the destination's currency (shown on trips abroad)."""
+    ap = airports().get(trip.get("destination", ""))
+    currency = fx.COUNTRY_CURRENCY.get(ap[1]) if ap else None
+    if not currency or currency == "USD":
+        return None
+    r = fx.rate("USD", currency)
+    return {"currency": currency, **r} if r else None

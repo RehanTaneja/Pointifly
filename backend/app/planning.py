@@ -135,6 +135,7 @@ class Planner:
                     reason=reason(tp),
                     fare=tp.trip.get("fare") if is_cash else _award_option(tp).get("fare"),
                     award_source=None if is_cash else _award_option(tp).get("award_source"),
+                    local_fx=tp.trip.get("local_fx"),
                 )
             )
         return StrategyResult(

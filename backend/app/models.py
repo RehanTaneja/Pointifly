@@ -28,6 +28,7 @@ class Allocation(BaseModel):
     reason: str
     fare: dict | None = None  # live cash fare for this cabin: price, itinerary, google_flights_url
     award_source: dict | None = None  # where the points price came from: official chart or sample
+    local_fx: dict | None = None  # Visa rate USD -> destination currency: {currency, rate, date, source}
 
 
 class StrategyResult(BaseModel):

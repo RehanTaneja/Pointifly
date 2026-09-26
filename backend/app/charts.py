@@ -104,6 +104,7 @@ def chart_options(trip: dict, cabin: str) -> list[dict]:
                 "program": program,
                 "points": price["points"],
                 "cabin": cabin,
+                "fee": c.get("partner_booking_fee"),  # published per-ticket fee, in its own currency
                 "award_source": {
                     "type": "chart",
                     "title": c["source_title"],

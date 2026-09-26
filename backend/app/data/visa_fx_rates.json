@@ -1,0 +1,22 @@
+{
+  "CAD->USD": {
+    "date": "2026-09-26",
+    "rate": 0.755802,
+    "source": "Visa FX rate"
+  },
+  "USD->GBP": {
+    "date": "2026-09-26",
+    "rate": 0.614792,
+    "source": "Visa FX rate"
+  },
+  "USD->INR": {
+    "date": "2026-09-26",
+    "rate": 53.8118,
+    "source": "Visa FX rate"
+  },
+  "USD->JPY": {
+    "date": "2026-09-26",
+    "rate": 141.43,
+    "source": "Visa FX rate"
+  }
+}
