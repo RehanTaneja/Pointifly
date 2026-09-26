@@ -66,6 +66,7 @@ export function PlanPanel({ result, holdingNames, autopay, onDetails }: Props) {
           )}
         </div>
       </div>
+      {result.skipped?.length ? <div className="banner small plan-skipped">Left out: {result.skipped.join(' ')}</div> : null}
       <VisaImpact result={result} compact />
       <ul className="plan-trips">
         {p.allocations.map((a) => (

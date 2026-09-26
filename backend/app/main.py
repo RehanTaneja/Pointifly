@@ -44,12 +44,14 @@ def optimize(req: OptimizeRequest | None = None) -> OptimizeResponse:
     unknown = [c for c in req.cards or [] if c not in card_rewards.cards()]
     if unknown:
         raise HTTPException(400, f"Unknown card products: {unknown}")
-    result = Planner(*_inputs(req, load_dataset()), card_ids=req.cards).run()
+    trips, balances, skipped = _inputs(req, load_dataset())
+    result = Planner(trips, balances, card_ids=req.cards).run()
+    result.skipped = skipped
     result.plan_id = agentpay.register(result.portfolio.allocations, autopay=req.autopay)  # server-side copy for payments
     return result
 
 
-def _inputs(req: OptimizeRequest, ds: dict) -> tuple[list[dict], dict[str, int]]:
+def _inputs(req: OptimizeRequest, ds: dict) -> tuple[list[dict], dict[str, int], list[str]]:
     known = holding_names()
     balances = {b.holding: b.points for b in req.balances} or {
         b["holding"]: b["points"] for b in ds["sample_balances"]
@@ -74,12 +76,17 @@ def _inputs(req: OptimizeRequest, ds: dict) -> tuple[list[dict], dict[str, int]]
         raise HTTPException(400, f"At most {MAX_TRIPS} trips per plan")
     if len({c["id"] for c in customs}) < len(customs):
         raise HTTPException(400, "The same trip was added twice")
-    try:
-        trips = [effective_trip(trips_by_id[i], req.cabins.get(i, trips_by_id[i]["cabin"])) for i in ids]
-        trips += [effective_trip(c, c["cabin"]) for c in customs]
-    except FareUnavailable as e:
-        raise HTTPException(422, str(e)) from e
-    return trips, balances
+    # Each trip is priced on its own: one that can't be priced (no fare, search off or over the daily
+    # cap) is left out and reported, and the rest are still planned. Only no priced trip at all fails.
+    trips, skipped = [], []
+    for base, cabin in [(trips_by_id[i], req.cabins.get(i, trips_by_id[i]["cabin"])) for i in ids] + [(c, c["cabin"]) for c in customs]:
+        try:
+            trips.append(effective_trip(base, cabin))
+        except FareUnavailable as e:
+            skipped.append(str(e))
+    if not trips:
+        raise HTTPException(422, " ".join(skipped))
+    return trips, balances, skipped
 
 
 @app.get("/api/airports")

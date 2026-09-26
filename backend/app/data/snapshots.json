@@ -692,6 +692,198 @@
         "currency": "USD",
         "type": 2
       }
+    },
+    "c-DEL-JFK-2026-12-03:business": {
+      "price": 2431,
+      "airlines": [
+        "Air India"
+      ],
+      "price_level": null,
+      "itinerary": {
+        "total_duration_min": 1255,
+        "flights": [
+          {
+            "airline": "Air India",
+            "flight_number": "AI 2957",
+            "from": "DEL",
+            "to": "BOM",
+            "departs": "2026-12-03 20:30",
+            "arrives": "2026-12-03 22:55",
+            "duration_min": 145,
+            "travel_class": "Business Class",
+            "airplane": "Airbus A320neo"
+          },
+          {
+            "airline": "Air India",
+            "flight_number": "AI 119",
+            "from": "BOM",
+            "to": "JFK",
+            "departs": "2026-12-04 00:25",
+            "arrives": "2026-12-04 06:55",
+            "duration_min": 1020,
+            "travel_class": "Business Class",
+            "airplane": "Boeing 777"
+          }
+        ],
+        "layovers": [
+          {
+            "airport": "BOM",
+            "duration_min": 90
+          }
+        ]
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI2LTEyLTAzagcIARIDREVMcgcIARIDSkZLQAFIA3ABmAEC&tfu=EgIIAQ",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T21:22:46+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "DEL",
+        "arrival_id": "JFK",
+        "outbound_date": "2026-12-03",
+        "travel_class": 3,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "c-JFK-SFO-2026-11-12:economy": {
+      "price": 209,
+      "airlines": [
+        "Alaska"
+      ],
+      "price_level": "typical",
+      "itinerary": {
+        "total_duration_min": 394,
+        "flights": [
+          {
+            "airline": "Alaska",
+            "flight_number": "AS 227",
+            "from": "JFK",
+            "to": "SFO",
+            "departs": "2026-11-12 09:30",
+            "arrives": "2026-11-12 13:04",
+            "duration_min": 394,
+            "travel_class": "Economy",
+            "airplane": "Boeing 737"
+          }
+        ],
+        "layovers": []
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI2LTExLTEyagcIARIDSkZLcgcIARIDU0ZPQAFIAXABmAEC&tfu=EgIIAQ",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T21:22:48+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "JFK",
+        "arrival_id": "SFO",
+        "outbound_date": "2026-11-12",
+        "travel_class": 1,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "c-JFK-PVG-2027-01-12:business": {
+      "price": 3401,
+      "airlines": [
+        "EgyptAir"
+      ],
+      "price_level": "typical",
+      "itinerary": {
+        "total_duration_min": 2295,
+        "flights": [
+          {
+            "airline": "EgyptAir",
+            "flight_number": "MS 986",
+            "from": "JFK",
+            "to": "CAI",
+            "departs": "2027-01-12 12:45",
+            "arrives": "2027-01-13 06:05",
+            "duration_min": 620,
+            "travel_class": "Business Class",
+            "airplane": "Airbus A350"
+          },
+          {
+            "airline": "EgyptAir",
+            "flight_number": "MS 951",
+            "from": "CAI",
+            "to": "PVG",
+            "departs": "2027-01-13 23:30",
+            "arrives": "2027-01-14 16:00",
+            "duration_min": 630,
+            "travel_class": "Business Class",
+            "airplane": "Boeing 787"
+          }
+        ],
+        "layovers": [
+          {
+            "airport": "CAI",
+            "duration_min": 1045
+          }
+        ]
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI3LTAxLTEyagcIARIDSkZLcgcIARIDUFZHQAFIA3ABmAEC&tfu=EgIIAQ",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T21:22:49+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "JFK",
+        "arrival_id": "PVG",
+        "outbound_date": "2027-01-12",
+        "travel_class": 3,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "c-DEL-BOM-2027-02-02:business": {
+      "price": 309,
+      "airlines": [
+        "IndiGo"
+      ],
+      "price_level": "high",
+      "itinerary": {
+        "total_duration_min": 330,
+        "flights": [
+          {
+            "airline": "IndiGo",
+            "flight_number": "6E 5058",
+            "from": "DEL",
+            "to": "HYD",
+            "departs": "2027-02-02 13:30",
+            "arrives": "2027-02-02 15:45",
+            "duration_min": 135,
+            "travel_class": "Business Class",
+            "airplane": "Airbus A321neo"
+          },
+          {
+            "airline": "IndiGo",
+            "flight_number": "6E 5259",
+            "from": "HYD",
+            "to": "BOM",
+            "departs": "2027-02-02 17:15",
+            "arrives": "2027-02-02 19:00",
+            "duration_min": 105,
+            "travel_class": "Business Class",
+            "airplane": "Airbus A321neo"
+          }
+        ],
+        "layovers": [
+          {
+            "airport": "HYD",
+            "duration_min": 90
+          }
+        ]
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI3LTAyLTAyagcIARIDREVMcgcIARIDQk9NQAFIA3ABmAEC&tfu=EgIIAQ",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T21:22:52+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "DEL",
+        "arrival_id": "BOM",
+        "outbound_date": "2027-02-02",
+        "travel_class": 3,
+        "currency": "USD",
+        "type": 2
+      }
     }
   }
 }

@@ -90,7 +90,8 @@ export function planSummary(r: OptimizeResponse, names: Record<string, string>, 
         (within.length ? ` Ask once to confirm paying ${within.map((a) => `${a.trip_label} ${fmtUsd(a.cash_usd)}`).join(' and ')}, then call pay_cash_leg for each.` : '') +
         overLine
       : ` Autonomous payment is OFF: tell the user to tap Pay with Visa for ${cash.map((a) => a.trip_label).join(' and ')}.`
-  return `${head} ${trips}${fxLine}${next}`
+  const skipped = r.skipped?.length ? ` Not planned (couldn't be priced): ${r.skipped.join(' ')} Tell the user.` : ''
+  return `${head} ${trips}${fxLine}${next}${skipped}`
 }
 
 export function explainTrip(r: OptimizeResponse | null, trip: string): string {

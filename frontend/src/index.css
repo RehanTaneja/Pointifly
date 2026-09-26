@@ -394,3 +394,4 @@ input[type='date'] { color-scheme: dark; }
 @keyframes moment-in { from { opacity: 0; transform: translateY(-14px) scale(0.96); } to { opacity: 1; transform: none; } }
 @keyframes moment-out { to { opacity: 0; transform: translateY(-10px) scale(0.97); } }
 @media (prefers-reduced-motion: reduce) { .visa-moment, .visa-moment * { animation-duration: 0.01ms !important; animation-delay: 0s !important; } }
+.plan-skipped { margin-top: 12px; }
