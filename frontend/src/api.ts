@@ -13,6 +13,8 @@ export type Trip = {
   cabin: string
   cash_price_usd: number
   award_options: AwardOption[]
+  outbound_date?: string
+  cash_source?: { source: string; fetched_at: string }
 }
 
 export type Dataset = {
@@ -33,6 +35,7 @@ export type Allocation = {
   sources: Balance[]
   points: number
   cash_usd: number
+  fees_usd: number
   value_usd: number
   cents_per_point: number | null
   reason: string

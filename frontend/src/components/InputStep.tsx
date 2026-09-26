@@ -65,9 +65,10 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize }:
             <tr>
               <th>Trip</th>
               <th>Route</th>
-              <th>Month</th>
+              <th>Date</th>
               <th>Cabin</th>
               <th>Cash price</th>
+              <th>Price source</th>
             </tr>
           </thead>
           <tbody>
@@ -77,9 +78,19 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize }:
                 <td>
                   {t.origin} → {t.destination}
                 </td>
-                <td>{t.month}</td>
+                <td>{t.outbound_date ?? t.month}</td>
                 <td>{t.cabin}</td>
                 <td>{fmtUsd(t.cash_price_usd)}</td>
+                <td className="small">
+                  {t.cash_source ? (
+                    <>
+                      {t.cash_source.source}
+                      <div className="muted">fetched {t.cash_source.fetched_at.slice(0, 10)}</div>
+                    </>
+                  ) : (
+                    <span className="tag">sample</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

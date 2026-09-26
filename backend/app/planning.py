@@ -20,7 +20,12 @@ def _route(tp: TripPlan, names: dict[str, str]) -> str:
 
 
 def _cpp(tp: TripPlan) -> float:
-    return tp.option.value_cents / tp.option.points
+    """Cents of fare value per point, net of the award's cash fees."""
+    return (tp.option.value_cents - tp.option.fees_cents) / tp.option.points
+
+
+def _net_cents(tp: TripPlan) -> int:
+    return 0 if tp.option.key == CASH else tp.option.value_cents - tp.option.fees_cents
 
 
 def _describe_change(before: TripPlan, after: TripPlan, names: dict[str, str]) -> str:
@@ -41,14 +46,15 @@ class Planner:
         order = list(self.names)
         self.balances = dict(sorted(balances.items(), key=lambda kv: order.index(kv[0])))
         self.transfers = {c["id"]: c["transfers"] for c in ds["currencies"]}
+        self.increments = {c["id"]: c.get("transfer_increment", 1) for c in ds["currencies"]}
         self.reserve_default = ds["reserve_value_cpp"]["default"]
         self.reserve = {h: ds["reserve_value_cpp"].get(h, self.reserve_default) for h in balances}
 
     def _solve(self, trips: list[dict], balances: dict[str, int], force_points: str | None = None) -> Plan | None:
-        return solve(trips, balances, self.transfers, self.reserve, force_points)
+        return solve(trips, balances, self.transfers, self.reserve, force_points, self.increments)
 
     def run(self) -> OptimizeResponse:
-        g = greedy(self.trips, self.balances, self.transfers, self.reserve)
+        g = greedy(self.trips, self.balances, self.transfers, self.reserve, self.increments)
         p = self._solve(self.trips, self.balances)
         assert p is not None  # paying cash for everything is always feasible
         greedy_res = self._result("Greedy (trip-by-trip)", g, self._greedy_reason)
@@ -87,7 +93,7 @@ class Planner:
         knock_on = [
             _describe_change(before, after, self.names)
             for before, after in zip(plan.trips, forced.trips)
-            if before.trip["id"] != tid and before.option.key != after.option.key
+            if before.trip["id"] != tid and _net_cents(after) < _net_cents(before)  # only trips that lose out
         ]
         using = f"Using points here ({self.names[forced_tp.option.program]}, {_cpp(forced_tp):.1f}¢/pt)"
         if knock_on:
@@ -111,7 +117,8 @@ class Planner:
                     cabin=tp.option.cabin,
                     sources=[Balance(holding=h, points=v) for h, v in tp.sources.items()],
                     points=sum(tp.sources.values()),
-                    cash_usd=0 if not is_cash else tp.option.value_cents / 100,
+                    cash_usd=(tp.option.value_cents if is_cash else tp.option.fees_cents) / 100,
+                    fees_usd=0 if is_cash else tp.option.fees_cents / 100,
                     value_usd=0 if is_cash else tp.option.value_cents / 100,
                     cents_per_point=None if is_cash else round(_cpp(tp), 2),
                     reason=reason(tp),

@@ -13,7 +13,11 @@ either directly (h == p) or through a transfer at ratio r_hp.
   sum_h r_hp * x[h,t,o] >= P_o * y[t,o]     transferred points cover the award
   sum_{t,o} x[h,t,o] <= B_h                 no holding is overdrawn
 
-  maximize  sum V_o * y[t,o]  -  sum reserve_h * x[h,t,o]
+  x[h,t,o] = k * increment_h                transfers move in fixed blocks (e.g. 1,000)
+
+  maximize  sum (V_o - F_o) * y[t,o]  -  sum reserve_h * x[h,t,o]
+
+F_o is the award's taxes and fees in cash.
 
 reserve_h is what a point in holding h is worth if you keep it, so an award only wins
 if it beats holding the points. Cash is net zero: you pay the fare and get the fare.
@@ -32,8 +36,8 @@ CASH = "cash"
 SCALE = 100  # objective in 1/100 cent so fractional reserve values stay integral
 # Lexicographic objective: value first, then fewest transfers pooled per award, then
 # holding order. Each weight exceeds the largest possible total of the terms below it.
-TIE = 1_000_000_000
-SPLIT = 10_000_000
+TIE = 10_000_000_000
+SPLIT = 100_000_000
 
 
 @dataclass
@@ -43,6 +47,7 @@ class Option:
     points: int
     value_cents: int
     cabin: str
+    fees_cents: int = 0
 
 
 @dataclass
@@ -69,6 +74,7 @@ def trip_options(trip: dict) -> list[Option]:
                 points=a["points"],
                 value_cents=round(a.get("cash_price_usd", trip["cash_price_usd"]) * 100),
                 cabin=a.get("cabin", trip["cabin"]),
+                fees_cents=round(a.get("fees_usd", 0) * 100),
             )
         )
     return opts
@@ -87,28 +93,33 @@ def solve(
     transfers: dict[str, dict[str, float]],
     reserve_cpp: dict[str, float],
     force_points: str | None = None,
+    increments: dict[str, int] | None = None,
 ) -> Plan | None:
     """Optimal plan for `trips` together. force_points=trip id disallows cash for that trip."""
     m = cp_model.CpModel()
     holdings = list(balances)
     y: dict[tuple[str, int], cp_model.IntVar] = {}
-    x: dict[tuple[str, str, int], cp_model.IntVar] = {}
+    x: dict[tuple[str, str, int], cp_model.LinearExpr] = {}
+    increments = increments or {}
     options = {t["id"]: trip_options(t) for t in trips}
     main_terms, tie_terms = [], []
 
-    for t in trips:
+    for t_idx, t in enumerate(trips):
         tid = t["id"]
         for i, o in enumerate(options[tid]):
             y[tid, i] = m.new_bool_var(f"y_{tid}_{i}")
             if o.key == CASH:
                 continue  # cash is net zero: pay the fare, get the fare
-            main_terms.append(o.value_cents * SCALE * y[tid, i])
+            main_terms.append((o.value_cents - o.fees_cents) * SCALE * y[tid, i])
             covered = []
             for rank, h in enumerate(holdings):
                 ratio = _reach(h, o.program, transfers)
                 if ratio is None or balances[h] == 0:
                     continue
-                v = m.new_int_var(0, balances[h], f"x_{h}_{tid}_{i}")
+                # Transfers move in fixed blocks; miles already in the program move freely.
+                inc = 1 if h == o.program else increments.get(h, 1)
+                blocks = m.new_int_var(0, balances[h] // inc, f"k_{h}_{tid}_{i}")
+                v = inc * blocks
                 x[h, tid, i] = v
                 used = m.new_bool_var(f"u_{h}_{tid}_{i}")
                 m.add(v <= balances[h] * used)
@@ -116,9 +127,9 @@ def solve(
                 covered.append((ratio, v))
                 main_terms.append(-round(reserve_cpp.get(h, 0) * SCALE) * v)
                 # Tie-breaks: fewest sources per award, then points already in the program,
-                # then holdings in list order.
+                # then earlier holdings go to earlier trips.
                 tie_terms.append(SPLIT * used)
-                tie_terms.append((0 if h == o.program else rank + 1) * v)
+                tie_terms.append((0 if h == o.program else (rank + 1) * (len(trips) - t_idx)) * v)
             if not covered:
                 m.add(y[tid, i] == 0)
                 continue
@@ -159,12 +170,13 @@ def greedy(
     balances: dict[str, int],
     transfers: dict[str, dict[str, float]],
     reserve_cpp: dict[str, float],
+    increments: dict[str, int] | None = None,
 ) -> Plan:
     """Same model, one trip at a time in date order: what trip-by-trip award tools do."""
     remaining = dict(balances)
     plans, objective = [], 0
     for t in sorted(trips, key=lambda t: t["month"]):
-        step = solve([t], remaining, transfers, reserve_cpp)
+        step = solve([t], remaining, transfers, reserve_cpp, increments=increments)
         assert step is not None  # cash is always feasible
         plans.append(step.trips[0])
         remaining = step.balances_after

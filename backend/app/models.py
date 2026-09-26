@@ -19,7 +19,8 @@ class Allocation(BaseModel):
     cabin: str
     sources: list[Balance] = []  # holdings the points come from (can pool several)
     points: int = 0
-    cash_usd: float = 0
+    cash_usd: float = 0  # fare paid in cash, or the award's taxes/fees
+    fees_usd: float = 0
     value_usd: float = 0  # cash-equivalent value obtained with points
     cents_per_point: float | None = None
     reason: str

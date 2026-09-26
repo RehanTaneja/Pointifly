@@ -1,5 +1,5 @@
 {
-  "_note": "SAMPLE DATA for development. Award prices, cash prices and balances are placeholders, not live quotes. Verify transfer partners/ratios before the demo.",
+  "_note": "SAMPLE DATA for development. transfer_increment (1,000) is an assumption to verify per issuer. Award prices, cash prices and balances are placeholders, not live quotes. Verify transfer partners/ratios before the demo. Trips are one-way; award prices must be one-way too.",
   "reserve_value_cpp": {
     "_note": "ASSUMPTION: what a point is worth if kept unspent (cents/point). An award only wins if it beats this.",
     "default": 1.0
@@ -7,34 +7,112 @@
   "currencies": [
     {
       "id": "amex_mr",
+      "transfer_increment": 1000,
       "name": "Amex Membership Rewards",
-      "transfers": { "aeroplan": 1.0, "british_airways": 1.0, "flying_blue": 1.0, "virgin_atlantic": 1.0, "ana": 1.0 }
+      "transfers": {
+        "aeroplan": 1.0,
+        "british_airways": 1.0,
+        "flying_blue": 1.0,
+        "virgin_atlantic": 1.0,
+        "ana": 1.0
+      }
     },
     {
       "id": "chase_ur",
+      "transfer_increment": 1000,
       "name": "Chase Ultimate Rewards",
-      "transfers": { "aeroplan": 1.0, "united": 1.0, "british_airways": 1.0, "flying_blue": 1.0, "virgin_atlantic": 1.0 }
+      "transfers": {
+        "aeroplan": 1.0,
+        "united": 1.0,
+        "british_airways": 1.0,
+        "flying_blue": 1.0,
+        "virgin_atlantic": 1.0
+      }
     },
     {
       "id": "capital_one",
+      "transfer_increment": 1000,
       "name": "Capital One Miles",
-      "transfers": { "aeroplan": 1.0, "british_airways": 1.0, "flying_blue": 1.0, "virgin_atlantic": 1.0, "turkish": 1.0 }
+      "transfers": {
+        "aeroplan": 1.0,
+        "british_airways": 1.0,
+        "flying_blue": 1.0,
+        "virgin_atlantic": 1.0,
+        "turkish": 1.0
+      }
     }
   ],
   "programs": [
-    { "id": "aeroplan", "name": "Air Canada Aeroplan" },
-    { "id": "united", "name": "United MileagePlus" },
-    { "id": "british_airways", "name": "British Airways Club (Avios)" },
-    { "id": "flying_blue", "name": "Air France-KLM Flying Blue" },
-    { "id": "virgin_atlantic", "name": "Virgin Atlantic Flying Club" },
-    { "id": "ana", "name": "ANA Mileage Club" },
-    { "id": "turkish", "name": "Turkish Airlines Miles&Smiles" }
+    {
+      "id": "aeroplan",
+      "name": "Air Canada Aeroplan",
+      "match": [
+        "aeroplan"
+      ]
+    },
+    {
+      "id": "united",
+      "name": "United MileagePlus",
+      "match": [
+        "united"
+      ]
+    },
+    {
+      "id": "british_airways",
+      "name": "British Airways Club (Avios)",
+      "match": [
+        "british airways",
+        "avios"
+      ]
+    },
+    {
+      "id": "flying_blue",
+      "name": "Air France-KLM Flying Blue",
+      "match": [
+        "flying blue",
+        "air france"
+      ]
+    },
+    {
+      "id": "virgin_atlantic",
+      "name": "Virgin Atlantic Flying Club",
+      "match": [
+        "virgin atlantic"
+      ]
+    },
+    {
+      "id": "ana",
+      "name": "ANA Mileage Club",
+      "match": [
+        "all nippon",
+        "ana mileage"
+      ]
+    },
+    {
+      "id": "turkish",
+      "name": "Turkish Airlines Miles&Smiles",
+      "match": [
+        "turkish"
+      ]
+    }
   ],
   "sample_balances": [
-    { "holding": "amex_mr", "points": 80000 },
-    { "holding": "chase_ur", "points": 60000 },
-    { "holding": "capital_one", "points": 40000 },
-    { "holding": "united", "points": 220000 }
+    {
+      "holding": "amex_mr",
+      "points": 80000
+    },
+    {
+      "holding": "chase_ur",
+      "points": 60000
+    },
+    {
+      "holding": "capital_one",
+      "points": 40000
+    },
+    {
+      "holding": "united",
+      "points": 220000
+    }
   ],
   "sample_trips": [
     {
@@ -42,52 +120,86 @@
       "label": "Miami",
       "origin": "ATL",
       "destination": "MIA",
-      "month": "2027-03",
+      "month": "2026-11",
       "cabin": "economy",
       "cash_price_usd": 180,
       "award_options": [
-        { "program": "british_airways", "points": 18000 },
-        { "program": "united", "points": 15000 }
-      ]
+        {
+          "program": "british_airways",
+          "points": 18000
+        },
+        {
+          "program": "united",
+          "points": 15000
+        }
+      ],
+      "outbound_date": "2026-11-20"
     },
     {
       "id": "lhr",
       "label": "London",
       "origin": "ATL",
       "destination": "LHR",
-      "month": "2027-05",
+      "month": "2027-01",
       "cabin": "economy",
       "cash_price_usd": 750,
       "award_options": [
-        { "program": "flying_blue", "points": 30000 },
-        { "program": "virgin_atlantic", "points": 100000, "cabin": "business", "cash_price_usd": 3000 }
-      ]
+        {
+          "program": "flying_blue",
+          "points": 30000
+        },
+        {
+          "program": "virgin_atlantic",
+          "points": 100000,
+          "cabin": "business",
+          "cash_price_usd": 3000
+        }
+      ],
+      "outbound_date": "2027-01-15"
     },
     {
       "id": "del",
       "label": "Delhi",
       "origin": "ATL",
       "destination": "DEL",
-      "month": "2027-08",
+      "month": "2027-03",
       "cabin": "business",
       "cash_price_usd": 4500,
       "award_options": [
-        { "program": "aeroplan", "points": 90000 },
-        { "program": "united", "points": 90000, "cabin": "economy", "cash_price_usd": 2650 }
-      ]
+        {
+          "program": "aeroplan",
+          "points": 90000
+        },
+        {
+          "program": "united",
+          "points": 90000,
+          "cabin": "economy",
+          "cash_price_usd": 2650
+        }
+      ],
+      "outbound_date": "2027-03-12"
     },
     {
       "id": "nrt",
       "label": "Tokyo",
       "origin": "ATL",
       "destination": "NRT",
-      "month": "2027-11",
+      "month": "2027-05",
       "cabin": "business",
       "cash_price_usd": 5280,
       "award_options": [
-        { "program": "virgin_atlantic", "points": 88000 },
-        { "program": "aeroplan", "points": 80000, "cabin": "economy", "cash_price_usd": 1500 }
-      ]
+        {
+          "program": "virgin_atlantic",
+          "points": 88000
+        },
+        {
+          "program": "aeroplan",
+          "points": 80000,
+          "cabin": "economy",
+          "cash_price_usd": 1500
+        }
+      ],
+      "outbound_date": "2027-05-14"
     }
   ]
 }
