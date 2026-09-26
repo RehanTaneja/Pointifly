@@ -82,9 +82,15 @@ def get_fare(trip: dict, cabin: str, live: bool = True) -> dict | None:
     """Saved fare for this trip's current search, else a live fetch when a key is configured."""
     key = fare_key(trip["id"], cabin)
     params = serpapi_flights.build_params(trip, cabin)
-    saved = read_snapshot().get("cash_fares", {}).get(key)
+    fares = read_snapshot().get("cash_fares", {})
+    saved = fares.get(key)
     if saved and saved.get("params") == params:
         return saved
+    # The identical search saved under another trip's id (e.g. a sample trip on the same route, date
+    # and cabin) is the same Google Flights result: reuse it rather than spend a search.
+    same = next((f for f in fares.values() if f.get("params") == params), None)
+    if same:
+        return same
     api_key = env("SERPAPI_KEY")
     if not live or not api_key:
         return None

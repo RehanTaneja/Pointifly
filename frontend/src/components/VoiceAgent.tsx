@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ConversationProvider, useConversation } from '@elevenlabs/react'
-import { getVoiceSession } from '../api'
+import { takeVoiceSession } from '../voiceSession'
 
 // Handlers the agent's client tools call. They run here in the browser against the local
 // backend, so balances, cards and trips stay off ElevenLabs; the agent only gets the summaries.
@@ -21,6 +21,15 @@ export const TALK_TO_AGENT = 'pointifly:talk'
 // (e.g. switching autopay off), without it being a user message.
 export const AGENT_CONTEXT = 'pointifly:agent-context'
 
+const MIC_WAIT_MS = 5000 // an unanswered permission prompt: start typing instead of waiting forever
+const CONNECT_TIMEOUT_MS = 12000 // a network that never lets the connection through
+// Plain-language versions of errors the voice service sends back.
+function friendly(message: string): string {
+  if (message.includes('quota_exceeded'))
+    return 'ElevenLabs voice credits are used up, so the agent can’t start. Manual mode still works; add credits or wait for the monthly reset to use voice.'
+  return message
+}
+
 type Props = {
   tools: VoiceTools
   enabled: boolean
@@ -37,6 +46,7 @@ function Agent({ tools, enabled, variant }: Props) {
   const [flash, setFlash] = useState(false)
   const [working, setWorking] = useState<string | null>(null) // the tool status shown right now
   const [starting, setStarting] = useState(false) // mic permission + signed URL, before the SDK connects
+  const [micSlow, setMicSlow] = useState(false) // the permission prompt is taking a while: say so
   const startingRef = useRef(false)
   const [everStarted, setEverStarted] = useState(false)
   const panel = useRef<HTMLDivElement>(null)
@@ -82,7 +92,7 @@ function Agent({ tools, enabled, variant }: Props) {
       if (source === 'user' && textModeRef.current) return // already shown when typed
       log({ role: source === 'user' ? 'user' : 'agent', text: message })
     },
-    onError: (message) => setError(String(message)),
+    onError: (message) => setError(friendly(String(message))),
   })
 
   // Leaving the agent (e.g. back to Connect) always closes the session, so it stops using credits.
@@ -116,28 +126,61 @@ function Agent({ tools, enabled, variant }: Props) {
     setStarting(true)
     setEverStarted(true)
     setError(null)
-    const session = getVoiceSession()
+    const session = takeVoiceSession()
     session.catch(() => undefined) // handled below; avoids an unhandled rejection while the mic is asked
     let asText = text
     try {
       if (!asText) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-          stream.getTracks().forEach((t) => t.stop()) // permission only; the SDK opens its own stream
-        } catch {
+        // Never wait on the permission prompt for long: after MIC_WAIT_MS the agent starts as a text chat
+        // (tap the circle later to switch to voice).
+        const slow = setTimeout(() => setMicSlow(true), 1200)
+        const mic = navigator.mediaDevices
+          .getUserMedia({ audio: true })
+          .then((stream) => {
+            stream.getTracks().forEach((t) => t.stop()) // permission only; the SDK opens its own stream
+            return 'ok' as const
+          })
+          .catch(() => 'denied' as const)
+        const result = await Promise.race([mic, new Promise<'timeout'>((r) => setTimeout(() => r('timeout'), MIC_WAIT_MS))])
+        clearTimeout(slow)
+        setMicSlow(false)
+        if (result !== 'ok') {
           asText = true
-          log({ role: 'tool', text: 'No microphone available: type your messages below.' })
+          log({
+            role: 'tool',
+            text:
+              result === 'timeout'
+                ? 'Microphone permission not answered: typing for now. Allow the mic, then tap the circle for voice.'
+                : 'No microphone available: type your messages below.',
+          })
         }
       }
       setTextMode(asText)
       const { signed_url } = await session
       conversation.startSession({ signedUrl: signed_url, textOnly: asText })
     } catch (e) {
-      setError((e as Error).message)
+      setError(friendly((e as Error).message))
     } finally {
       startingRef.current = false
       setStarting(false)
     }
+  }
+
+  // A connection that never completes (blocked network) ends with a clear message instead of spinning.
+  const connecting = conversation.status === 'connecting'
+  useEffect(() => {
+    if (!connecting) return
+    const t = setTimeout(() => {
+      setError('Couldn’t reach the voice service (network?). Tap the circle to retry, or use Manual mode.')
+      void Promise.resolve(conversationRef.current.endSession()).catch(() => undefined)
+    }, CONNECT_TIMEOUT_MS)
+    return () => clearTimeout(t)
+  }, [connecting])
+
+  // In a text chat, tapping the circle switches to voice (e.g. after allowing the microphone).
+  const switchToVoice = () => {
+    void Promise.resolve(conversation.endSession()).catch(() => undefined)
+    setTimeout(() => startRef.current(false), 500)
   }
   const startRef = useRef(start)
   useEffect(() => {
@@ -199,8 +242,9 @@ function Agent({ tools, enabled, variant }: Props) {
 
   // Before the first start the page counts as starting, so it never asks for a tap it doesn't need.
   const pendingAuto = variant === 'stage' && enabled && !everStarted
-  const state = !live
-    ? starting || pendingAuto
+  const failed = !!error && conversation.status !== 'connected' // a start that failed or timed out
+  const state = !live || failed
+    ? (starting || pendingAuto) && !failed
       ? 'connecting'
       : 'idle'
     : conversation.status === 'connecting'
@@ -218,13 +262,15 @@ function Agent({ tools, enabled, variant }: Props) {
           ? "Couldn't connect · tap the circle to try again"
           : 'Conversation ended · tap the circle to start again'
       : state === 'connecting'
-        ? 'Starting Pointifly…'
+        ? micSlow
+          ? 'Allow the microphone (see your browser’s address bar) to talk…'
+          : 'Starting Pointifly…'
         : state === 'working'
           ? working
           : state === 'speaking'
             ? 'Pointifly is speaking'
             : textMode
-              ? 'Type your message below'
+              ? 'Type below · tap the circle for voice'
               : 'Listening…'
 
   const input = live && (
@@ -262,7 +308,12 @@ function Agent({ tools, enabled, variant }: Props) {
           className="orb"
           role="img"
           aria-label={statusText ?? ''}
-          onClick={() => enabled && !live && start(false)}
+          onClick={() => {
+            if (!enabled) return
+            if (!live) start(false)
+            else if (textMode && conversation.status === 'connected') switchToVoice()
+          }}
+          title={live && textMode ? 'Tap to switch to voice' : undefined}
         >
           <span className="orb-ring r1" />
           <span className="orb-ring r2" />

@@ -22,6 +22,7 @@ import { PaymentToast } from './components/PaymentToast'
 import { PlanPanel } from './components/PlanPanel'
 import { BuiltOnVisa } from './components/VisaImpact'
 import { AGENT_CONTEXT, VoiceAgent, type VoiceTools } from './components/VoiceAgent'
+import { prefetchVoiceSession } from './voiceSession'
 import { explainTrip, planSummary, programsSummary } from './summaries'
 
 type Step = 'connect' | 'agent' | 'manual' | 'loading' | 'dashboard'
@@ -55,6 +56,11 @@ export default function App() {
       .then((s) => setVoiceReady(s.voice))
       .catch(() => setVoiceReady(false))
   }, [])
+
+  // While the user connects cards, get the agent's session URL ready so its page greets at once.
+  useEffect(() => {
+    if (voiceReady && step === 'connect') prefetchVoiceSession()
+  }, [voiceReady, step])
 
   const names = useMemo(() => (dataset ? holdingNames(dataset) : {}), [dataset])
   const cardIds = useMemo(() => cards.flatMap((c) => (c.product_id ? [c.product_id] : [])), [cards])
