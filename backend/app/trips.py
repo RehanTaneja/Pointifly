@@ -2,6 +2,7 @@
 
 import copy
 
+from .charts import PRICERS, chart_options
 from .fares import get_fare
 
 CABINS = ["economy", "premium_economy", "business", "first"]
@@ -27,12 +28,15 @@ def effective_trip(base: dict, cabin: str) -> dict:
         raise FareUnavailable(f"No {cabin.replace('_', ' ')} fare found for {base['label']}")
     trip["fare"] = fare
 
-    options = []
+    # Charted programs are priced from their official chart in the booked cabin; the rest are sample.
+    options = [{**o, "fare": fare, "cash_price_usd": trip["cash_price_usd"]} for o in chart_options(trip, cabin)]
     for opt in base["award_options"]:
+        if opt["program"] in PRICERS:
+            continue
         if RANK[opt["cabin"]] < RANK[cabin]:
             continue
         opt_fare = fare if opt["cabin"] == cabin else get_fare(trip, opt["cabin"])
-        opt = {**opt, "fare": opt_fare}
+        opt = {**opt, "fare": opt_fare, "award_source": {"type": "sample"}}
         if opt_fare:
             opt["cash_price_usd"] = opt_fare["price"]
         elif opt["cabin"] == cabin:

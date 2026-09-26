@@ -38,7 +38,8 @@ Results are saved to `backend/app/data/snapshots.json` (with source + fetch time
 |---|---|---|
 | Cash fares (live) | Google Flights via [SerpApi](https://serpapi.com/google-flights-api) | 100 searches/month; a full refresh uses 7 |
 | Transfer partners + ratios | Official issuer pages, curated in `backend/app/data/transfer_ratios.json` (verified 2026-09-26): [Amex](https://global.americanexpress.com/rewards/transfer?tier=MR), [Chase](https://www.chase.com/sapphire-cards/personal/preferred), [Capital One](https://www.capitalone.com/learn-grow/money-management/venture-miles-transfer-partnerships/) | Free; re-verify before the demo |
-| Award prices (points) | No free live source found | Still sample |
+| Award prices (points) | Official published charts in `backend/app/data/award_charts.json`: [Aeroplan Flight Reward Chart 2026-08](https://www.aircanada.com/content/dam/aircanada/loyalty-content/documents/flight-rewards-chart-en.pdf) ("all other partners" rows) and [ANA one-way partner chart](https://www.ana.co.jp/en/jp/guide/amc/award/tk/zone/). Other programs stay sample | Free. Seat availability and taxes/fees not checked |
+| Airport coordinates + countries | [OurAirports](https://ourairports.com/data/) (public domain), `backend/app/data/airports.json` | Free |
 
 Not usable: Amadeus Self-Service (shut down July 17, 2026), ITA Matrix (no public API), Seats.aero (paid Pro plan, non-commercial).
 

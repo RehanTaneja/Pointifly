@@ -9,6 +9,7 @@ import {
   type OptimizeResponse,
   type StrategyResult,
 } from '../api'
+import { AwardSourceNote } from './AwardSourceNote'
 import { CheckoutModal } from './CheckoutModal'
 import { FareDetails } from './FareDetails'
 import { FlowSankey } from './FlowSankey'
@@ -58,6 +59,7 @@ function StrategyColumn({ s, names, currencies, highlight }: ColumnProps) {
               {a.cents_per_point !== null && <span className="tag">{a.cents_per_point.toFixed(1)}¢/pt</span>}
             </div>
             <div>{describe(a, names, currencies)}</div>
+            <AwardSourceNote a={a} />
             <div className="muted small">{a.reason}</div>
             <FareDetails a={a} />
           </li>
@@ -76,7 +78,7 @@ export function Dashboard({ result, holdingNames, currencies, onReset }: Props) 
     <>
       <div className="banner">
         {result.portfolio.allocations.some((a) => a.fare)
-          ? 'Cash fares are live from Google Flights. Award prices (points) are still sample placeholders.'
+          ? 'Cash fares are live from Google Flights. Aeroplan and ANA award prices come from their official published charts (availability not checked); other programs use sample prices.'
           : 'Sample data: award and cash prices are placeholders, not live quotes.'}
       </div>
 

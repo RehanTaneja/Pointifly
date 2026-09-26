@@ -19,13 +19,15 @@ class Allocation(BaseModel):
     program: str | None = None  # program the award is booked in
     cabin: str
     sources: list[Balance] = []  # holdings the points come from (can pool several)
-    points: int = 0
+    points: int = 0  # points moved out of the user's holdings (transfers go in fixed blocks)
+    award_points: int = 0  # the award's price in the program's own points
     cash_usd: float = 0  # fare paid in cash, or the award's taxes/fees
     fees_usd: float = 0
     value_usd: float = 0  # cash-equivalent value obtained with points
     cents_per_point: float | None = None
     reason: str
     fare: dict | None = None  # live cash fare for this cabin: price, itinerary, google_flights_url
+    award_source: dict | None = None  # where the points price came from: official chart or sample
 
 
 class StrategyResult(BaseModel):

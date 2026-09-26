@@ -119,8 +119,8 @@ def test_effective_trip_keeps_same_or_better_cabin_awards(monkeypatch):
 
     monkeypatch.setattr(T, "get_fare", lambda trip, cabin: {"price": {"economy": 400, "business": 3000}[cabin]})
     base = trip("x", "2027-01", 999, [
-        {"program": "aeroplan", "points": 30000, "cabin": "economy"},
-        {"program": "aeroplan", "points": 80000, "cabin": "business"},
+        {"program": "flying_blue", "points": 30000, "cabin": "economy"},
+        {"program": "flying_blue", "points": 80000, "cabin": "business"},
     ])
     econ = T.effective_trip(base, "economy")
     assert econ["cash_price_usd"] == 400

@@ -1,5 +1,5 @@
 {
-  "_note": "SAMPLE DATA for development. Award prices (points) and balances are placeholders. Cash prices here are fallbacks: live Google Flights fares from snapshots.json override them. Trips are one-way; award prices must be one-way too. Transfer ratios live in transfer_ratios.json (official issuer pages).",
+  "_note": "SAMPLE DATA for development. Aeroplan and ANA award prices come from their official charts (award_charts.json); the award options listed here for other programs, and the balances, are sample placeholders. Cash prices here are fallbacks: live Google Flights fares from snapshots.json override them. Trips are one-way; award prices must be one-way too. Transfer ratios live in transfer_ratios.json (official issuer pages).",
   "reserve_value_cpp": {
     "_note": "ASSUMPTION: what a point is worth if kept unspent (cents/point). An award only wins if it beats this.",
     "default": 1.0
@@ -146,11 +146,6 @@
       "cash_price_usd": 4500,
       "award_options": [
         {
-          "program": "aeroplan",
-          "points": 90000,
-          "cabin": "business"
-        },
-        {
           "program": "united",
           "points": 90000,
           "cabin": "economy",
@@ -172,12 +167,6 @@
           "program": "virgin_atlantic",
           "points": 88000,
           "cabin": "business"
-        },
-        {
-          "program": "aeroplan",
-          "points": 80000,
-          "cabin": "economy",
-          "cash_price_usd": 1500
         }
       ],
       "outbound_date": "2027-05-14"

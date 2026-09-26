@@ -1,0 +1,1231 @@
+{
+ "_note": "Official published award charts, one-way prices in the program's own points. Verified 2026-09-26. Seat availability and taxes/fees are not included.",
+ "aeroplan": {
+  "name": "Air Canada Aeroplan",
+  "effective": "2026-08",
+  "verified_on": "2026-09-26",
+  "source_url": "https://www.aircanada.com/content/dam/aircanada/loyalty-content/documents/flight-rewards-chart-en.pdf",
+  "source_title": "Aeroplan Flight Reward Chart 2026-08 (Air Canada)",
+  "price_basis": "'All other partners' rows: fixed one-way prices on partner airlines. Air Canada and Select Partners (United, Emirates, Flydubai, Etihad, Canadian North, Calm Air, Bearskin, PAL) are priced dynamically ('Starting at') and are not used.",
+  "chart_notes": [
+   "Points required for flight rewards are based on the actual distance flown between origin and destination.",
+   "A partner booking fee will apply to flight rewards which include travel with a partner airline.",
+   "Taxes and third-party charges may apply.",
+   "Seats are subject to availability."
+  ],
+  "partner_booking_fee": "$39 CAD per ticket (Aeroplan Flight Reward Policy)",
+  "zone_method": "Zones are defined by the chart's map. Countries clearly inside a zone are mapped; border-area countries get no chart price.",
+  "ambiguous_countries": [
+   "AW",
+   "BD",
+   "BM",
+   "BT",
+   "CW",
+   "GL",
+   "GS",
+   "IO",
+   "KG",
+   "KZ",
+   "MM",
+   "NP",
+   "RU",
+   "SH",
+   "TJ",
+   "TM",
+   "TT",
+   "UZ"
+  ],
+  "excluded_regions": [
+   "US-HI"
+  ],
+  "country_zone": {
+   "AD": "ATL",
+   "AE": "ATL",
+   "AF": "ATL",
+   "AG": "NA",
+   "AI": "NA",
+   "AL": "ATL",
+   "AM": "ATL",
+   "AO": "ATL",
+   "AR": "SA",
+   "AS": "PAC",
+   "AT": "ATL",
+   "AU": "PAC",
+   "AZ": "ATL",
+   "BA": "ATL",
+   "BB": "NA",
+   "BE": "ATL",
+   "BF": "ATL",
+   "BG": "ATL",
+   "BH": "ATL",
+   "BI": "ATL",
+   "BJ": "ATL",
+   "BN": "PAC",
+   "BO": "SA",
+   "BR": "SA",
+   "BS": "NA",
+   "BW": "ATL",
+   "BY": "ATL",
+   "BZ": "NA",
+   "CA": "NA",
+   "CC": "PAC",
+   "CD": "ATL",
+   "CF": "ATL",
+   "CG": "ATL",
+   "CH": "ATL",
+   "CI": "ATL",
+   "CK": "PAC",
+   "CL": "SA",
+   "CM": "ATL",
+   "CN": "PAC",
+   "CO": "SA",
+   "CR": "NA",
+   "CU": "NA",
+   "CV": "ATL",
+   "CX": "PAC",
+   "CY": "ATL",
+   "CZ": "ATL",
+   "DE": "ATL",
+   "DJ": "ATL",
+   "DK": "ATL",
+   "DM": "NA",
+   "DO": "NA",
+   "DZ": "ATL",
+   "EC": "SA",
+   "EE": "ATL",
+   "EG": "ATL",
+   "ER": "ATL",
+   "ES": "ATL",
+   "ET": "ATL",
+   "FI": "ATL",
+   "FJ": "PAC",
+   "FK": "SA",
+   "FM": "PAC",
+   "FO": "ATL",
+   "FR": "ATL",
+   "GA": "ATL",
+   "GB": "ATL",
+   "GD": "NA",
+   "GE": "ATL",
+   "GF": "SA",
+   "GH": "ATL",
+   "GI": "ATL",
+   "GM": "ATL",
+   "GN": "ATL",
+   "GP": "NA",
+   "GQ": "ATL",
+   "GR": "ATL",
+   "GT": "NA",
+   "GU": "PAC",
+   "GW": "ATL",
+   "GY": "SA",
+   "HK": "PAC",
+   "HN": "NA",
+   "HR": "ATL",
+   "HT": "NA",
+   "HU": "ATL",
+   "ID": "PAC",
+   "IE": "ATL",
+   "IL": "ATL",
+   "IN": "ATL",
+   "IQ": "ATL",
+   "IR": "ATL",
+   "IS": "ATL",
+   "IT": "ATL",
+   "JM": "NA",
+   "JO": "ATL",
+   "JP": "PAC",
+   "KE": "ATL",
+   "KH": "PAC",
+   "KI": "PAC",
+   "KM": "ATL",
+   "KN": "NA",
+   "KR": "PAC",
+   "KW": "ATL",
+   "KY": "NA",
+   "LA": "PAC",
+   "LB": "ATL",
+   "LC": "NA",
+   "LI": "ATL",
+   "LK": "ATL",
+   "LR": "ATL",
+   "LS": "ATL",
+   "LT": "ATL",
+   "LU": "ATL",
+   "LV": "ATL",
+   "MA": "ATL",
+   "MC": "ATL",
+   "MD": "ATL",
+   "ME": "ATL",
+   "MF": "NA",
+   "MG": "ATL",
+   "MH": "PAC",
+   "MK": "ATL",
+   "ML": "ATL",
+   "MN": "PAC",
+   "MO": "PAC",
+   "MP": "PAC",
+   "MQ": "NA",
+   "MR": "ATL",
+   "MS": "NA",
+   "MT": "ATL",
+   "MU": "ATL",
+   "MV": "ATL",
+   "MW": "ATL",
+   "MX": "NA",
+   "MY": "PAC",
+   "MZ": "ATL",
+   "NA": "ATL",
+   "NC": "PAC",
+   "NE": "ATL",
+   "NF": "PAC",
+   "NG": "ATL",
+   "NI": "NA",
+   "NL": "ATL",
+   "NO": "ATL",
+   "NR": "PAC",
+   "NU": "PAC",
+   "NZ": "PAC",
+   "OM": "ATL",
+   "PA": "NA",
+   "PE": "SA",
+   "PF": "PAC",
+   "PG": "PAC",
+   "PH": "PAC",
+   "PK": "ATL",
+   "PL": "ATL",
+   "PN": "PAC",
+   "PR": "NA",
+   "PS": "ATL",
+   "PT": "ATL",
+   "PW": "PAC",
+   "PY": "SA",
+   "QA": "ATL",
+   "RO": "ATL",
+   "RS": "ATL",
+   "RW": "ATL",
+   "SA": "ATL",
+   "SB": "PAC",
+   "SC": "ATL",
+   "SD": "ATL",
+   "SE": "ATL",
+   "SG": "PAC",
+   "SI": "ATL",
+   "SK": "ATL",
+   "SL": "ATL",
+   "SM": "ATL",
+   "SN": "ATL",
+   "SO": "ATL",
+   "SR": "SA",
+   "ST": "ATL",
+   "SV": "NA",
+   "SY": "ATL",
+   "SZ": "ATL",
+   "TC": "NA",
+   "TD": "ATL",
+   "TG": "ATL",
+   "TH": "PAC",
+   "TK": "PAC",
+   "TL": "PAC",
+   "TN": "ATL",
+   "TO": "PAC",
+   "TR": "ATL",
+   "TV": "PAC",
+   "TW": "PAC",
+   "TZ": "ATL",
+   "UA": "ATL",
+   "UG": "ATL",
+   "US": "NA",
+   "UY": "SA",
+   "VA": "ATL",
+   "VC": "NA",
+   "VE": "SA",
+   "VG": "NA",
+   "VI": "NA",
+   "VN": "PAC",
+   "VU": "PAC",
+   "WF": "PAC",
+   "WS": "PAC",
+   "YE": "ATL",
+   "YT": "ATL",
+   "ZA": "ATL",
+   "ZM": "ATL",
+   "ZW": "ATL"
+  },
+  "bands": {
+   "NA|NA": [
+    {
+     "max_miles": 500,
+     "economy": 6000,
+     "business": 15000,
+     "first": null
+    },
+    {
+     "max_miles": 1500,
+     "economy": 10000,
+     "business": 20000,
+     "first": null
+    },
+    {
+     "max_miles": 2750,
+     "economy": 12500,
+     "business": 25000,
+     "first": null
+    },
+    {
+     "max_miles": null,
+     "economy": 22500,
+     "business": 35000,
+     "first": null
+    }
+   ],
+   "ATL|NA": [
+    {
+     "max_miles": 4000,
+     "economy": 32500,
+     "business": 60000,
+     "first": 90000
+    },
+    {
+     "max_miles": 6000,
+     "economy": 42500,
+     "business": 75000,
+     "first": 120000
+    },
+    {
+     "max_miles": 8000,
+     "economy": 60000,
+     "business": 90000,
+     "first": 150000
+    },
+    {
+     "max_miles": null,
+     "economy": 75000,
+     "business": 110000,
+     "first": 165000
+    }
+   ],
+   "NA|PAC": [
+    {
+     "max_miles": 5000,
+     "economy": 32500,
+     "business": 55000,
+     "first": 90000
+    },
+    {
+     "max_miles": 7500,
+     "economy": 50000,
+     "business": 85000,
+     "first": 120000
+    },
+    {
+     "max_miles": 11000,
+     "economy": 65000,
+     "business": 102500,
+     "first": 140000
+    },
+    {
+     "max_miles": null,
+     "economy": 70000,
+     "business": 115000,
+     "first": 150000
+    }
+   ],
+   "NA|SA": [
+    {
+     "max_miles": 2500,
+     "economy": 20000,
+     "business": 40000,
+     "first": 60000
+    },
+    {
+     "max_miles": 4500,
+     "economy": 30000,
+     "business": 50000,
+     "first": 80000
+    },
+    {
+     "max_miles": null,
+     "economy": 40000,
+     "business": 60000,
+     "first": 100000
+    }
+   ],
+   "ATL|ATL": [
+    {
+     "max_miles": 1000,
+     "economy": 7500,
+     "business": 12500,
+     "first": 25000
+    },
+    {
+     "max_miles": 2000,
+     "economy": 15000,
+     "business": 22500,
+     "first": 40000
+    },
+    {
+     "max_miles": 4000,
+     "economy": 30000,
+     "business": 40000,
+     "first": 75000
+    },
+    {
+     "max_miles": 6000,
+     "economy": 42500,
+     "business": 70000,
+     "first": 100000
+    },
+    {
+     "max_miles": null,
+     "economy": 50000,
+     "business": 95000,
+     "first": 130000
+    }
+   ],
+   "PAC|PAC": [
+    {
+     "max_miles": 1000,
+     "economy": 8000,
+     "business": 20000,
+     "first": 25000
+    },
+    {
+     "max_miles": 2000,
+     "economy": 15000,
+     "business": 30000,
+     "first": 50000
+    },
+    {
+     "max_miles": 5000,
+     "economy": 30000,
+     "business": 52500,
+     "first": 60000
+    },
+    {
+     "max_miles": 7000,
+     "economy": 35000,
+     "business": 72500,
+     "first": 80000
+    },
+    {
+     "max_miles": null,
+     "economy": 50000,
+     "business": 85000,
+     "first": 130000
+    }
+   ],
+   "ATL|PAC": [
+    {
+     "max_miles": 2500,
+     "economy": 25000,
+     "business": 47500,
+     "first": 55000
+    },
+    {
+     "max_miles": 5000,
+     "economy": 40000,
+     "business": 75000,
+     "first": 95000
+    },
+    {
+     "max_miles": 7000,
+     "economy": 60000,
+     "business": 92500,
+     "first": 120000
+    },
+    {
+     "max_miles": null,
+     "economy": 75000,
+     "business": 130000,
+     "first": 150000
+    }
+   ],
+   "SA|SA": [
+    {
+     "max_miles": 1600,
+     "economy": 10000,
+     "business": 20000,
+     "first": 30000
+    },
+    {
+     "max_miles": null,
+     "economy": 20000,
+     "business": 35000,
+     "first": 50000
+    }
+   ],
+   "ATL|SA": [
+    {
+     "max_miles": 7000,
+     "economy": 45000,
+     "business": 80000,
+     "first": 100000
+    },
+    {
+     "max_miles": null,
+     "economy": 60000,
+     "business": 100000,
+     "first": 130000
+    }
+   ],
+   "PAC|SA": [
+    {
+     "max_miles": 11000,
+     "economy": 60000,
+     "business": 90000,
+     "first": 130000
+    },
+    {
+     "max_miles": null,
+     "economy": 80000,
+     "business": 140000,
+     "first": 200000
+    }
+   ]
+  }
+ },
+ "ana": {
+  "name": "ANA Mileage Club",
+  "effective": "Reservations and tickets issued on/after 2025-06-24",
+  "verified_on": "2026-09-26",
+  "source_url": "https://www.ana.co.jp/en/jp/guide/amc/award/tk/zone/",
+  "source_title": "ANA: Zone / Required Mileage Charts for Partner Airline Flight Awards (one-way)",
+  "price_basis": "One-way partner airline flight award chart (applies when at least one partner airline flight is included). Japan one-way uses Zone 1-B (Zone 1-A is for international round trips).",
+  "chart_notes": [
+   "The number of miles required to redeem an award will vary depending on the departure and destination zones and the class of service.",
+   "Reservations cannot be made more than 355 days in advance of the departure date."
+  ],
+  "country_zone": {
+   "AD": "7",
+   "AE": "8",
+   "AF": "4",
+   "AG": "9",
+   "AI": "9",
+   "AL": "7",
+   "AM": "7",
+   "AO": "8",
+   "AR": "9",
+   "AS": "10",
+   "AT": "7",
+   "AU": "10",
+   "AW": "9",
+   "AZ": "7",
+   "BA": "7",
+   "BB": "9",
+   "BD": "4",
+   "BE": "7",
+   "BF": "8",
+   "BG": "7",
+   "BH": "8",
+   "BI": "8",
+   "BJ": "8",
+   "BM": "9",
+   "BN": "4",
+   "BO": "9",
+   "BR": "9",
+   "BS": "9",
+   "BT": "4",
+   "BW": "8",
+   "BY": "7",
+   "BZ": "9",
+   "CA": "6",
+   "CC": "10",
+   "CD": "8",
+   "CF": "8",
+   "CG": "8",
+   "CH": "7",
+   "CI": "8",
+   "CK": "10",
+   "CL": "9",
+   "CM": "8",
+   "CN": "3",
+   "CO": "9",
+   "CR": "9",
+   "CU": "9",
+   "CV": "8",
+   "CW": "9",
+   "CX": "10",
+   "CY": "7",
+   "CZ": "7",
+   "DE": "7",
+   "DJ": "8",
+   "DK": "7",
+   "DM": "9",
+   "DO": "9",
+   "DZ": "7",
+   "EC": "9",
+   "EE": "7",
+   "EG": "8",
+   "ER": "8",
+   "ES": "7",
+   "ET": "8",
+   "FI": "7",
+   "FJ": "10",
+   "FK": "9",
+   "FM": "10",
+   "FO": "7",
+   "FR": "7",
+   "GA": "8",
+   "GB": "7",
+   "GD": "9",
+   "GE": "7",
+   "GF": "9",
+   "GH": "8",
+   "GI": "7",
+   "GL": "7",
+   "GM": "8",
+   "GN": "8",
+   "GP": "9",
+   "GQ": "8",
+   "GR": "7",
+   "GS": "9",
+   "GT": "9",
+   "GU": "3",
+   "GW": "8",
+   "GY": "9",
+   "HK": "3",
+   "HN": "9",
+   "HR": "7",
+   "HT": "9",
+   "HU": "7",
+   "ID": "4",
+   "IE": "7",
+   "IL": "8",
+   "IN": "4",
+   "IO": "4",
+   "IQ": "8",
+   "IR": "8",
+   "IS": "7",
+   "IT": "7",
+   "JM": "9",
+   "JO": "8",
+   "JP": "1",
+   "KE": "8",
+   "KG": "4",
+   "KH": "4",
+   "KI": "10",
+   "KM": "8",
+   "KN": "9",
+   "KR": "2",
+   "KW": "8",
+   "KY": "9",
+   "KZ": "4",
+   "LA": "4",
+   "LB": "8",
+   "LC": "9",
+   "LI": "7",
+   "LK": "4",
+   "LR": "8",
+   "LS": "8",
+   "LT": "7",
+   "LU": "7",
+   "LV": "7",
+   "MA": "7",
+   "MC": "7",
+   "MD": "7",
+   "ME": "7",
+   "MF": "9",
+   "MG": "8",
+   "MH": "10",
+   "MK": "7",
+   "ML": "8",
+   "MM": "4",
+   "MN": "4",
+   "MO": "3",
+   "MP": "10",
+   "MQ": "9",
+   "MR": "8",
+   "MS": "9",
+   "MT": "7",
+   "MU": "8",
+   "MV": "4",
+   "MW": "8",
+   "MX": "6",
+   "MY": "4",
+   "MZ": "8",
+   "NA": "8",
+   "NC": "10",
+   "NE": "8",
+   "NF": "10",
+   "NG": "8",
+   "NI": "9",
+   "NL": "7",
+   "NO": "7",
+   "NP": "4",
+   "NR": "10",
+   "NU": "10",
+   "NZ": "10",
+   "OM": "8",
+   "PA": "9",
+   "PE": "9",
+   "PF": "10",
+   "PG": "10",
+   "PH": "3",
+   "PK": "4",
+   "PL": "7",
+   "PN": "10",
+   "PR": "9",
+   "PS": "8",
+   "PT": "7",
+   "PW": "10",
+   "PY": "9",
+   "QA": "8",
+   "RO": "7",
+   "RS": "7",
+   "RW": "8",
+   "SA": "8",
+   "SB": "10",
+   "SC": "8",
+   "SD": "8",
+   "SE": "7",
+   "SG": "4",
+   "SH": "9",
+   "SI": "7",
+   "SK": "7",
+   "SL": "8",
+   "SM": "7",
+   "SN": "8",
+   "SO": "8",
+   "SR": "9",
+   "ST": "8",
+   "SV": "9",
+   "SY": "8",
+   "SZ": "8",
+   "TC": "9",
+   "TD": "8",
+   "TG": "8",
+   "TH": "4",
+   "TJ": "4",
+   "TK": "10",
+   "TL": "4",
+   "TM": "4",
+   "TN": "7",
+   "TO": "10",
+   "TR": "7",
+   "TT": "9",
+   "TV": "10",
+   "TW": "3",
+   "TZ": "8",
+   "UA": "7",
+   "UG": "8",
+   "US": "6",
+   "UY": "9",
+   "UZ": "4",
+   "VA": "7",
+   "VC": "9",
+   "VE": "9",
+   "VG": "9",
+   "VI": "9",
+   "VN": "4",
+   "VU": "10",
+   "WF": "10",
+   "WS": "10",
+   "YE": "8",
+   "YT": "8",
+   "ZA": "8",
+   "ZM": "8",
+   "ZW": "8"
+  },
+  "region_zone": {
+   "US-HI": "5"
+  },
+  "table": {
+   "10|1": {
+    "economy": 25000,
+    "business": 45500,
+    "first": 75000
+   },
+   "10|10": {
+    "economy": 15000,
+    "business": 27500,
+    "first": 45000
+   },
+   "10|2": {
+    "economy": 27500,
+    "business": 48000,
+    "first": 90000
+   },
+   "10|3": {
+    "economy": 25000,
+    "business": 48000,
+    "first": 90000
+   },
+   "10|4": {
+    "economy": 23000,
+    "business": 43500,
+    "first": 83000
+   },
+   "10|5": {
+    "economy": 30000,
+    "business": 55000,
+    "first": 100500
+   },
+   "10|6": {
+    "economy": 37500,
+    "business": 72500,
+    "first": 123000
+   },
+   "10|7": {
+    "economy": 40000,
+    "business": 83500,
+    "first": 142000
+   },
+   "10|8": {
+    "economy": 35000,
+    "business": 66500,
+    "first": 115000
+   },
+   "10|9": {
+    "economy": 40000,
+    "business": 83500,
+    "first": 142000
+   },
+   "1|10": {
+    "economy": 25000,
+    "business": 45500,
+    "first": 75000
+   },
+   "1|2": {
+    "economy": 9000,
+    "business": 16500,
+    "first": 27000
+   },
+   "1|3": {
+    "economy": 11500,
+    "business": 21500,
+    "first": 34500
+   },
+   "1|4": {
+    "economy": 19000,
+    "business": 31500,
+    "first": 57000
+   },
+   "1|5": {
+    "economy": 21500,
+    "business": 44500,
+    "first": 75500
+   },
+   "1|6": {
+    "economy": 27500,
+    "business": 58500,
+    "first": 93500
+   },
+   "1|7": {
+    "economy": 31000,
+    "business": 60500,
+    "first": 103500
+   },
+   "1|8": {
+    "economy": 50000,
+    "business": 92500,
+    "first": 145000
+   },
+   "1|9": {
+    "economy": 57500,
+    "business": 97500,
+    "first": 163500
+   },
+   "2|1": {
+    "economy": 9000,
+    "business": 16500,
+    "first": 27000
+   },
+   "2|10": {
+    "economy": 27500,
+    "business": 48000,
+    "first": 90000
+   },
+   "2|2": {
+    "economy": 7500,
+    "business": 15000,
+    "first": 22500
+   },
+   "2|3": {
+    "economy": 11000,
+    "business": 21000,
+    "first": 33000
+   },
+   "2|4": {
+    "economy": 18500,
+    "business": 31000,
+    "first": 55500
+   },
+   "2|5": {
+    "economy": 27500,
+    "business": 55500,
+    "first": 96500
+   },
+   "2|6": {
+    "economy": 30000,
+    "business": 65000,
+    "first": 102000
+   },
+   "2|7": {
+    "economy": 30000,
+    "business": 59000,
+    "first": 100000
+   },
+   "2|8": {
+    "economy": 48500,
+    "business": 90500,
+    "first": 140500
+   },
+   "2|9": {
+    "economy": 61000,
+    "business": 103500,
+    "first": 173500
+   },
+   "3|1": {
+    "economy": 11500,
+    "business": 21500,
+    "first": 34500
+   },
+   "3|10": {
+    "economy": 25000,
+    "business": 48000,
+    "first": 90000
+   },
+   "3|2": {
+    "economy": 11000,
+    "business": 21000,
+    "first": 33000
+   },
+   "3|3": {
+    "economy": 10000,
+    "business": 20000,
+    "first": 30000
+   },
+   "3|4": {
+    "economy": 18000,
+    "business": 30500,
+    "first": 54000
+   },
+   "3|5": {
+    "economy": 27500,
+    "business": 55500,
+    "first": 96500
+   },
+   "3|6": {
+    "economy": 30000,
+    "business": 65000,
+    "first": 102000
+   },
+   "3|7": {
+    "economy": 30000,
+    "business": 59000,
+    "first": 100000
+   },
+   "3|8": {
+    "economy": 48000,
+    "business": 89500,
+    "first": 139000
+   },
+   "3|9": {
+    "economy": 61000,
+    "business": 103500,
+    "first": 173500
+   },
+   "4|1": {
+    "economy": 19000,
+    "business": 31500,
+    "first": 57000
+   },
+   "4|10": {
+    "economy": 23000,
+    "business": 43500,
+    "first": 83000
+   },
+   "4|2": {
+    "economy": 18500,
+    "business": 31000,
+    "first": 55500
+   },
+   "4|3": {
+    "economy": 18000,
+    "business": 30500,
+    "first": 54000
+   },
+   "4|4": {
+    "economy": 15000,
+    "business": 27500,
+    "first": 45000
+   },
+   "4|5": {
+    "economy": 32500,
+    "business": 65000,
+    "first": 121000
+   },
+   "4|6": {
+    "economy": 40000,
+    "business": 68000,
+    "first": 120000
+   },
+   "4|7": {
+    "economy": 29500,
+    "business": 47000,
+    "first": 88500
+   },
+   "4|8": {
+    "economy": 36000,
+    "business": 67000,
+    "first": 104500
+   },
+   "4|9": {
+    "economy": 67500,
+    "business": 114000,
+    "first": 157500
+   },
+   "5|1": {
+    "economy": 21500,
+    "business": 44500,
+    "first": 75500
+   },
+   "5|10": {
+    "economy": 30000,
+    "business": 55000,
+    "first": 100500
+   },
+   "5|2": {
+    "economy": 27500,
+    "business": 55500,
+    "first": 96500
+   },
+   "5|3": {
+    "economy": 27500,
+    "business": 55500,
+    "first": 96500
+   },
+   "5|4": {
+    "economy": 32500,
+    "business": 65000,
+    "first": 121000
+   },
+   "5|5": {
+    "economy": 10000,
+    "business": 20000,
+    "first": 30000
+   },
+   "5|6": {
+    "economy": 23500,
+    "business": 42500,
+    "first": 67500
+   },
+   "5|7": {
+    "economy": 35000,
+    "business": 65000,
+    "first": 105000
+   },
+   "5|8": {
+    "economy": 45000,
+    "business": 72500,
+    "first": 110000
+   },
+   "5|9": {
+    "economy": 35000,
+    "business": 65000,
+    "first": 105000
+   },
+   "6|1": {
+    "economy": 27500,
+    "business": 58500,
+    "first": 93500
+   },
+   "6|10": {
+    "economy": 37500,
+    "business": 72500,
+    "first": 123000
+   },
+   "6|2": {
+    "economy": 30000,
+    "business": 65000,
+    "first": 102000
+   },
+   "6|3": {
+    "economy": 30000,
+    "business": 65000,
+    "first": 102000
+   },
+   "6|4": {
+    "economy": 40000,
+    "business": 68000,
+    "first": 120000
+   },
+   "6|5": {
+    "economy": 23500,
+    "business": 42500,
+    "first": 67500
+   },
+   "6|6": {
+    "economy": 15000,
+    "business": 27500,
+    "first": 45000
+   },
+   "6|7": {
+    "economy": 27500,
+    "business": 50000,
+    "first": 82500
+   },
+   "6|8": {
+    "economy": 35000,
+    "business": 65000,
+    "first": 105000
+   },
+   "6|9": {
+    "economy": 30000,
+    "business": 48000,
+    "first": 90000
+   },
+   "7|1": {
+    "economy": 31000,
+    "business": 60500,
+    "first": 103500
+   },
+   "7|10": {
+    "economy": 40000,
+    "business": 83500,
+    "first": 142000
+   },
+   "7|2": {
+    "economy": 30000,
+    "business": 59000,
+    "first": 100000
+   },
+   "7|3": {
+    "economy": 30000,
+    "business": 59000,
+    "first": 100000
+   },
+   "7|4": {
+    "economy": 29500,
+    "business": 47000,
+    "first": 88500
+   },
+   "7|5": {
+    "economy": 35000,
+    "business": 65000,
+    "first": 105000
+   },
+   "7|6": {
+    "economy": 27500,
+    "business": 50000,
+    "first": 82500
+   },
+   "7|7": {
+    "economy": 15000,
+    "business": 27500,
+    "first": 45000
+   },
+   "7|8": {
+    "economy": 30000,
+    "business": 51000,
+    "first": 91000
+   },
+   "7|9": {
+    "economy": 35000,
+    "business": 65000,
+    "first": 105000
+   },
+   "8|1": {
+    "economy": 50000,
+    "business": 92500,
+    "first": 145000
+   },
+   "8|10": {
+    "economy": 35000,
+    "business": 66500,
+    "first": 115000
+   },
+   "8|2": {
+    "economy": 48500,
+    "business": 90500,
+    "first": 140500
+   },
+   "8|3": {
+    "economy": 48000,
+    "business": 89500,
+    "first": 139000
+   },
+   "8|4": {
+    "economy": 36000,
+    "business": 67000,
+    "first": 104500
+   },
+   "8|5": {
+    "economy": 45000,
+    "business": 72500,
+    "first": 110000
+   },
+   "8|6": {
+    "economy": 35000,
+    "business": 65000,
+    "first": 105000
+   },
+   "8|7": {
+    "economy": 30000,
+    "business": 51000,
+    "first": 91000
+   },
+   "8|8": {
+    "economy": 17500,
+    "business": 30000,
+    "first": 45000
+   },
+   "8|9": {
+    "economy": 34000,
+    "business": 58500,
+    "first": 101500
+   },
+   "9|1": {
+    "economy": 57500,
+    "business": 97500,
+    "first": 163500
+   },
+   "9|10": {
+    "economy": 40000,
+    "business": 83500,
+    "first": 142000
+   },
+   "9|2": {
+    "economy": 61000,
+    "business": 103500,
+    "first": 173500
+   },
+   "9|3": {
+    "economy": 61000,
+    "business": 103500,
+    "first": 173500
+   },
+   "9|4": {
+    "economy": 67500,
+    "business": 114000,
+    "first": 157500
+   },
+   "9|5": {
+    "economy": 35000,
+    "business": 65000,
+    "first": 105000
+   },
+   "9|6": {
+    "economy": 30000,
+    "business": 48000,
+    "first": 90000
+   },
+   "9|7": {
+    "economy": 35000,
+    "business": 65000,
+    "first": 105000
+   },
+   "9|8": {
+    "economy": 34000,
+    "business": 58500,
+    "first": 101500
+   },
+   "9|9": {
+    "economy": 17500,
+    "business": 30000,
+    "first": 45000
+   }
+  }
+ }
+}

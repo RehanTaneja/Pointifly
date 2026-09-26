@@ -90,7 +90,13 @@ export type Allocation = {
   cents_per_point: number | null
   reason: string
   fare: Fare | null
+  award_points: number
+  award_source: AwardSource | null
 }
+
+export type AwardSource =
+  | { type: 'chart'; title: string; url: string; effective: string; detail: string; notes: string }
+  | { type: 'sample' }
 
 export type StrategyResult = {
   name: string
