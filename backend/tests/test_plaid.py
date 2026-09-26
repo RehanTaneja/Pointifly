@@ -13,6 +13,9 @@ from app.plaid.cards import cards_from_accounts, classify
 api = TestClient(app)
 
 
+INSTITUTION_NAMES = {"ins_10": "American Express", "ins_56": "Chase", "ins_128026": "Capital One", "ins_109508": "First Platypus Bank"}
+
+
 class FakePlaid:
     """Implements the four endpoints we call, per https://plaid.com/docs/api/."""
 
@@ -43,7 +46,8 @@ class FakePlaid:
             return {"access_token": access, "item_id": f"item-{len(self.items)}"}
         if path == "/accounts/get":
             item = self.items[body["access_token"]]
-            return {"accounts": item["accounts"], "item": {"institution_id": item["institution_id"]}}
+            ins = item["institution_id"]
+            return {"accounts": item["accounts"], "item": {"institution_id": ins, "institution_name": INSTITUTION_NAMES[ins]}}
         raise AssertionError(path)
 
 
@@ -99,6 +103,13 @@ def test_only_credit_accounts_become_cards():
     assert [(c["product"], c["holding"], c["institution"]) for c in cards] == [("Chase Sapphire Preferred", "chase_ur", "Chase")]
 
 
+def test_presentation_flag(monkeypatch):
+    monkeypatch.setenv("PRESENTATION_MODE", "1")
+    assert api.get("/api/plaid/status").json()["presentation"] is True
+    monkeypatch.setenv("PRESENTATION_MODE", "0")
+    assert api.get("/api/plaid/status").json()["presentation"] is False
+
+
 def test_status_and_unconfigured(monkeypatch):
     monkeypatch.setattr(client, "configured", lambda: False)
     assert api.get("/api/plaid/status").json()["configured"] is False
@@ -120,8 +131,8 @@ def test_link_token_and_exchange_flow(fake):
 
 def test_sandbox_demo_connects_all_demo_issuers(fake):
     r = api.post("/api/plaid/sandbox_demo").json()
-    assert r["sandbox"] is True
-    assert {(c["stands_in_for"], c["product"], c["holding"]) for c in r["cards"]} == {
+    # Institution names come from Plaid (the issuers' own institution records).
+    assert {(c["institution"], c["product"], c["holding"]) for c in r["cards"]} == {
         ("American Express", "American Express Gold Card", "amex_mr"),
         ("Chase", "Chase Sapphire Preferred", "chase_ur"),
         ("Chase", "United Explorer Card", "united"),
@@ -151,4 +162,6 @@ def test_live_sandbox_demo():
     routes._CONNECTIONS.clear()
     r = api.post("/api/plaid/sandbox_demo")
     assert r.status_code == 200, r.text
-    assert {c["holding"] for c in r.json()["cards"]} >= {"amex_mr", "chase_ur", "capital_one", "united"}
+    cards = r.json()["cards"]
+    assert {c["holding"] for c in cards} == {"amex_mr", "chase_ur", "capital_one", "united"}
+    assert {c["institution"] for c in cards} == {"American Express", "Chase", "Capital One"}

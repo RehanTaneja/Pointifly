@@ -5,6 +5,7 @@ import secrets
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from ..sources.http import env
 from . import client
 from .cards import cards_from_accounts
 from .sandbox_demo import DEMO_ITEMS, custom_user_password
@@ -41,7 +42,9 @@ def _plaid_call(fn, *args):
 
 @router.get("/status")
 def status() -> dict:
-    return {"configured": client.configured(), "env": client.plaid_env()}
+    # presentation: the UI shows only the product flow (no environment tags or developer buttons).
+    presentation = (env("PRESENTATION_MODE") or "").lower() in ("1", "true", "yes")
+    return {"configured": client.configured(), "env": client.plaid_env(), "presentation": presentation}
 
 
 @router.post("/link_token")
@@ -63,10 +66,9 @@ def sandbox_demo() -> dict:
     if client.plaid_env() != "sandbox":
         raise HTTPException(400, "The demo connection only runs in the Plaid Sandbox")
     cards = []
-    for institution_id, issuer, accounts in DEMO_ITEMS:
+    for institution_id, accounts in DEMO_ITEMS:
         public_token = _plaid_call(
             client.sandbox_public_token, institution_id, "user_custom", custom_user_password(accounts)
         )
-        connected = _plaid_call(_connect, public_token, None)
-        cards += [{**c, "stands_in_for": issuer} for c in connected["cards"]]
-    return {"cards": cards, "sandbox": True}
+        cards += _plaid_call(_connect, public_token, None)["cards"]
+    return {"cards": cards}

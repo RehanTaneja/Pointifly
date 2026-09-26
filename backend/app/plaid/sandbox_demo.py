@@ -1,8 +1,7 @@
-"""Sandbox demo: custom test users whose credit cards carry real product names.
+"""Sandbox demo profile: the issuers' own Plaid institution records with a custom test user
+whose credit cards carry real product names: https://plaid.com/docs/sandbox/user-custom/
 
-Plaid Sandbox has only test banks (e.g. First Platypus Bank), so each "issuer" below is a
-Sandbox test institution with a custom user: https://plaid.com/docs/sandbox/user-custom/
-Card names are ours; production Plaid returns the issuer's own account names.
+Plaid returns the institution names itself. Production Plaid returns the issuer's own account names.
 """
 
 import json
@@ -18,11 +17,11 @@ def _card(name: str, mask: str, balance: int) -> dict:
     }
 
 
-# (Sandbox institution id, the issuer these test cards stand in for, cards)
+# (Plaid institution id, cards). IDs from /institutions/search: American Express, Chase, Capital One.
 DEMO_ITEMS = [
-    ("ins_109508", "American Express", [_card("American Express Gold Card", "1005", 1240)]),
-    ("ins_109509", "Chase", [_card("Chase Sapphire Preferred", "4417", 860), _card("United Explorer Card", "9023", 310)]),
-    ("ins_109510", "Capital One", [_card("Capital One Venture Rewards", "7788", 540)]),
+    ("ins_10", [_card("American Express Gold Card", "1005", 1240)]),
+    ("ins_56", [_card("Chase Sapphire Preferred", "4417", 860), _card("United Explorer Card", "9023", 310)]),
+    ("ins_128026", [_card("Capital One Venture Rewards", "7788", 540)]),
 ]
 
 

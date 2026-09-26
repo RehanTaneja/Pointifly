@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { usePlaidLink } from 'react-plaid-link'
-import { plaid, type LinkedCard } from '../api'
+import { plaid, type LinkedCard, type PlaidStatus } from '../api'
 
 export type { LinkedCard }
 
@@ -20,13 +20,16 @@ const MOCK_INSTITUTIONS: { institution: string; cards: Omit<LinkedCard, 'institu
 type Props = { holdingNames: Record<string, string>; onDone: (cards: LinkedCard[]) => void }
 
 export function ConnectStep({ holdingNames, onDone }: Props) {
-  const [status, setStatus] = useState<{ configured: boolean; env: string } | null>(null)
+  const [status, setStatus] = useState<PlaidStatus | null>(null)
   const [cards, setCards] = useState<LinkedCard[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    plaid.status().then(setStatus).catch(() => setStatus({ configured: false, env: 'sandbox' }))
+    plaid
+      .status()
+      .then(setStatus)
+      .catch(() => setStatus({ configured: false, env: 'sandbox', presentation: false }))
   }, [])
 
   const addCards = (more: LinkedCard[]) =>
@@ -56,6 +59,13 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
 
       {status === null ? (
         <p className="muted small">Checking Plaid…</p>
+      ) : status.configured && status.presentation ? (
+        // Pitch UI: one button; connects the demo profile through Plaid's API (no Plaid test pages).
+        <div className="row">
+          <button className="primary" disabled={busy} onClick={() => run(async () => (await plaid.sandboxDemo()).cards)}>
+            {busy ? 'Connecting your cards…' : 'Connect with Plaid'}
+          </button>
+        </div>
       ) : status.configured ? (
         <div className="row">
           <PlaidLinkButton disabled={busy} onCards={(c) => run(async () => c)} onError={setError} />
@@ -84,10 +94,7 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
           <tbody>
             {cards.map((c) => (
               <tr key={`${c.institution}-${c.product}-${c.mask ?? ''}`} className={c.holding ? '' : 'muted'}>
-                <td>
-                  {c.stands_in_for ?? c.institution}
-                  {c.stands_in_for && <div className="muted small">Sandbox test bank: {c.institution}</div>}
-                </td>
+                <td>{c.institution}</td>
                 <td>
                   {c.product}
                   {c.mask && <span className="muted"> ···{c.mask}</span>}

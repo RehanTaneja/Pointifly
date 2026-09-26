@@ -134,7 +134,6 @@ export type LinkedCard = {
   holding: string | null
   note?: string | null
   mask?: string | null
-  stands_in_for?: string // Sandbox demo: the issuer a test bank stands in for
 }
 
 const post = <T,>(path: string, body?: unknown) =>
@@ -145,12 +144,14 @@ const post = <T,>(path: string, body?: unknown) =>
   })
 
 export const plaid = {
-  status: () => request<{ configured: boolean; env: string }>('/api/plaid/status'),
+  status: () => request<PlaidStatus>('/api/plaid/status'),
   linkToken: () => post<{ link_token: string }>('/api/plaid/link_token'),
   exchange: (public_token: string, institution_name: string | null) =>
     post<{ connection_id: string; cards: LinkedCard[] }>('/api/plaid/exchange', { public_token, institution_name }),
-  sandboxDemo: () => post<{ cards: LinkedCard[]; sandbox: boolean }>('/api/plaid/sandbox_demo'),
+  sandboxDemo: () => post<{ cards: LinkedCard[] }>('/api/plaid/sandbox_demo'),
 }
+
+export type PlaidStatus = { configured: boolean; env: string; presentation: boolean }
 
 export const optimize = (balances: Balance[], trips: Trip[]) =>
   request<OptimizeResponse>('/api/optimize', {
