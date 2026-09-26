@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
+  agentPay,
   getAiStatus,
+  PAYMENTS_CHANGED,
+  type PayResult,
   getDataset,
   holdingNames,
   optimize,
@@ -75,6 +78,14 @@ export default function App() {
       return r ? planSummary(r, names) : 'The optimizer could not run: check the trips on screen.'
     },
     explain_trip: async (trip) => explainTrip(resultRef.current, trip),
+    // Server-enforced: autopay toggle, spending limits, plan's amount and card, no double charge.
+    pay_cash_leg: async (trip) => {
+      const planId = resultRef.current?.plan_id
+      if (!planId) return 'No plan yet: run the optimizer first.'
+      const r = await agentPay(planId, trip).catch((e: Error) => ({ ok: false, message: e.message }) as PayResult)
+      window.dispatchEvent(new CustomEvent<PayResult>(PAYMENTS_CHANGED, { detail: r }))
+      return r.message
+    },
   }
 
   return (

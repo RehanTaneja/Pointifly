@@ -72,14 +72,14 @@ def test_voice_session_signed_url(fake_ai, monkeypatch):
 
 def test_setup_creates_everything_once(fake_ai):
     state = voice.setup()
-    assert state["agent_id"] == "agent_test" and set(state["tools"]) == {"fill_trip_plan", "run_optimizer", "explain_trip"}
+    assert state["agent_id"] == "agent_test"
+    assert set(state["tools"]) == {"fill_trip_plan", "run_optimizer", "explain_trip", "pay_cash_leg"}
     n = len(fake_ai[1].calls)
-    voice.setup()  # re-run: only re-checks indexes, creates nothing new
-    created = [c for c in fake_ai[1].calls[n:] if c[1] in ("/v1/convai/knowledge-base/text", "/v1/convai/tools", "/v1/convai/agents/create")]
-    assert created == []
+    voice.setup()  # re-run: nothing changed, so no API calls at all
+    assert fake_ai[1].calls[n:] == []
     agent = next(c[2] for c in fake_ai[1].calls if c[1] == "/v1/convai/agents/create")
     prompt = agent["conversation_config"]["agent"]["prompt"]
-    assert prompt["rag"]["enabled"] and len(prompt["knowledge_base"]) == 4 and len(prompt["tool_ids"]) == 3
+    assert prompt["rag"]["enabled"] and len(prompt["knowledge_base"]) == 4 and len(prompt["tool_ids"]) == 4
 
 
 def test_knowledge_base_holds_only_public_reference_data():
@@ -101,3 +101,19 @@ def test_tool_names_match_what_the_browser_registers():
     src = (Path(__file__).resolve().parents[2] / "frontend/src/components/VoiceAgent.tsx").read_text()
     for t in voice.CLIENT_TOOLS:
         assert re.search(rf"\b{t['name']}\b", src), t["name"]  # names are case-sensitive on ElevenLabs
+
+
+def test_setup_updates_an_existing_agent_with_only_new_pieces(fake_ai, monkeypatch):
+    import json
+
+    all_tools = list(voice.CLIENT_TOOLS)
+    monkeypatch.setattr(voice, "CLIENT_TOOLS", [t for t in all_tools if t["name"] != "pay_cash_leg"])
+    voice.setup()  # an agent from before payments existed
+    monkeypatch.setattr(voice, "CLIENT_TOOLS", all_tools)  # (never monkeypatch.undo(): it drops the fakes)
+    n = len(fake_ai[1].calls)
+    state = voice.setup()
+    new = fake_ai[1].calls[n:]
+    assert [(m, p) for m, p, _ in new] == [("POST", "/v1/convai/tools"), ("PATCH", "/v1/convai/agents/agent_test")]
+    patched = new[1][2]["conversation_config"]["agent"]["prompt"]
+    assert len(patched["tool_ids"]) == 4 and len(patched["knowledge_base"]) == 4 and "pay_cash_leg" in patched["prompt"]
+    assert state["tools"]["pay_cash_leg"] == "tool_pay_cash_leg"

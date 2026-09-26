@@ -50,6 +50,7 @@ def test_custom_trip_priced_live_once_then_reused(fake_serpapi):
     r2 = api.post("/api/optimize", json=body(paris())).json()
     assert len(fake_serpapi.calls) == 1  # saved fare reused on the second run
     alloc = r1["portfolio"]["allocations"][0]
+    r1.pop("plan_id"), r2.pop("plan_id")  # each run registers its own plan for payments
     assert alloc["trip_label"] == "Paris" and r1 == r2
     # Charts price the new route automatically: Aeroplan and ANA business ATL-CDG.
     if alloc["method"] == "points":

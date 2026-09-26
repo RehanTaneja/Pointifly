@@ -2,6 +2,7 @@
 the live Sandbox test runs automatically when PLAID_CLIENT_ID / PLAID_SECRET are set."""
 
 import json
+import os
 
 import pytest
 from fastapi.testclient import TestClient
@@ -157,7 +158,10 @@ def test_plaid_errors_surface_as_502(fake, monkeypatch):
     assert r.status_code == 502 and "INVALID_API_KEYS" in r.json()["detail"]
 
 
-@pytest.mark.skipif(not client.configured() or client.plaid_env() != "sandbox", reason="no Plaid Sandbox keys in backend/.env")
+@pytest.mark.skipif(
+    os.environ.get("RUN_LIVE_TESTS") != "1" or not client.configured() or client.plaid_env() != "sandbox",
+    reason="live test: set RUN_LIVE_TESTS=1 (and Plaid Sandbox keys) to run",
+)
 def test_live_sandbox_demo():
     routes._CONNECTIONS.clear()
     r = api.post("/api/plaid/sandbox_demo")

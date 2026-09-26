@@ -73,6 +73,25 @@ export type Trip = {
 export type ParseResult = { balances: Balance[]; trips: Trip[]; warnings: string[]; model: string }
 export const parseSentence = (sentence: string, home_airport: string) =>
   post<ParseResult>('/api/parse', { sentence, home_airport })
+// Agent payments: the server holds the plan, the mandate (autopay + limits) and the audit log.
+export type AuditEntry = { time: string; trip_id: string | null; decision: string; reason: string; gateway: string | null }
+export type PayResult = AuditEntry & { ok: boolean; message: string; amount?: number; card?: string; earned_points?: number }
+export type AgentStatus = {
+  autopay: boolean
+  max_per_payment: number
+  max_total: number
+  spent: number
+  paid: string[]
+  cash_legs: Record<string, { label: string; amount: number; card_name: string; earned_points: number }>
+  audit: AuditEntry[]
+}
+export const getAgentStatus = (planId: string) => request<AgentStatus>(`/api/agent/status?plan_id=${encodeURIComponent(planId)}`)
+export const setMandate = (plan_id: string, autopay: boolean, max_per_payment: number, max_total: number) =>
+  post<AgentStatus>('/api/agent/mandate', { plan_id, autopay, max_per_payment, max_total })
+export const agentPay = (plan_id: string, trip: string) => post<PayResult>('/api/agent/pay', { plan_id, trip })
+export const userPay = (plan_id: string, trip: string) => post<PayResult>('/api/pay', { plan_id, trip })
+export const PAYMENTS_CHANGED = 'pointifly:payments' // window event: refresh payment state
+
 export const getAiStatus = () => request<{ parser: boolean; parser_model: string; voice: boolean }>('/api/ai/status')
 export const getVoiceSession = () => request<{ signed_url: string }>('/api/voice/session')
 
@@ -180,6 +199,7 @@ export type StrategyResult = {
 
 export type OptimizeResponse = {
   mock: boolean
+  plan_id: string | null
   greedy: StrategyResult
   portfolio: StrategyResult
   points_saved: number

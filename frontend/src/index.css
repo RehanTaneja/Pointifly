@@ -131,3 +131,12 @@ button.link:hover { color: var(--text); }
 .home-airport input { width: 64px; text-transform: uppercase; }
 .notes { margin: 6px 0 0; padding-left: 18px; }
 .voice-input input { flex: 1; }
+.switch { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.switch input { width: 18px; height: 18px; accent-color: #1db954; }
+.limits label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); }
+.limits input { width: 110px; }
+.audit { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow: auto; }
+.audit .paid strong { color: var(--ok); }
+.audit .blocked strong { color: var(--error-text); }
+.toast { position: fixed; right: 20px; bottom: 20px; display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.35); animation: fade-up 0.3s ease-out both; z-index: 50; }
+.checkmark.small-check { width: 40px; height: 40px; }

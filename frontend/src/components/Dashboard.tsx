@@ -1,15 +1,17 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   cabinLabel,
   fmtMoney,
   fmtPts,
   fmtUsd,
+  PAYMENTS_CHANGED,
   ratioLabel,
   type Allocation,
   type Currency,
   type OptimizeResponse,
   type StrategyResult,
 } from '../api'
+import { AgentPayments } from './AgentPayments'
 import { AwardSourceNote } from './AwardSourceNote'
 import { CheckoutModal } from './CheckoutModal'
 import { FareDetails } from './FareDetails'
@@ -84,6 +86,7 @@ function StrategyColumn({ s, names, currencies, highlight }: ColumnProps) {
 export function Dashboard({ result, holdingNames, currencies, cardIds, onReset }: Props) {
   const [checkout, setCheckout] = useState<Allocation | null>(null)
   const [paid, setPaid] = useState<Set<string>>(new Set())
+  const syncPaid = useCallback((ids: string[]) => setPaid(new Set(ids)), [])
   const cashLegs = result.portfolio.allocations.filter((a) => a.method === 'cash')
 
   return (
@@ -133,6 +136,8 @@ export function Dashboard({ result, holdingNames, currencies, cardIds, onReset }
         </section>
       )}
 
+      {result.plan_id && <AgentPayments planId={result.plan_id} onPaidChange={syncPaid} />}
+
       <VisaBenefits cardIds={cardIds} />
 
       <div className="row end">
@@ -144,7 +149,11 @@ export function Dashboard({ result, holdingNames, currencies, cardIds, onReset }
           allocation={checkout}
           holdingNames={holdingNames}
           onClose={() => setCheckout(null)}
-          onPaid={() => setPaid((prev) => new Set(prev).add(checkout.trip_id))}
+          planId={result.plan_id}
+          onPaid={() => {
+            setPaid((prev) => new Set(prev).add(checkout.trip_id))
+            window.dispatchEvent(new Event(PAYMENTS_CHANGED)) // refresh the audit log
+          }}
         />
       )}
     </>

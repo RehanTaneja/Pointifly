@@ -8,6 +8,7 @@ export type VoiceTools = {
   fill_trip_plan: (sentence: string) => Promise<string>
   run_optimizer: () => Promise<string>
   explain_trip: (trip: string) => Promise<string>
+  pay_cash_leg: (trip: string) => Promise<string>
 }
 
 type Line = { role: 'user' | 'agent' | 'tool'; text: string }
@@ -35,6 +36,10 @@ function Agent({ tools, enabled }: { tools: VoiceTools; enabled: boolean }) {
         return tools.run_optimizer()
       },
       explain_trip: async ({ trip }: Record<string, unknown>) => tools.explain_trip(String(trip ?? '')),
+      pay_cash_leg: async ({ trip }: Record<string, unknown>) => {
+        log({ role: 'tool', text: `Paying ${String(trip ?? '')} with Visa…` })
+        return tools.pay_cash_leg(String(trip ?? ''))
+      },
     },
     onMessage: ({ message, source }) => {
       if (source === 'user' && textModeRef.current) return // already shown when sent

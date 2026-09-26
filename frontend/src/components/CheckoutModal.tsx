@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fmtPts, fmtUsd, getVisaStatus, payWithVisa, type Allocation, type CheckoutResult } from '../api'
+import { fmtPts, fmtUsd, getVisaStatus, userPay, type Allocation, type PayResult } from '../api'
 
 // Pays a cash leg through the Cybersource Sandbox (Visa's payment gateway): a test transaction
 // with Cybersource's test Visa card, so no money moves. The demo always completes: if the
@@ -8,17 +8,18 @@ import { fmtPts, fmtUsd, getVisaStatus, payWithVisa, type Allocation, type Check
 type Props = {
   allocation: Allocation
   holdingNames: Record<string, string>
+  planId: string | null
   onClose: () => void
-  onPaid: (r: CheckoutResult | null) => void
+  onPaid: (r: PayResult | null) => void
 }
 
 const MIN_PROCESSING_MS = 1400 // same pacing whether the gateway is fast, slow or down
 
-export function CheckoutModal({ allocation, holdingNames, onClose, onPaid }: Props) {
+export function CheckoutModal({ allocation, holdingNames, planId, onClose, onPaid }: Props) {
   const card = allocation.payment_card
   const [presentation, setPresentation] = useState(false)
   const [stage, setStage] = useState<'review' | 'processing' | 'done'>('review')
-  const [result, setResult] = useState<CheckoutResult | null>(null)
+  const [result, setResult] = useState<PayResult | null>(null)
 
   useEffect(() => {
     getVisaStatus()
@@ -30,7 +31,8 @@ export function CheckoutModal({ allocation, holdingNames, onClose, onPaid }: Pro
     if (!card) return
     setStage('processing')
     const started = Date.now()
-    const r = await payWithVisa(allocation.trip_id, allocation.cash_usd, card.id).catch(() => null)
+    // The server pays at the plan's amount with the plan's card (the same record the agent uses).
+    const r = planId ? await userPay(planId, allocation.trip_id).catch(() => null) : null
     await new Promise((resolve) => setTimeout(resolve, Math.max(0, MIN_PROCESSING_MS - (Date.now() - started))))
     setResult(r)
     setStage('done')
@@ -91,7 +93,7 @@ export function CheckoutModal({ allocation, holdingNames, onClose, onPaid }: Pro
 function Success(props: {
   allocation: Allocation
   holdingNames: Record<string, string>
-  result: CheckoutResult | null
+  result: PayResult | null
   presentation: boolean
   onClose: () => void
 }) {
@@ -114,9 +116,7 @@ function Success(props: {
       <p className="muted small">Secured by Cybersource · test transaction, no money moves</p>
       {!presentation && (
         <p className="muted small dev-note">
-          {result?.authorized
-            ? `Gateway: authorized · approval ${result.approval_code ?? '—'} · transaction ${result.id ?? '—'}`
-            : `Gateway: ${result ? `${result.status}${result.message ? ` (${result.message})` : ''}` : 'unreachable'} · demo fallback`}
+          {result?.gateway ? `Gateway: ${result.gateway}` : 'Gateway: unreachable · demo fallback'}
         </p>
       )}
       <button className="primary" onClick={onClose}>
