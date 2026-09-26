@@ -13,14 +13,35 @@ def test_serpapi_params_one_way_and_round_trip():
     assert rt["type"] == 1 and rt["travel_class"] == 1 and rt["return_date"] == "2027-03-20"
 
 
+def _leg(airline, cabin):
+    return {"airline": airline, "travel_class": cabin}
+
+
 def test_serpapi_lowest_fare_across_best_and_other():
     resp = {
-        "best_flights": [{"price": 900, "flights": [{"airline": "Delta"}]}],
-        "other_flights": [{"price": 750, "flights": [{"airline": "Air India"}, {"airline": "United"}]}, {"flights": []}],
+        "best_flights": [{"price": 900, "flights": [_leg("Delta", "Economy")]}],
+        "other_flights": [
+            {"price": 750, "flights": [_leg("Air India", "Economy"), _leg("United", "Economy")]},
+            {"flights": []},
+        ],
         "price_insights": {"price_level": "low"},
     }
-    assert serpapi_flights.lowest_fare(resp) == {"price": 750, "airlines": ["Air India", "United"], "price_level": "low"}
-    assert serpapi_flights.lowest_fare({}) is None
+    assert serpapi_flights.lowest_fare(resp, "economy") == {
+        "price": 750, "airlines": ["Air India", "United"], "price_level": "low"
+    }
+    assert serpapi_flights.lowest_fare({}, "economy") is None
+
+
+def test_serpapi_business_ignores_mixed_cabin_itineraries():
+    # Real shape seen for ATL-NRT: cheapest "business" result had a premium economy leg.
+    resp = {
+        "other_flights": [
+            {"price": 2695, "flights": [_leg("WestJet", "Premium Economy"), _leg("WestJet", "Business Class")]},
+            {"price": 4913, "flights": [_leg("Air Canada", "Business Class"), _leg("Air Canada", "Business Class")]},
+        ]
+    }
+    assert serpapi_flights.lowest_fare(resp, "business")["price"] == 4913
+    assert serpapi_flights.lowest_fare(resp, "premium_economy") is None
 
 
 def test_rewardscc_ratios_map_to_our_currencies_and_ignore_bonus():

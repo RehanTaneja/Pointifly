@@ -25,9 +25,26 @@ def build_params(trip: dict, cabin: str, currency: str = "USD") -> dict:
     return params
 
 
-def lowest_fare(response: dict) -> dict | None:
-    """Cheapest itinerary across best_flights and other_flights, or None if nothing priced."""
-    itineraries = [i for i in response.get("best_flights", []) + response.get("other_flights", []) if i.get("price")]
+# Segment travel_class labels as returned by Google Flights (e.g. "Business Class").
+CABIN_WORD = {"economy": "economy", "premium_economy": "premium", "business": "business", "first": "first"}
+
+
+def _segment_cabin(label: str | None) -> str:
+    return (label or "").lower().split(" ")[0]
+
+
+def lowest_fare(response: dict, cabin: str) -> dict | None:
+    """Cheapest itinerary whose every segment is in `cabin`, or None if nothing qualifies.
+
+    Google Flights' "business" results include mixed-cabin trips (e.g. a premium economy
+    connection); those would understate what a full business award is worth.
+    """
+    want = CABIN_WORD[cabin]
+    itineraries = [
+        i
+        for i in response.get("best_flights", []) + response.get("other_flights", [])
+        if i.get("price") and i.get("flights") and all(_segment_cabin(f.get("travel_class")) == want for f in i["flights"])
+    ]
     if not itineraries:
         return None
     best = min(itineraries, key=lambda i: i["price"])

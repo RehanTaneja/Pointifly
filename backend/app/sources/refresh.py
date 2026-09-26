@@ -3,6 +3,7 @@
   python -m app.sources.refresh --dry-run     # show planned calls, no keys needed
   python -m app.sources.refresh --fares       # SERPAPI_KEY: live Google Flights cash fares
   python -m app.sources.refresh --fares --force   # re-fetch even fares fetched recently
+  python -m app.sources.refresh --reparse     # re-read saved raw responses: no API calls, no key
   python -m app.sources.refresh --transfers   # REWARDSCC_KEY: transfer partners + ratios
 
 Snapshots keep the demo working offline and stretch SerpApi's 100 free searches/month.
@@ -12,7 +13,7 @@ import argparse
 import json
 from datetime import datetime, timedelta, timezone
 
-from ..data_store import SNAPSHOT_PATH, load_base_dataset
+from ..data_store import DATA_DIR, SNAPSHOT_PATH, load_base_dataset
 from . import rewardscc, serpapi_flights
 from .http import env
 
@@ -32,6 +33,7 @@ def fare_searches(ds: dict) -> list[tuple[str, dict, dict]]:
 
 
 FRESH_FOR = timedelta(days=3)
+RAW_DIR = DATA_DIR / "raw"  # full API responses (git-ignored) so re-parsing never spends quota
 
 
 def is_fresh(entry: dict | None, params: dict) -> bool:
@@ -41,17 +43,30 @@ def is_fresh(entry: dict | None, params: dict) -> bool:
     return datetime.now(timezone.utc) - datetime.fromisoformat(entry["fetched_at"]) < FRESH_FOR
 
 
-def refresh_fares(ds: dict, snap: dict, api_key: str, force: bool = False) -> None:
+def refresh_fares(ds: dict, snap: dict, api_key: str | None, force: bool = False, reparse: bool = False) -> None:
     fares = snap.setdefault("cash_fares", {})
     for key, trip, params in fare_searches(ds):
-        if not force and is_fresh(fares.get(key), params):
+        cabin = key.split(":")[1]
+        raw_path = RAW_DIR / f"serpapi_{key.replace(':', '_')}.json"
+        if reparse:
+            raw = json.loads(raw_path.read_text()) if raw_path.exists() else None
+            if not raw or raw["params"] != params:
+                print(f"  {key}: no saved response for this search, skipping")
+                continue
+            response, fetched_at = raw["response"], raw["fetched_at"]
+        elif not force and is_fresh(fares.get(key), params):
             print(f"  {key}: fetched {fares[key]['fetched_at'][:10]}, skipping (use --force to re-fetch)")
             continue
-        fare = serpapi_flights.lowest_fare(serpapi_flights.search(params, api_key))
+        else:
+            response, fetched_at = serpapi_flights.search(params, api_key), _now()
+            RAW_DIR.mkdir(exist_ok=True)
+            raw_path.write_text(json.dumps({"params": params, "fetched_at": fetched_at, "response": response}))
+        fare = serpapi_flights.lowest_fare(response, cabin)
         if fare is None:
-            print(f"  {key}: no priced itineraries, keeping previous value")
+            fares.pop(key, None)
+            print(f"  {key}: no itinerary fully in {cabin}, using sample value")
             continue
-        fares[key] = {**fare, "source": "Google Flights via SerpApi", "fetched_at": _now(), "params": params}
+        fares[key] = {**fare, "source": "Google Flights via SerpApi", "fetched_at": fetched_at, "params": params}
         print(f"  {key}: ${fare['price']} ({', '.join(fare['airlines'])})")
 
 
@@ -75,6 +90,7 @@ def main() -> None:
     ap.add_argument("--transfers", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true", help="re-fetch fares fetched in the last 3 days")
+    ap.add_argument("--reparse", action="store_true", help="re-parse saved raw responses without API calls")
     args = ap.parse_args()
     ds = load_base_dataset()
 
@@ -87,6 +103,9 @@ def main() -> None:
         return
 
     snap = json.loads(SNAPSHOT_PATH.read_text()) if SNAPSHOT_PATH.exists() else {}
+    if args.reparse:
+        print("refresh_fares (reparse):")
+        refresh_fares(ds, snap, None, reparse=True)
     for flag, name, fn in ((args.fares, "SERPAPI_KEY", refresh_fares), (args.transfers, "REWARDSCC_KEY", refresh_transfers)):
         if not flag:
             continue

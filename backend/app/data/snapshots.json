@@ -1,0 +1,133 @@
+{
+  "cash_fares": {
+    "mia:economy": {
+      "price": 127,
+      "airlines": [
+        "Frontier"
+      ],
+      "price_level": "high",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T01:49:58+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "ATL",
+        "arrival_id": "MIA",
+        "outbound_date": "2026-11-20",
+        "travel_class": 1,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "lhr:business": {
+      "price": 2424,
+      "airlines": [
+        "Icelandair",
+        "JetBlue"
+      ],
+      "price_level": "typical",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T01:49:58+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "ATL",
+        "arrival_id": "LHR",
+        "outbound_date": "2027-01-15",
+        "travel_class": 3,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "lhr:economy": {
+      "price": 359,
+      "airlines": [
+        "JetBlue"
+      ],
+      "price_level": "typical",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T01:49:58+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "ATL",
+        "arrival_id": "LHR",
+        "outbound_date": "2027-01-15",
+        "travel_class": 1,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "del:business": {
+      "price": 3884,
+      "airlines": [
+        "American",
+        "Finnair"
+      ],
+      "price_level": "high",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T01:49:58+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "ATL",
+        "arrival_id": "DEL",
+        "outbound_date": "2027-03-12",
+        "travel_class": 3,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "del:economy": {
+      "price": 427,
+      "airlines": [
+        "Ethiopian"
+      ],
+      "price_level": "high",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T01:49:58+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "ATL",
+        "arrival_id": "DEL",
+        "outbound_date": "2027-03-12",
+        "travel_class": 1,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "nrt:business": {
+      "price": 4913,
+      "airlines": [
+        "Air Canada"
+      ],
+      "price_level": "typical",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T01:49:58+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "ATL",
+        "arrival_id": "NRT",
+        "outbound_date": "2027-05-14",
+        "travel_class": 3,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "nrt:economy": {
+      "price": 922,
+      "airlines": [
+        "China Airlines",
+        "WestJet"
+      ],
+      "price_level": "typical",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T01:49:58+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "ATL",
+        "arrival_id": "NRT",
+        "outbound_date": "2027-05-14",
+        "travel_class": 1,
+        "currency": "USD",
+        "type": 2
+      }
+    }
+  }
+}
