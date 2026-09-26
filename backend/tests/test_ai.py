@@ -84,6 +84,8 @@ def test_setup_creates_everything_once(fake_ai):
     assert "interruption" not in cc["conversation"]["client_events"]  # background voices can't cut it off
     assert {"audio", "agent_response", "user_transcript"} <= set(cc["conversation"]["client_events"])
     assert cc["turn"]["turn_eagerness"] == "patient" and "Aeroplan" in cc["asr"]["keywords"]
+    rule = voice.PRONUNCIATION_RULES[0]  # the name is spoken as "Point-ih-fly"
+    assert rule["string_to_replace"] == "Pointifly" and cc["tts"]["pronunciation_dictionary_locators"][0]["pronunciation_dictionary_id"] == "dict_test"
 
 
 def test_knowledge_base_holds_only_public_reference_data():
