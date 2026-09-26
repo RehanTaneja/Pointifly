@@ -1,0 +1,89 @@
+{
+  "_note": "SAMPLE DATA for development. Award prices, cash prices and balances are placeholders, not live quotes. Verify transfer partners/ratios before the demo.",
+  "currencies": [
+    {
+      "id": "amex_mr",
+      "name": "Amex Membership Rewards",
+      "transfers": { "aeroplan": 1.0, "british_airways": 1.0, "flying_blue": 1.0, "virgin_atlantic": 1.0, "ana": 1.0 }
+    },
+    {
+      "id": "chase_ur",
+      "name": "Chase Ultimate Rewards",
+      "transfers": { "aeroplan": 1.0, "united": 1.0, "british_airways": 1.0, "flying_blue": 1.0, "virgin_atlantic": 1.0 }
+    },
+    {
+      "id": "capital_one",
+      "name": "Capital One Miles",
+      "transfers": { "aeroplan": 1.0, "british_airways": 1.0, "flying_blue": 1.0, "virgin_atlantic": 1.0, "turkish": 1.0 }
+    }
+  ],
+  "programs": [
+    { "id": "aeroplan", "name": "Air Canada Aeroplan" },
+    { "id": "united", "name": "United MileagePlus" },
+    { "id": "british_airways", "name": "British Airways Club (Avios)" },
+    { "id": "flying_blue", "name": "Air France-KLM Flying Blue" },
+    { "id": "virgin_atlantic", "name": "Virgin Atlantic Flying Club" },
+    { "id": "ana", "name": "ANA Mileage Club" },
+    { "id": "turkish", "name": "Turkish Airlines Miles&Smiles" }
+  ],
+  "sample_balances": [
+    { "holding": "amex_mr", "points": 100000 },
+    { "holding": "chase_ur", "points": 120000 },
+    { "holding": "capital_one", "points": 80000 },
+    { "holding": "united", "points": 100000 }
+  ],
+  "sample_trips": [
+    {
+      "id": "mia",
+      "label": "Miami",
+      "origin": "ATL",
+      "destination": "MIA",
+      "month": "2027-03",
+      "cabin": "economy",
+      "cash_price_usd": 180,
+      "award_options": [
+        { "program": "british_airways", "points": 18000 },
+        { "program": "united", "points": 15000 }
+      ]
+    },
+    {
+      "id": "lhr",
+      "label": "London",
+      "origin": "ATL",
+      "destination": "LHR",
+      "month": "2027-05",
+      "cabin": "economy",
+      "cash_price_usd": 750,
+      "award_options": [
+        { "program": "flying_blue", "points": 30000 },
+        { "program": "virgin_atlantic", "points": 100000, "cabin": "business", "cash_price_usd": 3000 }
+      ]
+    },
+    {
+      "id": "del",
+      "label": "Delhi",
+      "origin": "ATL",
+      "destination": "DEL",
+      "month": "2027-08",
+      "cabin": "business",
+      "cash_price_usd": 4500,
+      "award_options": [
+        { "program": "aeroplan", "points": 90000 },
+        { "program": "united", "points": 90000, "cash_price_usd": 2650 }
+      ]
+    },
+    {
+      "id": "nrt",
+      "label": "Tokyo",
+      "origin": "ATL",
+      "destination": "NRT",
+      "month": "2027-11",
+      "cabin": "business",
+      "cash_price_usd": 5280,
+      "award_options": [
+        { "program": "virgin_atlantic", "points": 88000 },
+        { "program": "aeroplan", "points": 80000, "cabin": "economy", "cash_price_usd": 1500 }
+      ]
+    }
+  ]
+}
