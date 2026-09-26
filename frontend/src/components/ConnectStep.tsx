@@ -60,22 +60,20 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
 
       {status === null ? (
         <p className="muted small">Checking Plaid…</p>
-      ) : status.configured && status.presentation ? (
-        // Pitch UI: one button; connects the demo profile through Plaid's API (no Plaid test pages).
+      ) : status.configured && status.env === 'sandbox' ? (
+        // Sandbox: Plaid Link's phone screen can't finish (Sandbox sends no codes to real numbers), so
+        // one button connects the demo profile through Plaid's Sandbox API instead.
         <div className="row">
-          <button className="primary" disabled={busy} onClick={() => run(async () => (await plaid.sandboxDemo()).cards)}>
+          <button className="primary pay-button" disabled={busy} onClick={() => run(async () => (await plaid.sandboxDemo()).cards)}>
+            {busy && <span className="button-spinner" />}
             {busy ? 'Connecting your cards…' : 'Connect with Plaid'}
           </button>
+          {!status.presentation && <span className="tag">Plaid Sandbox</span>}
         </div>
       ) : status.configured ? (
         <div className="row">
           <PlaidLinkButton disabled={busy} onCards={(c) => run(async () => c)} onError={setError} />
-          {status.env === 'sandbox' && (
-            <button disabled={busy} onClick={() => run(async () => (await plaid.sandboxDemo()).cards)}>
-              {busy ? 'Connecting…' : 'Use Sandbox demo cards'}
-            </button>
-          )}
-          <span className="tag">Plaid {status.env}</span>
+          {!status.presentation && <span className="tag">Plaid {status.env}</span>}
         </div>
       ) : (
         <MockConnect disabled={busy} linked={new Set(cards.map((c) => c.institution))} onCards={addCards} />

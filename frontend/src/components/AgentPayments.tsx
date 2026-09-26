@@ -1,13 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { fmtUsd, getAgentStatus, PAYMENTS_CHANGED, setMandate, type AgentStatus, type PayResult } from '../api'
+import { fmtUsd, getAgentStatus, PAYMENTS_CHANGED, setMandate, type AgentStatus } from '../api'
+import { AGENT_CONTEXT } from './VoiceAgent'
 
 // The user's mandate for the agent: autopay on/off and spending limits, enforced by the server,
 // plus the audit log of every payment attempt (paid or blocked, and why).
-export function AgentPayments({ planId, onPaidChange }: { planId: string; onPaidChange: (ids: string[]) => void }) {
+type Props = {
+  planId: string
+  onPaidChange: (ids: string[]) => void
+  onAutopayChange: (on: boolean) => void // the app-wide switch (also on the agent page)
+}
+
+export function AgentPayments({ planId, onPaidChange, onAutopayChange }: Props) {
   const [status, setStatus] = useState<AgentStatus | null>(null)
   const [limits, setLimits] = useState({ per: 1000, total: 2500 })
-  const [toast, setToast] = useState<PayResult | null>(null)
 
   const refresh = useCallback(() => {
     getAgentStatus(planId)
@@ -21,20 +26,23 @@ export function AgentPayments({ planId, onPaidChange }: { planId: string; onPaid
 
   useEffect(() => {
     refresh()
-    const onChange = (e: Event) => {
-      refresh()
-      const r = (e as CustomEvent<PayResult>).detail
-      if (r?.decision === 'paid') {
-        setToast(r)
-        setTimeout(() => setToast(null), 4500)
-      }
-    }
-    window.addEventListener(PAYMENTS_CHANGED, onChange)
-    return () => window.removeEventListener(PAYMENTS_CHANGED, onChange)
+    window.addEventListener(PAYMENTS_CHANGED, refresh)
+    return () => window.removeEventListener(PAYMENTS_CHANGED, refresh)
   }, [refresh])
 
-  const save = (autopay: boolean, per = limits.per, total = limits.total) =>
-    setMandate(planId, autopay, per, total).then(setStatus).catch(() => undefined)
+  // New limits apply on the server at once; the plan card and a live agent are told too.
+  const saveLimits = () =>
+    setMandate(planId, status!.autopay, limits.per, limits.total)
+      .then((s) => {
+        setStatus(s)
+        window.dispatchEvent(new Event(PAYMENTS_CHANGED))
+        window.dispatchEvent(
+          new CustomEvent(AGENT_CONTEXT, {
+            detail: `The user changed the spending limits to ${fmtUsd(s.max_per_payment)} per payment and ${fmtUsd(s.max_total)} total. Trips within the new limits can now be paid after one confirmation.`,
+          }),
+        )
+      })
+      .catch(() => undefined)
 
   if (!status) return null
   const legs = Object.keys(status.cash_legs).length
@@ -43,14 +51,14 @@ export function AgentPayments({ planId, onPaidChange }: { planId: string; onPaid
       <div className="row between">
         <h2>Agent payments</h2>
         <label className="switch small">
-          <input type="checkbox" checked={status.autopay} onChange={(e) => save(e.target.checked)} />
-          <span>Let Pointifly pay cash trips for me</span>
+          <input type="checkbox" checked={status.autopay} onChange={(e) => onAutopayChange(e.target.checked)} />
+          <span>Autonomous payments</span>
         </label>
       </div>
       <p className="muted small">
         {status.autopay
-          ? `Ask Pointifly to book and it pays the plan's ${legs} cash trip${legs === 1 ? '' : 's'} with Visa, within your limits.`
-          : 'Autopay is off: Pointifly can plan and explain, but only you can pay.'}{' '}
+          ? `Pointifly asks once, then pays the plan's ${legs} cash trip${legs === 1 ? '' : 's'} with Visa, within your limits.`
+          : 'Autonomous payments are off: Pointifly can plan and explain, but only you can pay.'}{' '}
         The amount and card always come from the plan; limits are enforced by the server.
       </p>
       <div className="row limits">
@@ -62,7 +70,7 @@ export function AgentPayments({ planId, onPaidChange }: { planId: string; onPaid
           Max total
           <input type="number" min={1} max={50000} value={limits.total} onChange={(e) => setLimits({ ...limits, total: Number(e.target.value) })} />
         </label>
-        <button onClick={() => save(status.autopay)} disabled={limits.per === status.max_per_payment && limits.total === status.max_total}>
+        <button onClick={saveLimits} disabled={limits.per === status.max_per_payment && limits.total === status.max_total}>
           Save limits
         </button>
       </div>
@@ -86,21 +94,6 @@ export function AgentPayments({ planId, onPaidChange }: { planId: string; onPaid
             </li>
           ))}
         </ul>
-      )}
-      {toast && createPortal(
-        <div className="toast" role="status">
-          <svg className="checkmark small-check" viewBox="0 0 52 52" aria-hidden="true">
-            <circle className="checkmark-circle" cx="26" cy="26" r="24" />
-            <path className="checkmark-check" d="M15 27 l7 7 l15 -15" />
-          </svg>
-          <div>
-            <strong>Pointifly paid {status.cash_legs[toast.trip_id ?? '']?.label}</strong>
-            <div className="small">
-              {fmtUsd(toast.amount ?? 0)} with {toast.card} · +{(toast.earned_points ?? 0).toLocaleString()} points
-            </div>
-          </div>
-        </div>,
-        document.body,
       )}
     </section>
   )

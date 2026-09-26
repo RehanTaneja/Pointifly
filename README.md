@@ -41,7 +41,7 @@ Code: `backend/app/optimizer.py` (model), `backend/app/planning.py` (explanation
 ## Layout
 
 - `backend/`: FastAPI + OR-Tools. Data in `backend/app/data/`, integrations in `app/plaid/`, `app/visa/`, `app/sources/`.
-- `frontend/`: Vite + React + TypeScript. Flow: connect cards (Plaid) → balances + trips (add your own route, date and cabin, or load the sample year) → optimize → Greedy vs. Pointifly dashboard, Sankey, flight details, Visa travel benefits → Visa checkout for cash legs.
+- `frontend/`: Vite + React + TypeScript. Flow: connect cards (Plaid) → the agent page (the voice agent starts on its own: it asks for balances and trips, explains the transfer ratios, optimizes, and pays cash trips with Visa after one confirmation; an Autonomous payments switch, on by default, hands payment back to the user's Pay with Visa button) → or Manual mode (type or parse balances and trips, add your own route, date and cabin) → Greedy vs. Pointifly dashboard, Sankey, flight details, Visa travel benefits, agent payment limits and audit log.
 
 ## Run locally
 

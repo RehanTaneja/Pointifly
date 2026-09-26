@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   cabinLabel,
   fmtMoney,
@@ -14,6 +14,7 @@ import {
 import { AgentPayments } from './AgentPayments'
 import { AwardSourceNote } from './AwardSourceNote'
 import { CheckoutModal } from './CheckoutModal'
+import { CountUp } from './CountUp'
 import { FareDetails } from './FareDetails'
 import { VisaBenefits } from './VisaBenefits'
 import { FlowSankey } from './FlowSankey'
@@ -24,6 +25,8 @@ type Props = {
   currencies: Currency[]
   cardIds: string[]
   onReset: () => void
+  onBack: () => void
+  onAutopayChange: (on: boolean) => void
 }
 
 function describe(a: Allocation, names: Record<string, string>, currencies: Currency[]) {
@@ -83,7 +86,7 @@ function StrategyColumn({ s, names, currencies, highlight }: ColumnProps) {
   )
 }
 
-export function Dashboard({ result, holdingNames, currencies, cardIds, onReset }: Props) {
+export function Dashboard({ result, holdingNames, currencies, cardIds, onReset, onBack, onAutopayChange }: Props) {
   const [checkout, setCheckout] = useState<Allocation | null>(null)
   const [paid, setPaid] = useState<Set<string>>(new Set())
   const syncPaid = useCallback((ids: string[]) => setPaid(new Set(ids)), [])
@@ -138,11 +141,14 @@ export function Dashboard({ result, holdingNames, currencies, cardIds, onReset }
         </section>
       )}
 
-      {result.plan_id && <AgentPayments planId={result.plan_id} onPaidChange={syncPaid} />}
+      {result.plan_id && <AgentPayments planId={result.plan_id} onPaidChange={syncPaid} onAutopayChange={onAutopayChange} />}
 
       <VisaBenefits cardIds={cardIds} />
 
-      <div className="row end">
+      <div className="row between">
+        <button className="link" onClick={onBack}>
+          ← Back
+        </button>
         <button onClick={onReset}>Start over</button>
       </div>
 
@@ -160,25 +166,6 @@ export function Dashboard({ result, holdingNames, currencies, cardIds, onReset }
       )}
     </div>
   )
-}
-
-// Numbers ease up from zero when the dashboard appears.
-function CountUp({ value, format }: { value: number; format: (n: number) => string }) {
-  const [reduced] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
-  const [shown, setShown] = useState(0)
-  const raf = useRef(0)
-  useEffect(() => {
-    if (reduced) return
-    const start = performance.now()
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / 900)
-      setShown(value * (1 - Math.pow(1 - t, 3)))
-      if (t < 1) raf.current = requestAnimationFrame(tick)
-    }
-    raf.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf.current)
-  }, [value, reduced])
-  return <>{format(Math.round(reduced ? value : shown))}</>
 }
 
 const cpp = (s: StrategyResult) => (s.total_points ? (s.total_value_usd / s.total_points) * 100 : 0)

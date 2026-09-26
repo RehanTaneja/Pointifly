@@ -245,7 +245,7 @@ export const plaid = {
 
 export type PlaidStatus = { configured: boolean; env: string; presentation: boolean }
 
-export const optimize = (balances: Balance[], trips: Trip[], cards?: string[]) =>
+export const optimize = (balances: Balance[], trips: Trip[], cards?: string[], autopay = true) =>
   request<OptimizeResponse>('/api/optimize', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -257,6 +257,7 @@ export const optimize = (balances: Balance[], trips: Trip[], cards?: string[]) =
         .filter((t) => t.custom)
         .map((t) => ({ origin: t.origin, destination: t.destination, date: t.outbound_date, cabin: t.cabin, label: t.custom_label })),
       cards,
+      autopay,
     }),
   })
 

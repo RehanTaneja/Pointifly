@@ -47,8 +47,8 @@ class Plan:
 _PLANS: dict[str, Plan] = {}
 
 
-def register(allocations: list) -> str:
-    """Record a plan's cash legs (from the optimizer) and return its id."""
+def register(allocations: list, autopay: bool = True) -> str:
+    """Record a plan's cash legs (from the optimizer) and return its id. autopay is the user's choice."""
     legs = {
         a.trip_id: {
             "label": a.trip_label,
@@ -63,7 +63,7 @@ def register(allocations: list) -> str:
     if len(_PLANS) >= MAX_PLANS:
         _PLANS.pop(next(iter(_PLANS)))
     plan_id = secrets.token_urlsafe(12)
-    _PLANS[plan_id] = Plan(legs)
+    _PLANS[plan_id] = Plan(legs, Mandate(autopay=autopay))
     return plan_id
 
 

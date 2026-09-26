@@ -45,7 +45,7 @@ def optimize(req: OptimizeRequest | None = None) -> OptimizeResponse:
     if unknown:
         raise HTTPException(400, f"Unknown card products: {unknown}")
     result = Planner(*_inputs(req, load_dataset()), card_ids=req.cards).run()
-    result.plan_id = agentpay.register(result.portfolio.allocations)  # server-side copy for payments
+    result.plan_id = agentpay.register(result.portfolio.allocations, autopay=req.autopay)  # server-side copy for payments
     return result
 
 
