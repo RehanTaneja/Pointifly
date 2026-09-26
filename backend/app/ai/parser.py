@@ -74,7 +74,9 @@ Rules:
 - Balances: map each program mentioned to one of these ids; "100k" means 100000. Only include
   programs the traveler states a number for. Programs:
 {programs}
-- Trips: one entry per destination. Use the main international airport's IATA code. Origin is
+- Trips: one entry per destination. Use the main international airport's IATA code (New York -> JFK,
+  London -> LHR, Tokyo -> NRT, Paris -> CDG, Shanghai -> PVG, Beijing -> PEK, Chicago -> ORD), never a
+  city code such as NYC, LON, TYO or PAR. Origin is
   {home_airport} unless they say otherwise. Dates must be after today and within {MAX_DAYS_AHEAD} days:
   if only a month is given, use the 15th of its next occurrence and set date_is_estimate true.
 - Cabin: economy unless they say premium economy, business or first.

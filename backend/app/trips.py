@@ -7,6 +7,7 @@ from datetime import date, timedelta
 from .charts import PRICERS, airports, chart_options
 from .fares import SearchBudgetExceeded, get_fare
 from .visa import fx
+from .sources.http import env
 
 CABINS = ["economy", "premium_economy", "business", "first"]
 RANK = {c: i for i, c in enumerate(CABINS)}
@@ -33,6 +34,11 @@ def effective_trip(base: dict, cabin: str) -> dict:
     if fare:
         trip["cash_price_usd"] = fare["price"]
     elif cabin != base["cabin"] or base.get("cash_price_usd") is None:
+        if not env("SERPAPI_KEY"):  # saved fares only: say so, instead of "not found"
+            raise FareUnavailable(
+                f"No saved {cabin.replace('_', ' ')} fare for {base['label']}, and live flight search is off "
+                "(SERPAPI_KEY not set). Start the backend with the key to price new routes."
+            )
         raise FareUnavailable(f"No {cabin.replace('_', ' ')} fare found for {base['label']}")
     trip["fare"] = fare
 
@@ -84,9 +90,19 @@ def _city(code: str) -> str:
     return re.sub(r"\s*\(.*\)", "", name).strip() or code
 
 
+# Metropolitan (city) codes cover several airports and can't be searched as one: people say "New York"
+# and get NYC. Each maps to the city's main international airport.
+METRO_CODES = {
+    "NYC": "JFK", "LON": "LHR", "TYO": "NRT", "PAR": "CDG", "CHI": "ORD", "WAS": "IAD", "MIL": "MXP",
+    "ROM": "FCO", "SEL": "ICN", "BJS": "PEK", "OSA": "KIX", "STO": "ARN", "MOW": "SVO", "BUE": "EZE",
+    "SAO": "GRU", "RIO": "GIG", "YTO": "YYZ", "YMQ": "YUL", "JKT": "CGK", "BER": "BER", "DTT": "DTW",
+}
+
+
 def custom_trip(origin: str, destination: str, outbound_date: str, cabin: str, label: str | None = None) -> dict:
     """A user-entered trip. Its id comes from route + date, so the same trip reuses its saved fare."""
     origin, destination = origin.strip().upper(), destination.strip().upper()
+    origin, destination = METRO_CODES.get(origin, origin), METRO_CODES.get(destination, destination)
     ap = airports()
     for code in (origin, destination):
         if code not in ap:

@@ -48,6 +48,7 @@ export default function App() {
   const inputApi = useRef<InputApi | null>(null)
   const lastInputs = useRef<{ balances: Balance[]; trips: Trip[] } | null>(null)
   const resultRef = useRef<OptimizeResponse | null>(null)
+  const lastError = useRef<string | null>(null) // why the last optimize failed, for the agent to say
   const stepRef = useRef(step)
   const autopayRef = useRef(autopay)
   useEffect(() => {
@@ -88,7 +89,8 @@ export default function App() {
       }
       return r
     } catch (e) {
-      setError((e as Error).message)
+      lastError.current = (e as Error).message
+      setError(lastError.current)
       if (!inPlace) setStep('manual')
       return null
     }
@@ -142,8 +144,8 @@ export default function App() {
       const r = await runOptimize(inputs.balances, inputs.trips, stepRef.current === 'agent')
       const hold = Math.max(0, MIN_WORKING_MS - (Date.now() - began)) // saved fares are instant: keep "working" visible
       if (!r) {
-        visaMoment({ id: 'fx', kind: 'held', title: 'Foreign Exchange Rates API', detail: 'The optimizer could not run' })
-        return 'The optimizer could not run: check the trips on screen.'
+        visaMoment({ id: 'fx', kind: 'dismiss', title: '' }) // not a Visa failure: don't show it as one
+        return `The optimizer could not run: ${lastError.current ?? 'check the trips on screen'}. Tell the user this reason plainly.`
       }
       const fx = [...new Set(r.portfolio.allocations.flatMap((a) => (a.local_fx?.currency ? [a.local_fx.currency] : [])))]
       if (fx.length) status(`Visa Foreign Exchange Rates API: USD → ${fx.join(', ')} (Sandbox sample rates)`)

@@ -106,3 +106,15 @@ def test_identical_search_reuses_a_saved_fare(fake_serpapi):
     assert fake_serpapi.calls == []
     alloc = r["portfolio"]["allocations"][0]
     assert alloc["trip_id"] == "c-ATL-NRT-2027-05-14" and alloc["fare"]["price"] == fares.read_snapshot()["cash_fares"]["nrt:business"]["price"]
+
+
+def test_city_codes_become_the_main_airport():
+    t = custom_trip("NYC", "SFO", DAY, "economy")  # "New York" often comes back as the NYC city code
+    assert t["origin"] == "JFK" and t["id"] == f"c-JFK-SFO-{DAY}"
+
+
+def test_no_saved_fare_with_search_off_says_so(fake_serpapi, monkeypatch):
+    monkeypatch.setenv("SERPAPI_KEY", "")
+    r = api.post("/api/optimize", json=body({"origin": "DEL", "destination": "BOM", "date": DAY, "cabin": "business"}))
+    assert r.status_code == 422 and "live flight search is off" in r.json()["detail"]
+    assert fake_serpapi.calls == []

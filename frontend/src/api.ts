@@ -211,7 +211,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, init)
   if (!res.ok) {
     const detail = await res.json().then((b) => b.detail).catch(() => null)
-    throw new Error(detail ?? `${init?.method ?? 'GET'} ${path} failed: ${res.status}`)
+    // Validation errors arrive as a list of {loc, msg}: turn them into one readable line.
+    const text = Array.isArray(detail)
+      ? detail.map((d: { loc?: unknown[]; msg?: string }) => `${(d.loc ?? []).slice(1).join(' › ')}: ${d.msg}`).join('; ')
+      : detail
+    throw new Error(text || `${init?.method ?? 'GET'} ${path} failed: ${res.status}`)
   }
   return res.json() as Promise<T>
 }
