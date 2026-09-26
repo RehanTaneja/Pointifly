@@ -1,9 +1,26 @@
 """Every test runs against fake Visa and Google Flights (SerpApi) APIs with temporary caches and
 snapshot copies, so the suite never spends real API calls or edits committed data files."""
 
+import os
 import shutil
+import urllib.request
 
 import pytest
+
+LIVE = os.environ.get("RUN_LIVE_TESTS") == "1"
+
+
+@pytest.fixture(autouse=True)
+def block_real_network(monkeypatch):
+    """Safety net: no test reaches a real API (and spends quota) unless RUN_LIVE_TESTS=1."""
+    if LIVE:
+        return
+
+    def blocked(req, *a, **k):
+        url = req.full_url if hasattr(req, "full_url") else str(req)
+        raise RuntimeError(f"real network call blocked in tests: {url.split('?')[0]}")
+
+    monkeypatch.setattr(urllib.request, "urlopen", blocked)
 
 from app import data_store, fares
 from app.sources import serpapi_flights
@@ -125,6 +142,8 @@ class FakeElevenLabs:
             return {"id": f"tool_{body['tool_config']['name']}"}
         if path == "/v1/convai/agents/create":
             return {"agent_id": "agent_test"}
+        if method == "PATCH" and path.startswith("/v1/convai/agents/"):
+            return {"agent_id": path.rsplit("/", 1)[1]}
         raise AssertionError(f"unexpected ElevenLabs call {method} {path}")
 
 

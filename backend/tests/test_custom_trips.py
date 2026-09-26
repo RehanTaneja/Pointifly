@@ -50,6 +50,7 @@ def test_custom_trip_priced_live_once_then_reused(fake_serpapi):
     r2 = api.post("/api/optimize", json=body(paris())).json()
     assert len(fake_serpapi.calls) == 1  # saved fare reused on the second run
     alloc = r1["portfolio"]["allocations"][0]
+    r1.pop("plan_id"), r2.pop("plan_id")  # each run registers its own plan for payments
     assert alloc["trip_label"] == "Paris" and r1 == r2
     # Charts price the new route automatically: Aeroplan and ANA business ATL-CDG.
     if alloc["method"] == "points":
@@ -96,3 +97,12 @@ def test_airport_search():
     assert "CDG" in codes and "ORY" in codes
     assert api.get("/api/airports?q=cdg").json()[0]["code"] == "CDG"
     assert api.get("/api/airports?q=p").json() == []
+
+
+def test_identical_search_reuses_a_saved_fare(fake_serpapi):
+    # Same route, date and cabin as the sample Tokyo trip: the same Google Flights search, so no new one.
+    tokyo = {"origin": "ATL", "destination": "NRT", "date": "2027-05-14", "cabin": "business"}
+    r = api.post("/api/optimize", json=body(tokyo)).json()
+    assert fake_serpapi.calls == []
+    alloc = r["portfolio"]["allocations"][0]
+    assert alloc["trip_id"] == "c-ATL-NRT-2027-05-14" and alloc["fare"]["price"] == fares.read_snapshot()["cash_fares"]["nrt:business"]["price"]

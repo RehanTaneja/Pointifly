@@ -499,6 +499,199 @@
         "currency": "USD",
         "type": 2
       }
+    },
+    "c-ATL-MIA-2027-03-15:premium_economy": {
+      "price": 168,
+      "airlines": [
+        "Frontier"
+      ],
+      "price_level": null,
+      "itinerary": {
+        "total_duration_min": 127,
+        "flights": [
+          {
+            "airline": "Frontier",
+            "flight_number": "F9 3442",
+            "from": "ATL",
+            "to": "MIA",
+            "departs": "2027-03-15 10:30",
+            "arrives": "2027-03-15 12:37",
+            "duration_min": 127,
+            "travel_class": "Premium Economy",
+            "airplane": "Airbus A321neo"
+          }
+        ],
+        "layovers": []
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI3LTAzLTE1agcIARIDQVRMcgcIARIDTUlBQAFIAnABmAEC&tfu=EgIIAQ",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T18:55:04+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "ATL",
+        "arrival_id": "MIA",
+        "outbound_date": "2027-03-15",
+        "travel_class": 2,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "c-ATL-LHR-2027-05-15:economy": {
+      "price": 408,
+      "airlines": [
+        "Delta",
+        "Virgin Atlantic"
+      ],
+      "price_level": "low",
+      "itinerary": {
+        "total_duration_min": 980,
+        "flights": [
+          {
+            "airline": "Delta",
+            "flight_number": "DL 2386",
+            "from": "ATL",
+            "to": "JFK",
+            "departs": "2027-05-15 22:40",
+            "arrives": "2027-05-16 00:59",
+            "duration_min": 139,
+            "travel_class": "Economy",
+            "airplane": "Boeing 737"
+          },
+          {
+            "airline": "Virgin Atlantic",
+            "flight_number": "VS 26",
+            "from": "JFK",
+            "to": "LHR",
+            "departs": "2027-05-16 08:05",
+            "arrives": "2027-05-16 20:00",
+            "duration_min": 415,
+            "travel_class": "Economy",
+            "airplane": "Airbus A330-900neo"
+          }
+        ],
+        "layovers": [
+          {
+            "airport": "JFK",
+            "duration_min": 426
+          }
+        ]
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI3LTA1LTE1agcIARIDQVRMcgcIARIDTEhSQAFIAXABmAEC&tfu=EgIIAQ",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T18:55:06+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "ATL",
+        "arrival_id": "LHR",
+        "outbound_date": "2027-05-15",
+        "travel_class": 1,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "c-ATL-DEL-2027-08-15:economy": {
+      "price": 562,
+      "airlines": [
+        "Turkish Airlines"
+      ],
+      "price_level": "high",
+      "itinerary": {
+        "total_duration_min": 1290,
+        "flights": [
+          {
+            "airline": "Turkish Airlines",
+            "flight_number": "TK 32",
+            "from": "ATL",
+            "to": "IST",
+            "departs": "2027-08-15 21:50",
+            "arrives": "2027-08-16 15:40",
+            "duration_min": 650,
+            "travel_class": "Economy",
+            "airplane": "Boeing 787"
+          },
+          {
+            "airline": "Turkish Airlines",
+            "flight_number": "TK 716",
+            "from": "IST",
+            "to": "DEL",
+            "departs": "2027-08-16 20:15",
+            "arrives": "2027-08-17 04:50",
+            "duration_min": 365,
+            "travel_class": "Economy",
+            "airplane": "Airbus A330"
+          }
+        ],
+        "layovers": [
+          {
+            "airport": "IST",
+            "duration_min": 275
+          }
+        ]
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI3LTA4LTE1agcIARIDQVRMcgcIARIDREVMQAFIAXABmAEC&tfu=EgIIAQ",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T18:55:12+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "ATL",
+        "arrival_id": "DEL",
+        "outbound_date": "2027-08-15",
+        "travel_class": 1,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "c-ATL-HND-2026-11-15:economy": {
+      "price": 819,
+      "airlines": [
+        "Turkish Airlines"
+      ],
+      "price_level": "typical",
+      "itinerary": {
+        "total_duration_min": 1915,
+        "flights": [
+          {
+            "airline": "Turkish Airlines",
+            "flight_number": "TK 32",
+            "from": "ATL",
+            "to": "IST",
+            "departs": "2026-11-15 21:50",
+            "arrives": "2026-11-16 16:40",
+            "duration_min": 650,
+            "travel_class": "Economy",
+            "airplane": "Boeing 787"
+          },
+          {
+            "airline": "Turkish Airlines",
+            "flight_number": "TK 198",
+            "from": "IST",
+            "to": "HND",
+            "departs": "2026-11-17 02:30",
+            "arrives": "2026-11-17 19:45",
+            "duration_min": 675,
+            "travel_class": "Economy",
+            "airplane": "Boeing 777"
+          }
+        ],
+        "layovers": [
+          {
+            "airport": "IST",
+            "duration_min": 590
+          }
+        ]
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI2LTExLTE1agcIARIDQVRMcgcIARIDSE5EQAFIAXABmAEC&tfu=EgIIAQ",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T18:55:14+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "ATL",
+        "arrival_id": "HND",
+        "outbound_date": "2026-11-15",
+        "travel_class": 1,
+        "currency": "USD",
+        "type": 2
+      }
     }
   }
 }

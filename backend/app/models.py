@@ -20,6 +20,7 @@ class OptimizeRequest(BaseModel):
     cabins: dict[str, str] = {}  # trip id -> cabin override
     custom_trips: list[CustomTrip] = []
     cards: list[str] | None = None  # the user's card product ids (from Plaid); None = default profile
+    autopay: bool = True  # the user's choice: may the agent pay this plan's cash trips on its own
 
 
 class Allocation(BaseModel):
@@ -64,6 +65,7 @@ class SankeyLink(BaseModel):
 
 class OptimizeResponse(BaseModel):
     mock: bool
+    plan_id: str | None = None  # server-side record of the plan's cash legs (payments use it)
     greedy: StrategyResult
     portfolio: StrategyResult
     points_saved: int

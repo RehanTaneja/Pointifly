@@ -2,6 +2,7 @@
 the live Sandbox test runs automatically when PLAID_CLIENT_ID / PLAID_SECRET are set."""
 
 import json
+import os
 
 import pytest
 from fastapi.testclient import TestClient
@@ -123,7 +124,7 @@ def test_link_token_and_exchange_flow(fake):
     pt = client.sandbox_public_token("ins_109508", "user_custom", json.dumps({"override_accounts": [
         {"type": "credit", "subtype": "credit card", "meta": {"name": "American Express Gold Card", "mask": "1005"}}]}))
     r = api.post("/api/plaid/exchange", json={"public_token": pt, "institution_name": "American Express"}).json()
-    assert r["cards"] == [{"product_id": "amex_gold", "account_id": "acc0", "institution": "American Express",
+    assert r["cards"] == [{"product_id": "amex_gold", "network": "amex", "tier": None, "account_id": "acc0", "institution": "American Express",
                            "product": "American Express Gold Card", "mask": "1005", "holding": "amex_mr", "note": None}]
     assert "access" not in json.dumps(r)  # access tokens stay server-side
     assert list(routes._CONNECTIONS) == [r["connection_id"]]
@@ -157,7 +158,10 @@ def test_plaid_errors_surface_as_502(fake, monkeypatch):
     assert r.status_code == 502 and "INVALID_API_KEYS" in r.json()["detail"]
 
 
-@pytest.mark.skipif(not client.configured() or client.plaid_env() != "sandbox", reason="no Plaid Sandbox keys in backend/.env")
+@pytest.mark.skipif(
+    os.environ.get("RUN_LIVE_TESTS") != "1" or not client.configured() or client.plaid_env() != "sandbox",
+    reason="live test: set RUN_LIVE_TESTS=1 (and Plaid Sandbox keys) to run",
+)
 def test_live_sandbox_demo():
     routes._CONNECTIONS.clear()
     r = api.post("/api/plaid/sandbox_demo")

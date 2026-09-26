@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from .data_store import holding_names, load_dataset
 from .models import OptimizeRequest, OptimizeResponse
 from .planning import Planner
+from . import agentpay
+from .agentpay_routes import router as agentpay_router
 from .ai.routes import router as ai_router
 from .plaid.routes import router as plaid_router
 from .visa.routes import router as visa_router
@@ -15,6 +17,7 @@ app = FastAPI(title="Pointifly API")
 app.include_router(plaid_router)
 app.include_router(visa_router)
 app.include_router(ai_router)
+app.include_router(agentpay_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -41,7 +44,9 @@ def optimize(req: OptimizeRequest | None = None) -> OptimizeResponse:
     unknown = [c for c in req.cards or [] if c not in card_rewards.cards()]
     if unknown:
         raise HTTPException(400, f"Unknown card products: {unknown}")
-    return Planner(*_inputs(req, load_dataset()), card_ids=req.cards).run()
+    result = Planner(*_inputs(req, load_dataset()), card_ids=req.cards).run()
+    result.plan_id = agentpay.register(result.portfolio.allocations, autopay=req.autopay)  # server-side copy for payments
+    return result
 
 
 def _inputs(req: OptimizeRequest, ds: dict) -> tuple[list[dict], dict[str, int]]:

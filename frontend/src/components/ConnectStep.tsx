@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { usePlaidLink } from 'react-plaid-link'
 import { plaid, type LinkedCard, type PlaidStatus } from '../api'
+import { VisaMark } from './VisaImpact'
 
 export type { LinkedCard }
 
@@ -48,6 +50,7 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
   }
 
   const mapped = cards.filter((c) => c.holding)
+  const visaCards = cards.filter((c) => c.network === 'visa').length
 
   return (
     <section className="card">
@@ -59,22 +62,20 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
 
       {status === null ? (
         <p className="muted small">Checking Plaid…</p>
-      ) : status.configured && status.presentation ? (
-        // Pitch UI: one button; connects the demo profile through Plaid's API (no Plaid test pages).
+      ) : status.configured && status.env === 'sandbox' ? (
+        // Sandbox: Plaid Link's phone screen can't finish (Sandbox sends no codes to real numbers), so
+        // one button connects the demo profile through Plaid's Sandbox API instead.
         <div className="row">
-          <button className="primary" disabled={busy} onClick={() => run(async () => (await plaid.sandboxDemo()).cards)}>
+          <button className="primary pay-button" disabled={busy} onClick={() => run(async () => (await plaid.sandboxDemo()).cards)}>
+            {busy && <span className="button-spinner" />}
             {busy ? 'Connecting your cards…' : 'Connect with Plaid'}
           </button>
+          {!status.presentation && <span className="tag">Plaid Sandbox</span>}
         </div>
       ) : status.configured ? (
         <div className="row">
           <PlaidLinkButton disabled={busy} onCards={(c) => run(async () => c)} onError={setError} />
-          {status.env === 'sandbox' && (
-            <button disabled={busy} onClick={() => run(async () => (await plaid.sandboxDemo()).cards)}>
-              {busy ? 'Connecting…' : 'Use Sandbox demo cards'}
-            </button>
-          )}
-          <span className="tag">Plaid {status.env}</span>
+          {!status.presentation && <span className="tag">Plaid {status.env}</span>}
         </div>
       ) : (
         <MockConnect disabled={busy} linked={new Set(cards.map((c) => c.institution))} onCards={addCards} />
@@ -83,6 +84,7 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
       {error && <div className="banner error small">{error}</div>}
 
       {cards.length > 0 && (
+        <div className="table-wrap">
         <table className="table">
           <thead>
             <tr>
@@ -96,8 +98,9 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
               <tr key={`${c.institution}-${c.product}-${c.mask ?? ''}`} className={c.holding ? '' : 'muted'}>
                 <td>{c.institution}</td>
                 <td>
-                  {c.product}
+                  {c.network === 'visa' && <VisaMark />} {c.product}
                   {c.mask && <span className="muted"> ···{c.mask}</span>}
+                  {c.network === 'visa' && <div className="muted small">{c.tier ? `${c.tier} · ` : ''}pays your cash trips and earns points</div>}
                 </td>
                 <td>
                   {c.holding ? holdingNames[c.holding] : 'Not a program Pointifly models'}
@@ -107,11 +110,19 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
             ))}
           </tbody>
         </table>
+        </div>
+      )}
+
+      {visaCards > 0 && (
+        <p className="visa-note small">
+          <VisaMark /> {visaCards} Visa card{visaCards === 1 ? '' : 's'} linked: Pointifly picks the best one for each cash trip and
+          pays through Visa's Cybersource gateway.
+        </p>
       )}
 
       <div className="row end">
         <button className="primary" disabled={mapped.length === 0} onClick={() => onDone(mapped)}>
-          Continue
+          Continue<span className="arrow">→</span>
         </button>
       </div>
     </section>
@@ -159,7 +170,7 @@ function MockConnect(props: { disabled: boolean; linked: Set<string>; onCards: (
         </button>
         <span className="muted small">Plaid keys not set on the server: using a mock.</span>
       </div>
-      {open && (
+      {open && createPortal(
         <div className="modal-backdrop" onClick={() => setOpen(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Select your institution</h3>
@@ -179,7 +190,8 @@ function MockConnect(props: { disabled: boolean; linked: Set<string>; onCards: (
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   )

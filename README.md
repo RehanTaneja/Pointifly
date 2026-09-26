@@ -10,6 +10,21 @@ Connect your cards, enter your point balances and trips, and Pointifly decides f
 - **ElevenLabs** is the voice orchestrator (voice, or "Type instead" for a text chat with the same agent, tools and knowledge base). Its tools are *client tools* that run in the browser against the local backend (`fill_trip_plan`, `run_optimizer`, `explain_trip`), so balances, cards and trips never live on ElevenLabs; the agent only receives short summaries. The API key stays on the server; the browser gets a 15-minute signed URL.
 - **Knowledge base (RAG):** public reference data only (official transfer ratios, award charts, card earn rates, how the optimizer decides). A test fails if any key or user data appears in it. Credentials never go into the knowledge base.
 
+## Agent payments and guardrails
+
+The agent can pay the plan's cash trips on its own ("book it"), but only inside a mandate the **server** enforces, so a tampered request or a prompt injection can't get around it:
+
+- **Autopay toggle:** the user can turn agent payments off at any time (the agent then tells them to tap Pay).
+- **Spending limits:** per payment and total, set by the user.
+- **Fixed by the plan:** the agent only names a trip; the amount and Visa card come from the server's copy of the plan. Only cash trips of the current plan can be paid.
+- **No double charging, and a cap on attempts per minute** (stops runaway loops).
+- **Two paths:** `/api/agent/pay` (the agent's only payment tool; toggle and limits always apply) and `/api/pay` (the user's own tap). The agent has no tool that reaches the user path.
+- **Strict inputs:** unknown fields are rejected (the agent can't send an amount or card), ids and trip names are limited to safe characters, limits are bounded. Pointifly has no SQL database, and no request data is used to build a query or command.
+- **Audit log:** every attempt (paid, blocked and why, and the gateway's real answer) is shown to the user.
+- **Card data:** Pointifly never stores or handles card numbers. Plaid returns card names and masks; checkout uses Cybersource's test card server-side. A production build would use Cybersource tokenization so card numbers never touch our servers.
+
+`backend/tests/test_agent_payments.py` attacks each rule (SQL-injection payloads in every field, prompt-injection phrasing, tampered amounts and cards, limits, the toggle, double charging, loops) and checks that nothing reaches the payment gateway when a rule blocks it. Tests can't reach real APIs: `conftest.py` blocks network access unless `RUN_LIVE_TESTS=1`.
+
 ## How the optimizer works
 
 Not ML or AI. It's a **mathematical optimization model** (an integer program) solved exactly with Google OR-Tools CP-SAT:
@@ -26,7 +41,7 @@ Code: `backend/app/optimizer.py` (model), `backend/app/planning.py` (explanation
 ## Layout
 
 - `backend/`: FastAPI + OR-Tools. Data in `backend/app/data/`, integrations in `app/plaid/`, `app/visa/`, `app/sources/`.
-- `frontend/`: Vite + React + TypeScript. Flow: connect cards (Plaid) → balances + trips (add your own route, date and cabin, or load the sample year) → optimize → Greedy vs. Pointifly dashboard, Sankey, flight details, Visa travel benefits → Visa checkout for cash legs.
+- `frontend/`: Vite + React + TypeScript. Flow: connect cards (Plaid) → the agent page (the voice agent starts on its own: it asks for balances and trips, explains the transfer ratios, optimizes, and pays cash trips with Visa after one confirmation; an Autonomous payments switch, on by default, hands payment back to the user's Pay with Visa button) → or Manual mode (type or parse balances and trips, add your own route, date and cabin) → Greedy vs. Pointifly dashboard, Sankey, flight details, Visa travel benefits, agent payment limits and audit log.
 
 ## Run locally
 
@@ -40,6 +55,15 @@ cd frontend && npm install && npm run dev
 ```
 
 Open http://localhost:5173 (Vite proxies `/api` to `:8000`). Copy `backend/.env.example` to `backend/.env` for the integrations below; everything falls back to cached or sample data without keys.
+
+## Deploy (Vultr or any Ubuntu 24.04 server)
+
+```bash
+./deploy/deploy.sh root@SERVER_IP                            # https://SERVER_IP.sslip.io
+ACCESS_PASSWORD=choose-one ./deploy/deploy.sh root@SERVER_IP  # same, behind a password (user "demo")
+```
+
+Builds the frontend, copies the code plus `backend/.env` and `backend/secrets/` over SSH, and runs the API as a single uvicorn process (plans and payment mandates are in memory) behind Caddy, which serves the frontend, proxies `/api` and gets an HTTPS certificate (browsers only allow the microphone over HTTPS). Presentation mode is on for the server. Re-run to update; the server keeps its own caches and API usage counters.
 
 ## Data sources
 
