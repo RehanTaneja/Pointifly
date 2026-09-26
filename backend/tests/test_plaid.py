@@ -123,8 +123,8 @@ def test_link_token_and_exchange_flow(fake):
     pt = client.sandbox_public_token("ins_109508", "user_custom", json.dumps({"override_accounts": [
         {"type": "credit", "subtype": "credit card", "meta": {"name": "American Express Gold Card", "mask": "1005"}}]}))
     r = api.post("/api/plaid/exchange", json={"public_token": pt, "institution_name": "American Express"}).json()
-    assert r["cards"] == [{"account_id": "acc0", "institution": "American Express", "product": "American Express Gold Card",
-                           "mask": "1005", "holding": "amex_mr", "note": None}]
+    assert r["cards"] == [{"product_id": "amex_gold", "account_id": "acc0", "institution": "American Express",
+                           "product": "American Express Gold Card", "mask": "1005", "holding": "amex_mr", "note": None}]
     assert "access" not in json.dumps(r)  # access tokens stay server-side
     assert list(routes._CONNECTIONS) == [r["connection_id"]]
 

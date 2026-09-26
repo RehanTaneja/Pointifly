@@ -19,6 +19,7 @@ class OptimizeRequest(BaseModel):
     trip_ids: list[str] = []
     cabins: dict[str, str] = {}  # trip id -> cabin override
     custom_trips: list[CustomTrip] = []
+    cards: list[str] | None = None  # the user's card product ids (from Plaid); None = default profile
 
 
 class Allocation(BaseModel):
@@ -38,6 +39,7 @@ class Allocation(BaseModel):
     fare: dict | None = None  # live cash fare for this cabin: price, itinerary, google_flights_url
     award_source: dict | None = None  # where the points price came from: official chart or sample
     local_fx: dict | None = None  # Visa rate USD -> destination currency: {currency, rate, date, source}
+    payment_card: dict | None = None  # Visa card that pays a cash leg and the points it earns
 
 
 class StrategyResult(BaseModel):
@@ -46,6 +48,7 @@ class StrategyResult(BaseModel):
     total_points: int
     total_value_usd: float
     cash_out_of_pocket_usd: float
+    points_earned: int = 0  # earned paying cash legs with Visa cards
     remaining_balances: list[Balance]
 
 

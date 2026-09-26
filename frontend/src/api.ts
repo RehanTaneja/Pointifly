@@ -98,7 +98,38 @@ export type Allocation = {
   award_points: number
   award_source: AwardSource | null
   local_fx: FxRate | null
+  payment_card: PaymentCard | null
 }
+
+// The Visa card that pays a cash leg, and what it earns (official issuer earn rates).
+export type PaymentCard = {
+  id: string
+  name: string
+  tier: string | null
+  holding: string
+  rate: number
+  earned_points: number
+  source_url: string | null
+}
+
+export type CheckoutResult = {
+  http_status: number
+  status: string
+  id: string | null
+  approval_code: string | null
+  reconciliation_id: string | null
+  message: string | null
+  amount_usd: number
+  test_card_last4: string
+  environment: string
+  trigger_range_warning: boolean
+  card: string
+  repeat?: boolean
+}
+
+export const payWithVisa = (trip_id: string, amount_usd: number, card_id: string) =>
+  post<CheckoutResult>('/api/visa/checkout', { trip_id, amount_usd, card_id })
+export const getVisaStatus = () => request<{ configured: boolean; checkout_configured: boolean }>('/api/visa/status')
 
 // Visa FX rate; `date` is when Pointifly retrieved it from Visa.
 export type FxRate = { currency?: string; rate: number; date: string; source: string }
@@ -131,6 +162,7 @@ export type StrategyResult = {
   total_points: number
   total_value_usd: number
   cash_out_of_pocket_usd: number
+  points_earned: number
   remaining_balances: Balance[]
 }
 
@@ -156,6 +188,7 @@ export const getDataset = () => request<Dataset>('/api/dataset')
 
 // A credit card detected through Plaid (or the mock), mapped to the points program it earns.
 export type LinkedCard = {
+  product_id?: string | null // card product (for Visa earn rates), e.g. chase_sapphire_preferred
   institution: string
   product: string
   holding: string | null
@@ -180,7 +213,7 @@ export const plaid = {
 
 export type PlaidStatus = { configured: boolean; env: string; presentation: boolean }
 
-export const optimize = (balances: Balance[], trips: Trip[]) =>
+export const optimize = (balances: Balance[], trips: Trip[], cards?: string[]) =>
   request<OptimizeResponse>('/api/optimize', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -191,6 +224,7 @@ export const optimize = (balances: Balance[], trips: Trip[]) =>
       custom_trips: trips
         .filter((t) => t.custom)
         .map((t) => ({ origin: t.origin, destination: t.destination, date: t.outbound_date, cabin: t.cabin, label: t.custom_label })),
+      cards,
     }),
   })
 

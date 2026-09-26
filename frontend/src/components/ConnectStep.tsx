@@ -6,15 +6,15 @@ export type { LinkedCard }
 
 // Used only when the backend has no Plaid keys: a clearly labeled stand-in for Plaid Link.
 const MOCK_INSTITUTIONS: { institution: string; cards: Omit<LinkedCard, 'institution'>[] }[] = [
-  { institution: 'American Express', cards: [{ product: 'American Express Gold Card', holding: 'amex_mr' }] },
+  { institution: 'American Express', cards: [{ product: 'American Express Gold Card', holding: 'amex_mr', product_id: 'amex_gold' }] },
   {
     institution: 'Chase',
     cards: [
-      { product: 'Chase Sapphire Preferred', holding: 'chase_ur' },
-      { product: 'United Explorer Card', holding: 'united' },
+      { product: 'Chase Sapphire Preferred', holding: 'chase_ur', product_id: 'chase_sapphire_preferred' },
+      { product: 'United Explorer Card', holding: 'united', product_id: 'united_explorer' },
     ],
   },
-  { institution: 'Capital One', cards: [{ product: 'Capital One Venture Rewards', holding: 'capital_one' }] },
+  { institution: 'Capital One', cards: [{ product: 'Capital One Venture Rewards', holding: 'capital_one', product_id: 'capital_one_venture' }] },
 ]
 
 type Props = { holdingNames: Record<string, string>; onDone: (cards: LinkedCard[]) => void }

@@ -25,7 +25,7 @@ export default function App() {
     setStep('loading')
     try {
       setError(null)
-      setResult(await optimize(balances, trips))
+      setResult(await optimize(balances, trips, cards.flatMap((c) => (c.product_id ? [c.product_id] : []))))
       setStep('dashboard')
     } catch (e) {
       setError((e as Error).message)

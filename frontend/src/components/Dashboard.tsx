@@ -24,7 +24,12 @@ type Props = {
 }
 
 function describe(a: Allocation, names: Record<string, string>, currencies: Currency[]) {
-  if (a.method === 'cash') return `Pay cash · ${fmtUsd(a.cash_usd)}`
+  if (a.method === 'cash') {
+    const c = a.payment_card
+    return c
+      ? `Pay cash · ${fmtUsd(a.cash_usd)} with ${c.name} · earns ${fmtPts(c.earned_points)} ${names[c.holding]} (${c.rate}x)`
+      : `Pay cash · ${fmtUsd(a.cash_usd)}`
+  }
   const from = a.sources.map((s) => {
     if (s.holding === a.program) return `${fmtPts(s.points)} miles`
     const d = currencies.find((c) => c.id === s.holding)?.transfer_details[a.program!]
@@ -53,6 +58,9 @@ function StrategyColumn({ s, names, currencies, highlight }: ColumnProps) {
           <div className="muted small">cash</div>
         </div>
       </div>
+      {s.points_earned > 0 && (
+        <div className="small earned">+{fmtPts(s.points_earned)} points earned paying cash with Visa</div>
+      )}
       <ul className="allocs">
         {s.allocations.map((a) => (
           <li key={a.trip_id}>
@@ -81,7 +89,7 @@ export function Dashboard({ result, holdingNames, currencies, onReset }: Props) 
     <>
       <div className="banner">
         {result.portfolio.allocations.some((a) => a.fare)
-          ? 'Cash fares are live from Google Flights. Aeroplan and ANA award prices come from their official published charts (availability not checked); other programs use sample prices. Currency conversions use Visa FX rates.'
+          ? 'Cash fares are live from Google Flights. Aeroplan and ANA award prices come from their official published charts (availability not checked); other programs use sample prices. Currency conversions use Visa FX Sandbox rates: sample data, not live market rates.'
           : 'Sample data: award and cash prices are placeholders, not live quotes.'}
       </div>
 
@@ -113,9 +121,9 @@ export function Dashboard({ result, holdingNames, currencies, onReset }: Props) 
                 {a.local_fx && <LocalRate fx={a.local_fx} />}
               </span>
               {paid.has(a.trip_id) ? (
-                <span className="tag ok">Paid (demo)</span>
+                <span className="tag ok">Authorized · Sandbox</span>
               ) : (
-                <button className="primary" onClick={() => setCheckout(a)}>
+                <button className="primary" onClick={() => setCheckout(a)} disabled={!a.payment_card}>
                   Pay with Visa
                 </button>
               )}
@@ -133,11 +141,9 @@ export function Dashboard({ result, holdingNames, currencies, onReset }: Props) 
       {checkout && (
         <CheckoutModal
           allocation={checkout}
+          holdingNames={holdingNames}
           onClose={() => setCheckout(null)}
-          onPaid={() => {
-            setPaid((prev) => new Set(prev).add(checkout.trip_id))
-            setCheckout(null)
-          }}
+          onPaid={() => setPaid((prev) => new Set(prev).add(checkout.trip_id))}
         />
       )}
     </>
@@ -172,7 +178,8 @@ function Headline({ r }: { r: OptimizeResponse }) {
 function LocalRate({ fx }: { fx: NonNullable<Allocation['local_fx']> }) {
   return (
     <div className="muted small">
-      Local currency: {fmtMoney(1, 'USD')} = {fmtMoney(fx.rate, fx.currency!)} · Visa rate, retrieved {fx.date}
+      Local currency: {fmtMoney(1, 'USD')} = {fmtMoney(fx.rate, fx.currency!)}{' '}
+      <span className="tag warn">Visa Sandbox sample rate · not live</span>
     </div>
   )
 }

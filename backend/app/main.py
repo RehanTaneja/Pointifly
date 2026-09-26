@@ -6,6 +6,7 @@ from .models import OptimizeRequest, OptimizeResponse
 from .planning import Planner
 from .plaid.routes import router as plaid_router
 from .visa.routes import router as visa_router
+from . import card_rewards
 from .charts import airports
 from .trips import CABINS, MAX_TRIPS, FareUnavailable, custom_trip, effective_trip
 
@@ -34,7 +35,11 @@ def dataset() -> dict:
 @app.post("/api/optimize", response_model=OptimizeResponse)
 def optimize(req: OptimizeRequest | None = None) -> OptimizeResponse:
     """Greedy vs. portfolio over the given balances and trips (defaults: sample data)."""
-    return Planner(*_inputs(req or OptimizeRequest(), load_dataset())).run()
+    req = req or OptimizeRequest()
+    unknown = [c for c in req.cards or [] if c not in card_rewards.cards()]
+    if unknown:
+        raise HTTPException(400, f"Unknown card products: {unknown}")
+    return Planner(*_inputs(req, load_dataset()), card_ids=req.cards).run()
 
 
 def _inputs(req: OptimizeRequest, ds: dict) -> tuple[list[dict], dict[str, int]]:

@@ -22,7 +22,7 @@ export function AwardSourceNote({ a }: { a: Allocation }) {
           {src.fee.usd ? (
             <span className="muted">
               {' '}
-              ≈ {fmtMoney(src.fee.usd.amount, 'USD')} at the Visa rate (retrieved {src.fee.usd.date}), included in the plan
+              ≈ {fmtMoney(src.fee.usd.amount, 'USD')} at a Visa Sandbox sample rate (not live), included in the plan
             </span>
           ) : (
             <span className="muted"> (not converted: no Visa rate available)</span>

@@ -1,6 +1,7 @@
 """Runs greedy and portfolio optimizers and turns their plans into the API response,
 including a plain-English reason for every decision."""
 
+from . import card_rewards
 from .data_store import holding_names, load_dataset
 from .models import Allocation, Balance, OptimizeResponse, StrategyResult
 from .optimizer import CASH, Plan, TripPlan, greedy, solve
@@ -46,7 +47,7 @@ def _describe_change(before: TripPlan, after: TripPlan, names: dict[str, str]) -
 
 
 class Planner:
-    def __init__(self, trips: list[dict], balances: dict[str, int]):
+    def __init__(self, trips: list[dict], balances: dict[str, int], card_ids: list[str] | None = None):
         ds = load_dataset()
         self.trips = trips
         # Fixed holding order so tie-breaks don't depend on the order the client sent.
@@ -58,13 +59,20 @@ class Planner:
             c["id"]: {pid: d["increment"] for pid, d in c["transfer_details"].items()} for c in ds["currencies"]
         }
         self.reserve_default = ds["reserve_value_cpp"]["default"]
-        self.reserve = {h: ds["reserve_value_cpp"].get(h, self.reserve_default) for h in balances}
+        # Visa cards that can pay cash legs (default: the Visa cards that earn into the user's holdings).
+        if card_ids is None:
+            card_ids = [cid for cid, c in card_rewards.cards().items() if c["earns"] in balances]
+        self.visa_ids = card_rewards.visa_card_ids(card_ids)
+        self.earn = {t["id"]: card_rewards.earn_options(t, self.visa_ids) for t in trips}
+        holdings = set(balances) | {h for opts in self.earn.values() for _, h, _ in opts}
+        self.reserve = {h: ds["reserve_value_cpp"].get(h, self.reserve_default) for h in holdings}
 
     def _solve(self, trips: list[dict], balances: dict[str, int], force_points: str | None = None) -> Plan | None:
-        return solve(trips, balances, self.transfers, self.reserve, force_points, self.increments)
+        earn = {t["id"]: self.earn.get(t["id"], []) for t in trips}
+        return solve(trips, balances, self.transfers, self.reserve, force_points, self.increments, earn)
 
     def run(self) -> OptimizeResponse:
-        g = greedy(self.trips, self.balances, self.transfers, self.reserve, self.increments)
+        g = greedy(self.trips, self.balances, self.transfers, self.reserve, self.increments, self.earn)
         p = self._solve(self.trips, self.balances)
         assert p is not None  # paying cash for everything is always feasible
         greedy_res = self._result("Greedy (trip-by-trip)", g, self._greedy_reason)
@@ -136,6 +144,7 @@ class Planner:
                     fare=tp.trip.get("fare") if is_cash else _award_option(tp).get("fare"),
                     award_source=None if is_cash else _award_option(tp).get("award_source"),
                     local_fx=tp.trip.get("local_fx"),
+                    payment_card=self._payment_card(tp),
                 )
             )
         return StrategyResult(
@@ -144,8 +153,24 @@ class Planner:
             total_points=sum(a.points for a in allocs),
             total_value_usd=sum(a.value_usd for a in allocs),
             cash_out_of_pocket_usd=sum(a.cash_usd for a in allocs),
+            points_earned=sum(a.payment_card["earned_points"] for a in allocs if a.payment_card),
             remaining_balances=[Balance(holding=h, points=v) for h, v in plan.balances_after.items()],
         )
+
+    def _payment_card(self, tp: TripPlan) -> dict | None:
+        if not tp.card:
+            return None
+        cid, holding, pts = tp.card
+        c = card_rewards.cards()[cid]
+        return {
+            "id": cid,
+            "name": c["name"],
+            "tier": c["tier"],
+            "holding": holding,
+            "rate": card_rewards.airfare_rate(cid, (tp.trip.get("fare") or {}).get("airlines")),
+            "earned_points": pts,
+            "source_url": c["source_url"],
+        }
 
     def _sankey(self, result: StrategyResult) -> dict[str, list]:
         """holding -> program -> trip, plus holding -> 'Preserved' for unspent points. Units: points."""

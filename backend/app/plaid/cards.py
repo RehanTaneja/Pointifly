@@ -2,6 +2,8 @@
 
 import re
 
+from ..card_rewards import product_id
+
 # (pattern on the card's official_name or name, holding id, note). First match wins, so the
 # more specific patterns (co-branded cards) come before the issuer's general points cards.
 RULES: list[tuple[str, str | None, str | None]] = [
@@ -36,8 +38,10 @@ def cards_from_accounts(accounts_response: dict, institution: str | None = None)
         if acct.get("type") != "credit":
             continue
         holding, note = classify(acct)
+        name = acct.get("official_name") or acct.get("name") or ""
         out.append(
             {
+                "product_id": product_id(name),
                 "account_id": acct.get("account_id"),
                 "institution": inst,
                 "product": acct.get("official_name") or acct.get("name") or "Credit card",

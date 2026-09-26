@@ -71,3 +71,29 @@ def fake_serpapi(monkeypatch, tmp_path):
     data_store.load_dataset.cache_clear()
     yield fake
     data_store.load_dataset.cache_clear()
+
+
+class FakeCybersource:
+    """Mimics Cybersource's create-payment responses (documented fields); records requests."""
+
+    def __init__(self):
+        self.requests: list[dict] = []
+        self.response = (201, {"id": "7400000000000000000000", "status": "AUTHORIZED", "reconciliationId": "R123",
+                               "processorInformation": {"approvalCode": "831000"}})
+
+    def __call__(self, config, body):
+        assert config["run_environment"] == "apitest.cybersource.com"
+        self.requests.append(body)
+        return self.response
+
+
+@pytest.fixture(autouse=True)
+def fake_cybersource(monkeypatch):
+    from app.cybersource import checkout
+
+    fake = FakeCybersource()
+    monkeypatch.setattr(checkout, "_send", fake)
+    monkeypatch.setattr(checkout, "_PAID", {})
+    for k, v in {"CYBERSOURCE_MERCHANT_ID": "test_merchant", "CYBERSOURCE_KEY_ID": "kid", "CYBERSOURCE_SECRET_KEY": "c2VjcmV0"}.items():
+        monkeypatch.setenv(k, v)
+    return fake
