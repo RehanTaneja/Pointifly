@@ -4,9 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from .data_store import holding_names, load_dataset
 from .models import OptimizeRequest, OptimizeResponse
 from .planning import Planner
+from .plaid.routes import router as plaid_router
 from .trips import CABINS, FareUnavailable, effective_trip
 
 app = FastAPI(title="Pointfolio API")
+app.include_router(plaid_router)
 
 app.add_middleware(
     CORSMiddleware,

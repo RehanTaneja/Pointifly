@@ -60,7 +60,7 @@ export default function App() {
           <InputStep
             dataset={dataset}
             holdingNames={names}
-            linkedHoldings={cards.map((c) => c.holding)}
+            linkedHoldings={[...new Set(cards.flatMap((c) => (c.holding ? [c.holding] : [])))]}
             onOptimize={runOptimize}
           />
         </div>

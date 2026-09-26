@@ -127,6 +127,31 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const getDataset = () => request<Dataset>('/api/dataset')
 
+// A credit card detected through Plaid (or the mock), mapped to the points program it earns.
+export type LinkedCard = {
+  institution: string
+  product: string
+  holding: string | null
+  note?: string | null
+  mask?: string | null
+  stands_in_for?: string // Sandbox demo: the issuer a test bank stands in for
+}
+
+const post = <T,>(path: string, body?: unknown) =>
+  request<T>(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
+
+export const plaid = {
+  status: () => request<{ configured: boolean; env: string }>('/api/plaid/status'),
+  linkToken: () => post<{ link_token: string }>('/api/plaid/link_token'),
+  exchange: (public_token: string, institution_name: string | null) =>
+    post<{ connection_id: string; cards: LinkedCard[] }>('/api/plaid/exchange', { public_token, institution_name }),
+  sandboxDemo: () => post<{ cards: LinkedCard[]; sandbox: boolean }>('/api/plaid/sandbox_demo'),
+}
+
 export const optimize = (balances: Balance[], trips: Trip[]) =>
   request<OptimizeResponse>('/api/optimize', {
     method: 'POST',

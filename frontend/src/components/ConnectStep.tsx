@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { usePlaidLink } from 'react-plaid-link'
+import { plaid, type LinkedCard } from '../api'
 
-// Mock of Plaid Link (Sandbox). The real flow will return card product names from
-// Plaid, which we auto-map to the loyalty holding they earn into.
-export type LinkedCard = { institution: string; product: string; holding: string }
+export type { LinkedCard }
 
-const SANDBOX_INSTITUTIONS: { institution: string; cards: Omit<LinkedCard, 'institution'>[] }[] = [
+// Used only when the backend has no Plaid keys: a clearly labeled stand-in for Plaid Link.
+const MOCK_INSTITUTIONS: { institution: string; cards: Omit<LinkedCard, 'institution'>[] }[] = [
   { institution: 'American Express', cards: [{ product: 'American Express Gold Card', holding: 'amex_mr' }] },
   {
     institution: 'Chase',
@@ -13,34 +14,65 @@ const SANDBOX_INSTITUTIONS: { institution: string; cards: Omit<LinkedCard, 'inst
       { product: 'United Explorer Card', holding: 'united' },
     ],
   },
-  { institution: 'Capital One', cards: [{ product: 'Capital One Venture', holding: 'capital_one' }] },
+  { institution: 'Capital One', cards: [{ product: 'Capital One Venture Rewards', holding: 'capital_one' }] },
 ]
 
 type Props = { holdingNames: Record<string, string>; onDone: (cards: LinkedCard[]) => void }
 
 export function ConnectStep({ holdingNames, onDone }: Props) {
-  const [linked, setLinked] = useState<LinkedCard[]>([])
-  const [modalOpen, setModalOpen] = useState(false)
-  const linkedInstitutions = new Set(linked.map((c) => c.institution))
+  const [status, setStatus] = useState<{ configured: boolean; env: string } | null>(null)
+  const [cards, setCards] = useState<LinkedCard[]>([])
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const link = (institution: string) => {
-    const inst = SANDBOX_INSTITUTIONS.find((i) => i.institution === institution)!
-    setLinked((prev) => [...prev, ...inst.cards.map((c) => ({ ...c, institution }))])
-    setModalOpen(false)
+  useEffect(() => {
+    plaid.status().then(setStatus).catch(() => setStatus({ configured: false, env: 'sandbox' }))
+  }, [])
+
+  const addCards = (more: LinkedCard[]) =>
+    setCards((prev) => [...prev, ...more.filter((c) => !prev.some((p) => p.product === c.product && p.mask === c.mask))])
+
+  const run = async (fn: () => Promise<LinkedCard[]>) => {
+    setBusy(true)
+    setError(null)
+    try {
+      addCards(await fn())
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setBusy(false)
+    }
   }
+
+  const mapped = cards.filter((c) => c.holding)
 
   return (
     <section className="card">
       <h2>1. Connect your cards</h2>
       <p className="muted">
-        Link each issuer once. We detect your card products and map them to the points programs they earn.
+        Link each issuer once. We detect your card products and map them to the points programs they earn. Point
+        balances stay manual (no aggregator exposes them).
       </p>
 
-      <button className="primary" onClick={() => setModalOpen(true)}>
-        Connect with Plaid <span className="tag">Sandbox · mock</span>
-      </button>
+      {status === null ? (
+        <p className="muted small">Checking Plaid…</p>
+      ) : status.configured ? (
+        <div className="row">
+          <PlaidLinkButton disabled={busy} onCards={(c) => run(async () => c)} onError={setError} />
+          {status.env === 'sandbox' && (
+            <button disabled={busy} onClick={() => run(async () => (await plaid.sandboxDemo()).cards)}>
+              {busy ? 'Connecting…' : 'Use Sandbox demo cards'}
+            </button>
+          )}
+          <span className="tag">Plaid {status.env}</span>
+        </div>
+      ) : (
+        <MockConnect disabled={busy} linked={new Set(cards.map((c) => c.institution))} onCards={addCards} />
+      )}
 
-      {linked.length > 0 && (
+      {error && <div className="banner error small">{error}</div>}
+
+      {cards.length > 0 && (
         <table className="table">
           <thead>
             <tr>
@@ -50,11 +82,20 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
             </tr>
           </thead>
           <tbody>
-            {linked.map((c) => (
-              <tr key={c.product}>
-                <td>{c.institution}</td>
-                <td>{c.product}</td>
-                <td>{holdingNames[c.holding]}</td>
+            {cards.map((c) => (
+              <tr key={`${c.institution}-${c.product}-${c.mask ?? ''}`} className={c.holding ? '' : 'muted'}>
+                <td>
+                  {c.stands_in_for ?? c.institution}
+                  {c.stands_in_for && <div className="muted small">Sandbox test bank: {c.institution}</div>}
+                </td>
+                <td>
+                  {c.product}
+                  {c.mask && <span className="muted"> ···{c.mask}</span>}
+                </td>
+                <td>
+                  {c.holding ? holdingNames[c.holding] : 'Not a program Pointfolio models'}
+                  {c.note && <div className="muted small">{c.note}</div>}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -62,30 +103,77 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
       )}
 
       <div className="row end">
-        <button className="primary" disabled={linked.length === 0} onClick={() => onDone(linked)}>
+        <button className="primary" disabled={mapped.length === 0} onClick={() => onDone(mapped)}>
           Continue
         </button>
       </div>
+    </section>
+  )
+}
 
-      {modalOpen && (
-        <div className="modal-backdrop" onClick={() => setModalOpen(false)}>
+// Real Plaid Link: fetch a link token, open Link, exchange the public token on the backend.
+function PlaidLinkButton(props: { disabled: boolean; onCards: (c: LinkedCard[]) => void; onError: (m: string) => void }) {
+  const { disabled, onCards, onError } = props
+  const [token, setToken] = useState<string | null>(null)
+
+  useEffect(() => {
+    plaid
+      .linkToken()
+      .then((r) => setToken(r.link_token))
+      .catch((e: Error) => onError(e.message))
+  }, [onError])
+
+  const { open, ready } = usePlaidLink({
+    token,
+    onSuccess: (publicToken, metadata) => {
+      if (!publicToken) return onError('Plaid Link finished without a public token')
+      plaid
+        .exchange(publicToken, metadata.institution?.name ?? null)
+        .then((r) => onCards(r.cards))
+        .catch((e: Error) => onError(e.message))
+    },
+  })
+
+  return (
+    <button className="primary" disabled={disabled || !ready} onClick={() => open()}>
+      Connect with Plaid
+    </button>
+  )
+}
+
+function MockConnect(props: { disabled: boolean; linked: Set<string>; onCards: (c: LinkedCard[]) => void }) {
+  const { disabled, linked, onCards } = props
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <div className="row">
+        <button className="primary" disabled={disabled} onClick={() => setOpen(true)}>
+          Connect with Plaid <span className="tag">mock</span>
+        </button>
+        <span className="muted small">Plaid keys not set on the server: using a mock.</span>
+      </div>
+      {open && (
+        <div className="modal-backdrop" onClick={() => setOpen(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Select your institution</h3>
-            <p className="muted small">Plaid Sandbox (mocked): no real credentials are used.</p>
-            {SANDBOX_INSTITUTIONS.map((i) => (
+            <p className="muted small">Mock of Plaid Link: no real connection is made.</p>
+            {MOCK_INSTITUTIONS.map((i) => (
               <button
                 key={i.institution}
                 className="list-item"
-                disabled={linkedInstitutions.has(i.institution)}
-                onClick={() => link(i.institution)}
+                disabled={linked.has(i.institution)}
+                onClick={() => {
+                  onCards(i.cards.map((c) => ({ ...c, institution: i.institution })))
+                  setOpen(false)
+                }}
               >
                 {i.institution}
-                {linkedInstitutions.has(i.institution) && <span className="tag">linked</span>}
+                {linked.has(i.institution) && <span className="tag">linked</span>}
               </button>
             ))}
           </div>
         </div>
       )}
-    </section>
+    </>
   )
 }

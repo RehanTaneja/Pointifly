@@ -43,6 +43,14 @@ Results are saved to `backend/app/data/snapshots.json` (with source + fetch time
 
 Not usable: Amadeus Self-Service (shut down July 17, 2026), ITA Matrix (no public API), Seats.aero (paid Pro plan, non-commercial).
 
+## Plaid (free Sandbox)
+
+1. Create a free account at https://dashboard.plaid.com and copy the **Sandbox** keys (Developers → Keys).
+2. Add them to `backend/.env` (see `backend/.env.example`), keep `PLAID_ENV=sandbox`, restart the API.
+3. In the app, **Use Sandbox demo cards** connects test cards named after real products; **Connect with Plaid** opens real Plaid Link (Sandbox login `user_good` / `pass_good`).
+
+Access tokens stay on the server (in memory for now). Point balances stay manual: Plaid doesn't expose rewards balances.
+
 ## Tests
 
 ```bash
@@ -55,7 +63,7 @@ cd backend && .venv/bin/python -m pytest -q
 |---|---|
 | Greedy vs. portfolio optimizer | Real: exact integer program (OR-Tools CP-SAT); greedy = same model, one trip at a time |
 | Redemption dataset | Sample award prices. Live cash fares; official transfer ratios. Reserve value (1.0¢/pt) is an assumption |
-| Plaid Link (Sandbox) | UI mock only |
+| Plaid Link (Sandbox) | Built: link token, Link, token exchange, card detection → program mapping, one-click Sandbox demo cards. Needs `PLAID_CLIENT_ID` / `PLAID_SECRET` in `backend/.env`; falls back to a labeled mock without them |
 | NL trip parse (LLM) | Mock: loads sample trips |
 | ElevenLabs voice agent + RAG | Not connected |
 | Visa FX Rates API | Not connected |
