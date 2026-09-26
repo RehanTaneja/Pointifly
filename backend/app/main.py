@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .data_store import holding_names, load_dataset
 from .models import OptimizeRequest, OptimizeResponse
 from .planning import Planner
+from .trips import CABINS, FareUnavailable, effective_trip
 
 app = FastAPI(title="Pointfolio API")
 
@@ -45,4 +46,11 @@ def _inputs(req: OptimizeRequest, ds: dict) -> tuple[list[dict], dict[str, int]]
     missing = [i for i in ids if i not in trips_by_id]
     if missing:
         raise HTTPException(400, f"Unknown trips: {missing}")
-    return [trips_by_id[i] for i in ids], balances
+    bad = {t: c for t, c in req.cabins.items() if c not in CABINS or t not in trips_by_id}
+    if bad:
+        raise HTTPException(400, f"Invalid cabins: {bad} (choose from {CABINS})")
+    try:
+        trips = [effective_trip(trips_by_id[i], req.cabins.get(i, trips_by_id[i]["cabin"])) for i in ids]
+    except FareUnavailable as e:
+        raise HTTPException(422, str(e)) from e
+    return trips, balances

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { fmtUsd, type Balance, type Dataset, type Trip } from '../api'
+import { CABINS, cabinLabel, fmtUsd, type Balance, type Cabin, type Dataset, type Trip } from '../api'
 
 const EXAMPLE_SENTENCE =
   'I have 100k Amex, 120k Chase, 80k Capital One and 100k United miles. This year I am going to Miami in March, London in May, Delhi in August and Tokyo in November.'
@@ -21,6 +21,9 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize }:
   )
   const [sentence, setSentence] = useState(EXAMPLE_SENTENCE)
   const [trips, setTrips] = useState<Trip[]>([])
+
+  const setCabin = (id: string, cabin: Cabin) =>
+    setTrips((prev) => prev.map((t) => (t.id === id ? { ...t, cabin } : t)))
 
   const setPoints = (holding: string, points: number) =>
     setBalances((prev) => prev.map((b) => (b.holding === holding ? { ...b, points } : b)))
@@ -79,18 +82,16 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize }:
                   {t.origin} → {t.destination}
                 </td>
                 <td>{t.outbound_date ?? t.month}</td>
-                <td>{t.cabin}</td>
-                <td>{fmtUsd(t.cash_price_usd)}</td>
-                <td className="small">
-                  {t.cash_source ? (
-                    <>
-                      {t.cash_source.source}
-                      <div className="muted">fetched {t.cash_source.fetched_at.slice(0, 10)}</div>
-                    </>
-                  ) : (
-                    <span className="tag">sample</span>
-                  )}
+                <td>
+                  <select value={t.cabin} onChange={(e) => setCabin(t.id, e.target.value as Cabin)}>
+                    {CABINS.map((c) => (
+                      <option key={c} value={c}>
+                        {cabinLabel(c)}
+                      </option>
+                    ))}
+                  </select>
                 </td>
+                <CashPrice trip={t} base={dataset.sample_trips.find((b) => b.id === t.id)!} />
               </tr>
             ))}
           </tbody>
@@ -103,5 +104,37 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize }:
         </button>
       </div>
     </section>
+  )
+}
+
+// Price for the selected cabin: already fetched, sample, or fetched live on optimize.
+function CashPrice({ trip, base }: { trip: Trip; base: Trip }) {
+  const fetched = trip.cash_fares?.[trip.cabin]
+  if (fetched) {
+    return (
+      <>
+        <td>{fmtUsd(fetched.price)}</td>
+        <td className="small">
+          Google Flights via SerpApi
+          <div className="muted">fetched {fetched.fetched_at.slice(0, 10)}</div>
+        </td>
+      </>
+    )
+  }
+  if (trip.cabin === base.cabin) {
+    return (
+      <>
+        <td>{fmtUsd(base.cash_price_usd)}</td>
+        <td className="small">
+          <span className="tag">sample</span>
+        </td>
+      </>
+    )
+  }
+  return (
+    <>
+      <td className="muted">—</td>
+      <td className="small muted">Fetched live when you optimize</td>
+    </>
   )
 }

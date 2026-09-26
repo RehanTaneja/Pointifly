@@ -1,39 +1,24 @@
 """Fetch real data and save it to app/data/snapshots.json.
 
-  python -m app.sources.refresh --dry-run     # show planned calls, no keys needed
-  python -m app.sources.refresh --fares       # SERPAPI_KEY: live Google Flights cash fares
+  python -m app.sources.refresh --dry-run         # show planned calls, no keys needed
+  python -m app.sources.refresh --fares           # SERPAPI_KEY: live Google Flights cash fares
   python -m app.sources.refresh --fares --force   # re-fetch even fares fetched recently
-  python -m app.sources.refresh --reparse     # re-read saved raw responses: no API calls, no key
-  python -m app.sources.refresh --transfers   # REWARDSCC_KEY: transfer partners + ratios
+  python -m app.sources.refresh --reparse         # re-read saved raw responses: no API calls, no key
+  python -m app.sources.refresh --transfers       # REWARDSCC_KEY: transfer partners + ratios
 
-Snapshots keep the demo working offline and stretch SerpApi's 100 free searches/month.
+Snapshots keep the demo working offline and stretch SerpApi's free monthly searches.
 """
 
 import argparse
 import json
 from datetime import datetime, timedelta, timezone
 
-from ..data_store import DATA_DIR, SNAPSHOT_PATH, load_base_dataset
+from .. import fares as store
+from ..data_store import load_base_dataset
 from . import rewardscc, serpapi_flights
 from .http import env
 
-
-def _now() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
-
-
-def fare_searches(ds: dict) -> list[tuple[str, dict, dict]]:
-    """One search per (trip, cabin) the optimizer needs a cash value for."""
-    out = []
-    for trip in ds["sample_trips"]:
-        cabins = {trip["cabin"]} | {o["cabin"] for o in trip["award_options"] if "cabin" in o}
-        for cabin in sorted(cabins):
-            out.append((f"{trip['id']}:{cabin}", trip, serpapi_flights.build_params(trip, cabin)))
-    return out
-
-
 FRESH_FOR = timedelta(days=3)
-RAW_DIR = DATA_DIR / "raw"  # full API responses (git-ignored) so re-parsing never spends quota
 
 
 def is_fresh(entry: dict | None, params: dict) -> bool:
@@ -43,34 +28,40 @@ def is_fresh(entry: dict | None, params: dict) -> bool:
     return datetime.now(timezone.utc) - datetime.fromisoformat(entry["fetched_at"]) < FRESH_FOR
 
 
+def fare_searches(ds: dict) -> list[tuple[str, dict, str, dict]]:
+    """One search per (trip, cabin) the optimizer needs a cash value for."""
+    out = []
+    for trip in ds["sample_trips"]:
+        cabins = {trip["cabin"]} | {o["cabin"] for o in trip["award_options"]}
+        for cabin in sorted(cabins):
+            out.append((store.fare_key(trip["id"], cabin), trip, cabin, serpapi_flights.build_params(trip, cabin)))
+    return out
+
+
 def refresh_fares(ds: dict, snap: dict, api_key: str | None, force: bool = False, reparse: bool = False) -> None:
     fares = snap.setdefault("cash_fares", {})
-    for key, trip, params in fare_searches(ds):
-        cabin = key.split(":")[1]
-        raw_path = RAW_DIR / f"serpapi_{key.replace(':', '_')}.json"
+    for key, trip, cabin, params in fare_searches(ds):
         if reparse:
-            raw = json.loads(raw_path.read_text()) if raw_path.exists() else None
+            path = store.raw_path(key)
+            raw = json.loads(path.read_text()) if path.exists() else None
             if not raw or raw["params"] != params:
                 print(f"  {key}: no saved response for this search, skipping")
                 continue
-            response, fetched_at = raw["response"], raw["fetched_at"]
+            fare, fetched_at = serpapi_flights.lowest_fare(raw["response"], cabin), raw["fetched_at"]
         elif not force and is_fresh(fares.get(key), params):
             print(f"  {key}: fetched {fares[key]['fetched_at'][:10]}, skipping (use --force to re-fetch)")
             continue
         else:
-            response, fetched_at = serpapi_flights.search(params, api_key), _now()
-            RAW_DIR.mkdir(exist_ok=True)
-            raw_path.write_text(json.dumps({"params": params, "fetched_at": fetched_at, "response": response}))
-        fare = serpapi_flights.lowest_fare(response, cabin)
+            fare, fetched_at = store.fetch(trip, cabin, api_key)
         if fare is None:
             fares.pop(key, None)
             print(f"  {key}: no itinerary fully in {cabin}, using sample value")
             continue
-        fares[key] = {**fare, "source": "Google Flights via SerpApi", "fetched_at": fetched_at, "params": params}
+        fares[key] = store.entry(fare, fetched_at, params)
         print(f"  {key}: ${fare['price']} ({', '.join(fare['airlines'])})")
 
 
-def refresh_transfers(ds: dict, snap: dict, api_key: str, force: bool = False) -> None:
+def refresh_transfers(ds: dict, snap: dict, api_key: str, **_) -> None:
     ours = {p["id"]: p["match"] for p in ds["programs"]}
     wanted = {}
     for row in rewardscc.transfer_programs(api_key):
@@ -80,7 +71,7 @@ def refresh_transfers(ds: dict, snap: dict, api_key: str, force: bool = False) -
                 wanted[pid] = row
     print(f"  matched {len(wanted)}/{len(ours)} programs: {sorted(wanted)}")
     rows = {pid: rewardscc.program_cards(row["transferPartnerId"], api_key) for pid, row in wanted.items()}
-    snap["transfers"] = {"source": "RewardsCC", "fetched_at": _now(), "ratios": rewardscc.ratios(rows)}
+    snap["transfers"] = {"source": "RewardsCC", "fetched_at": store.now(), "ratios": rewardscc.ratios(rows)}
     print(f"  ratios: {json.dumps(snap['transfers']['ratios'])}")
 
 
@@ -96,13 +87,13 @@ def main() -> None:
 
     if args.dry_run:
         searches = fare_searches(ds)
-        print(f"--fares would use {len(searches)} SerpApi searches:")
-        for key, _, params in searches:
+        print(f"--fares would use up to {len(searches)} SerpApi searches:")
+        for key, _, _, params in searches:
             print(f"  {key}: {params}")
         print(f"--transfers would make 1 + (matched programs, up to {len(ds['programs'])}) RewardsCC calls")
         return
 
-    snap = json.loads(SNAPSHOT_PATH.read_text()) if SNAPSHOT_PATH.exists() else {}
+    snap = store.read_snapshot()
     if args.reparse:
         print("refresh_fares (reparse):")
         refresh_fares(ds, snap, None, reparse=True)
@@ -114,8 +105,8 @@ def main() -> None:
             raise SystemExit(f"{name} is not set (add it to backend/.env)")
         print(f"{fn.__name__}:")
         fn(ds, snap, key, force=args.force)
-    SNAPSHOT_PATH.write_text(json.dumps(snap, indent=2) + "\n")
-    print(f"saved {SNAPSHOT_PATH}")
+    store.write_snapshot(snap)
+    print(f"saved {store.SNAPSHOT_PATH}")
 
 
 if __name__ == "__main__":

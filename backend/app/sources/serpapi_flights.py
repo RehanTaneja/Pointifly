@@ -52,6 +52,30 @@ def lowest_fare(response: dict, cabin: str) -> dict | None:
         "price": best["price"],
         "airlines": sorted({f["airline"] for f in best.get("flights", []) if f.get("airline")}),
         "price_level": response.get("price_insights", {}).get("price_level"),
+        "itinerary": _itinerary(best),
+        # Opens this exact search (route, date, cabin) on Google Flights.
+        "google_flights_url": response.get("search_metadata", {}).get("google_flights_url"),
+    }
+
+
+def _itinerary(it: dict) -> dict:
+    return {
+        "total_duration_min": it.get("total_duration"),
+        "flights": [
+            {
+                "airline": f.get("airline"),
+                "flight_number": f.get("flight_number"),
+                "from": f.get("departure_airport", {}).get("id"),
+                "to": f.get("arrival_airport", {}).get("id"),
+                "departs": f.get("departure_airport", {}).get("time"),
+                "arrives": f.get("arrival_airport", {}).get("time"),
+                "duration_min": f.get("duration"),
+                "travel_class": f.get("travel_class"),
+                "airplane": f.get("airplane"),
+            }
+            for f in it.get("flights", [])
+        ],
+        "layovers": [{"airport": l.get("id"), "duration_min": l.get("duration")} for l in it.get("layovers", [])],
     }
 
 

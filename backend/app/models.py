@@ -9,6 +9,7 @@ class Balance(BaseModel):
 class OptimizeRequest(BaseModel):
     balances: list[Balance] = []
     trip_ids: list[str] = []
+    cabins: dict[str, str] = {}  # trip id -> cabin override
 
 
 class Allocation(BaseModel):
@@ -24,6 +25,7 @@ class Allocation(BaseModel):
     value_usd: float = 0  # cash-equivalent value obtained with points
     cents_per_point: float | None = None
     reason: str
+    fare: dict | None = None  # live cash fare for this cabin: price, itinerary, google_flights_url
 
 
 class StrategyResult(BaseModel):

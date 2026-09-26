@@ -18,6 +18,12 @@ def apply_snapshot(ds: dict, snap: dict) -> dict:
     ds = copy.deepcopy(ds)
     fares = snap.get("cash_fares", {})
     for trip in ds["sample_trips"]:
+        # Every cabin already fetched for this trip, so the UI can show prices before optimizing.
+        trip["cash_fares"] = {
+            k.split(":")[1]: {"price": v["price"], "fetched_at": v["fetched_at"]}
+            for k, v in fares.items()
+            if k.split(":")[0] == trip["id"]
+        }
         base = fares.get(f"{trip['id']}:{trip['cabin']}")
         if base:
             trip["cash_price_usd"] = base["price"]

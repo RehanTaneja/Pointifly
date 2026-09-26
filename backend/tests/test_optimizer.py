@@ -112,3 +112,30 @@ def test_no_balances_or_no_trips():
 
 def test_trip_without_award_options_pays_cash():
     assert plan_for({"amex_mr": 100000}, [trip("x", "2027-01", 300, [])]).trips[0].option.key == CASH
+
+
+def test_effective_trip_keeps_same_or_better_cabin_awards(monkeypatch):
+    from app import trips as T
+
+    monkeypatch.setattr(T, "get_fare", lambda trip, cabin: {"price": {"economy": 400, "business": 3000}[cabin]})
+    base = trip("x", "2027-01", 999, [
+        {"program": "aeroplan", "points": 30000, "cabin": "economy"},
+        {"program": "aeroplan", "points": 80000, "cabin": "business"},
+    ])
+    econ = T.effective_trip(base, "economy")
+    assert econ["cash_price_usd"] == 400
+    assert [(o["cabin"], o["cash_price_usd"]) for o in econ["award_options"]] == [("economy", 400), ("business", 3000)]
+    biz = T.effective_trip(base, "business")
+    assert [o["cabin"] for o in biz["award_options"]] == ["business"]
+
+
+def test_effective_trip_unavailable_cabin_raises(monkeypatch):
+    import pytest
+
+    from app import trips as T
+
+    monkeypatch.setattr(T, "get_fare", lambda trip, cabin: None)
+    base = trip("x", "2027-01", 999, [])
+    assert T.effective_trip(base, "economy")["cash_price_usd"] == 999  # sample price for the default cabin
+    with pytest.raises(T.FareUnavailable):
+        T.effective_trip(base, "first")

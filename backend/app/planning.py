@@ -28,6 +28,14 @@ def _net_cents(tp: TripPlan) -> int:
     return 0 if tp.option.key == CASH else tp.option.value_cents - tp.option.fees_cents
 
 
+def _option_fare(tp: TripPlan) -> dict | None:
+    """Live cash fare for the cabin an award books (the value it's measured against)."""
+    for opt in tp.trip["award_options"]:
+        if opt["program"] == tp.option.program and opt["cabin"] == tp.option.cabin:
+            return opt.get("fare")
+    return None
+
+
 def _describe_change(before: TripPlan, after: TripPlan, names: dict[str, str]) -> str:
     def label(tp: TripPlan) -> str:
         if tp.option.key == CASH:
@@ -122,6 +130,7 @@ class Planner:
                     value_usd=0 if is_cash else tp.option.value_cents / 100,
                     cents_per_point=None if is_cash else round(_cpp(tp), 2),
                     reason=reason(tp),
+                    fare=tp.trip.get("fare") if is_cash else _option_fare(tp),
                 )
             )
         return StrategyResult(

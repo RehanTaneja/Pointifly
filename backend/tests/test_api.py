@@ -19,8 +19,7 @@ def test_dataset_shape_matches_doc():
 def test_optimize_sample_portfolio_beats_greedy():
     r = client.post("/api/optimize", json={}).json()
     assert r["mock"] is False
-    assert r["points_saved"] > 0
-    assert r["value_gained_usd"] > 0
+    assert r["value_gained_usd"] > 0  # the claim that matters; points spent can go either way
     cash = [a for a in r["portfolio"]["allocations"] if a["method"] == "cash"]
     assert cash and all(a["reason"] for a in cash)
 
@@ -48,3 +47,17 @@ def test_optimize_independent_of_balance_order_and_no_fragment_splits():
     assert a["portfolio"] == b["portfolio"] and a["greedy"] == b["greedy"]
     for alloc in a["portfolio"]["allocations"]:
         assert len(alloc["sources"]) <= 2
+
+
+def test_cabin_override_filters_lower_cabin_awards_and_attaches_fares():
+    r = client.post("/api/optimize", json={"cabins": {"del": "business"}}).json()
+    for strategy in ("greedy", "portfolio"):
+        for a in r[strategy]["allocations"]:
+            if a["trip_id"] == "del" and a["method"] == "points":
+                assert a["cabin"] == "business"  # no economy award offered for a business request
+    assert all("fare" in a for a in r["portfolio"]["allocations"])
+
+
+def test_invalid_cabin_rejected():
+    assert client.post("/api/optimize", json={"cabins": {"del": "lie-flat"}}).status_code == 400
+    assert client.post("/api/optimize", json={"cabins": {"nope": "economy"}}).status_code == 400

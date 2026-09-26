@@ -26,9 +26,9 @@ def test_serpapi_lowest_fare_across_best_and_other():
         ],
         "price_insights": {"price_level": "low"},
     }
-    assert serpapi_flights.lowest_fare(resp, "economy") == {
-        "price": 750, "airlines": ["Air India", "United"], "price_level": "low"
-    }
+    fare = serpapi_flights.lowest_fare(resp, "economy")
+    assert (fare["price"], fare["airlines"], fare["price_level"]) == (750, ["Air India", "United"], "low")
+    assert [f["airline"] for f in fare["itinerary"]["flights"]] == ["Air India", "United"]
     assert serpapi_flights.lowest_fare({}, "economy") is None
 
 
@@ -92,7 +92,7 @@ def test_program_match_phrases_do_not_collide():
 def test_recent_fares_are_not_refetched():
     from datetime import datetime, timedelta, timezone
 
-    from app.sources.refresh import is_fresh
+    from app.sources.refresh import is_fresh  # noqa: E402
 
     params = {"departure_id": "ATL"}
     now = datetime.now(timezone.utc)

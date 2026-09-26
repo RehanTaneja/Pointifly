@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { fmtPts, fmtUsd, type Allocation, type OptimizeResponse, type StrategyResult } from '../api'
+import { cabinLabel, fmtPts, fmtUsd, type Allocation, type OptimizeResponse, type StrategyResult } from '../api'
 import { CheckoutModal } from './CheckoutModal'
+import { FareDetails } from './FareDetails'
 import { FlowSankey } from './FlowSankey'
 
 type Props = { result: OptimizeResponse; holdingNames: Record<string, string>; onReset: () => void }
@@ -8,7 +9,7 @@ type Props = { result: OptimizeResponse; holdingNames: Record<string, string>; o
 function describe(a: Allocation, names: Record<string, string>) {
   if (a.method === 'cash') return `Pay cash · ${fmtUsd(a.cash_usd)}`
   const from = a.sources.map((s) => (s.holding === a.program ? `${fmtPts(s.points)} miles` : `${names[s.holding]} ${fmtPts(s.points)}`))
-  return `${names[a.program!]} ${a.cabin} · ${from.join(' + ')}`
+  return `${names[a.program!]} ${cabinLabel(a.cabin)} · ${from.join(' + ')}`
 }
 
 function StrategyColumn({ s, names, highlight }: { s: StrategyResult; names: Record<string, string>; highlight?: boolean }) {
@@ -38,6 +39,7 @@ function StrategyColumn({ s, names, highlight }: { s: StrategyResult; names: Rec
             </div>
             <div>{describe(a, names)}</div>
             <div className="muted small">{a.reason}</div>
+            <FareDetails a={a} />
           </li>
         ))}
       </ul>
@@ -53,15 +55,13 @@ export function Dashboard({ result, holdingNames, onReset }: Props) {
   return (
     <>
       <div className="banner">
-        {result.mock ? 'Mock optimizer output. ' : 'Computed by the optimizer on '}
-        sample data: award and cash prices are placeholders, not live quotes.
+        {result.portfolio.allocations.some((a) => a.fare)
+          ? 'Cash fares are live from Google Flights. Award prices (points) are still sample placeholders.'
+          : 'Sample data: award and cash prices are placeholders, not live quotes.'}
       </div>
 
       <section className="card headline">
-        <p>
-          Optimizing trip-by-trip spends <strong>{fmtPts(result.points_saved)} more points</strong> and gets{' '}
-          <strong>{fmtUsd(result.value_gained_usd)} less travel value</strong> than optimizing the portfolio.
-        </p>
+        <Headline r={result} />
       </section>
 
       <section className="card">
@@ -116,5 +116,30 @@ export function Dashboard({ result, holdingNames, onReset }: Props) {
         />
       )}
     </>
+  )
+}
+
+const cpp = (s: StrategyResult) => (s.total_points ? (s.total_value_usd / s.total_points) * 100 : 0)
+
+// Says what the numbers show: points spent can go either way, value is the claim.
+function Headline({ r }: { r: OptimizeResponse }) {
+  if (r.value_gained_usd <= 0) {
+    return <p>Trip-by-trip and whole-year planning agree for these trips and balances.</p>
+  }
+  const value = <strong>{fmtUsd(r.value_gained_usd)} less travel value</strong>
+  if (r.points_saved >= 0) {
+    return (
+      <p>
+        Optimizing trip-by-trip spends <strong>{fmtPts(r.points_saved)} more points</strong> and gets {value} than
+        optimizing the portfolio.
+      </p>
+    )
+  }
+  return (
+    <p>
+      Optimizing trip-by-trip gets {value} than optimizing the portfolio. Pointfolio spends{' '}
+      {fmtPts(-r.points_saved)} more points, but each goes further: <strong>{cpp(r.portfolio).toFixed(1)}¢</strong>{' '}
+      vs {cpp(r.greedy).toFixed(1)}¢ per point.
+    </p>
   )
 }

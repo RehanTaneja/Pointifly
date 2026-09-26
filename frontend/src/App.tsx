@@ -14,7 +14,9 @@ export default function App() {
   const [result, setResult] = useState<OptimizeResponse | null>(null)
 
   useEffect(() => {
-    getDataset().then(setDataset).catch((e: Error) => setError(e.message))
+    getDataset()
+      .then(setDataset)
+      .catch((e: Error) => setError(`${e.message}. Is the API running on :8000?`))
   }, [])
 
   const names = useMemo(() => (dataset ? holdingNames(dataset) : {}), [dataset])
@@ -22,7 +24,8 @@ export default function App() {
   const runOptimize = async (balances: Balance[], trips: Trip[]) => {
     setStep('loading')
     try {
-      setResult(await optimize(balances, trips.map((t) => t.id)))
+      setError(null)
+      setResult(await optimize(balances, trips))
       setStep('dashboard')
     } catch (e) {
       setError((e as Error).message)
@@ -37,7 +40,7 @@ export default function App() {
         <p className="muted">Award tools optimize one flight. Pointfolio optimizes your whole year of points.</p>
       </header>
 
-      {error && <div className="banner error">Backend error: {error}. Is the API running on :8000?</div>}
+      {error && <div className="banner error">{error}</div>}
 
       {!dataset && !error && <p className="muted">Loading…</p>}
 
@@ -51,13 +54,16 @@ export default function App() {
         />
       )}
 
-      {dataset && step === 'input' && (
-        <InputStep
-          dataset={dataset}
-          holdingNames={names}
-          linkedHoldings={cards.map((c) => c.holding)}
-          onOptimize={runOptimize}
-        />
+      {/* Stays mounted while loading so edits survive an error and the return to this step. */}
+      {dataset && (step === 'input' || step === 'loading') && (
+        <div hidden={step === 'loading'}>
+          <InputStep
+            dataset={dataset}
+            holdingNames={names}
+            linkedHoldings={cards.map((c) => c.holding)}
+            onOptimize={runOptimize}
+          />
+        </div>
       )}
 
       {step === 'loading' && (

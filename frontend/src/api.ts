@@ -2,7 +2,36 @@
 
 export type Balance = { holding: string; points: number }
 
-export type AwardOption = { program: string; points: number; cabin?: string; cash_price_usd?: number }
+export const CABINS = ['economy', 'premium_economy', 'business', 'first'] as const
+export type Cabin = (typeof CABINS)[number]
+export const cabinLabel = (c: string) => c.replace('_', ' ')
+
+export type AwardOption = { program: string; points: number; cabin: Cabin; cash_price_usd?: number }
+
+export type Flight = {
+  airline: string | null
+  flight_number: string | null
+  from: string | null
+  to: string | null
+  departs: string | null
+  arrives: string | null
+  duration_min: number | null
+  travel_class: string | null
+  airplane: string | null
+}
+
+export type Fare = {
+  price: number
+  airlines: string[]
+  source: string
+  fetched_at: string
+  google_flights_url: string | null
+  itinerary?: {
+    total_duration_min: number | null
+    flights: Flight[]
+    layovers: { airport: string | null; duration_min: number | null }[]
+  }
+}
 
 export type Trip = {
   id: string
@@ -10,9 +39,10 @@ export type Trip = {
   origin: string
   destination: string
   month: string
-  cabin: string
+  cabin: Cabin
   cash_price_usd: number
   award_options: AwardOption[]
+  cash_fares?: Partial<Record<Cabin, { price: number; fetched_at: string }>>
   outbound_date?: string
   cash_source?: { source: string; fetched_at: string }
 }
@@ -39,6 +69,7 @@ export type Allocation = {
   value_usd: number
   cents_per_point: number | null
   reason: string
+  fare: Fare | null
 }
 
 export type StrategyResult = {
@@ -61,17 +92,24 @@ export type OptimizeResponse = {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, init)
-  if (!res.ok) throw new Error(`${init?.method ?? 'GET'} ${path} failed: ${res.status}`)
+  if (!res.ok) {
+    const detail = await res.json().then((b) => b.detail).catch(() => null)
+    throw new Error(detail ?? `${init?.method ?? 'GET'} ${path} failed: ${res.status}`)
+  }
   return res.json() as Promise<T>
 }
 
 export const getDataset = () => request<Dataset>('/api/dataset')
 
-export const optimize = (balances: Balance[], tripIds: string[]) =>
+export const optimize = (balances: Balance[], trips: Trip[]) =>
   request<OptimizeResponse>('/api/optimize', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ balances, trip_ids: tripIds }),
+    body: JSON.stringify({
+      balances,
+      trip_ids: trips.map((t) => t.id),
+      cabins: Object.fromEntries(trips.map((t) => [t.id, t.cabin])),
+    }),
   })
 
 export function holdingNames(ds: Dataset): Record<string, string> {
@@ -79,4 +117,5 @@ export function holdingNames(ds: Dataset): Record<string, string> {
 }
 
 export const fmtPts = (n: number) => n.toLocaleString('en-US')
+export const fmtDuration = (min: number | null) => (min == null ? '' : `${Math.floor(min / 60)}h ${min % 60}m`)
 export const fmtUsd = (n: number) => `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`

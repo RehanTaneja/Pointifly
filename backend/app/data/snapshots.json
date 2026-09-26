@@ -6,6 +6,24 @@
         "Frontier"
       ],
       "price_level": "high",
+      "itinerary": {
+        "total_duration_min": 122,
+        "flights": [
+          {
+            "airline": "Frontier",
+            "flight_number": "F9 4406",
+            "from": "ATL",
+            "to": "MIA",
+            "departs": "2026-11-20 21:24",
+            "arrives": "2026-11-20 23:26",
+            "duration_min": 122,
+            "travel_class": "Economy",
+            "airplane": "Airbus A321neo"
+          }
+        ],
+        "layovers": []
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI2LTExLTIwagcIARIDQVRMcgcIARIDTUlBQAFIAXABmAEC&tfu=EgIIAQ",
       "source": "Google Flights via SerpApi",
       "fetched_at": "2026-09-26T01:49:58+00:00",
       "params": {
@@ -25,6 +43,55 @@
         "JetBlue"
       ],
       "price_level": "typical",
+      "itinerary": {
+        "total_duration_min": 883,
+        "flights": [
+          {
+            "airline": "JetBlue",
+            "flight_number": "B6 896",
+            "from": "ATL",
+            "to": "BOS",
+            "departs": "2027-01-15 15:07",
+            "arrives": "2027-01-15 17:41",
+            "duration_min": 154,
+            "travel_class": "Business Class",
+            "airplane": "Airbus A220-300 Passenger"
+          },
+          {
+            "airline": "Icelandair",
+            "flight_number": "FI 630",
+            "from": "BOS",
+            "to": "KEF",
+            "departs": "2027-01-15 19:50",
+            "arrives": "2027-01-16 06:05",
+            "duration_min": 315,
+            "travel_class": "Business Class",
+            "airplane": "Boeing 737MAX 9 Passenger"
+          },
+          {
+            "airline": "Icelandair",
+            "flight_number": "FI 450",
+            "from": "KEF",
+            "to": "LHR",
+            "departs": "2027-01-16 07:35",
+            "arrives": "2027-01-16 10:50",
+            "duration_min": 195,
+            "travel_class": "Business Class",
+            "airplane": "Boeing 737MAX 8 Passenger"
+          }
+        ],
+        "layovers": [
+          {
+            "airport": "BOS",
+            "duration_min": 129
+          },
+          {
+            "airport": "KEF",
+            "duration_min": 90
+          }
+        ]
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI3LTAxLTE1agcIARIDQVRMcgcIARIDTEhSQAFIA3ABmAEC&tfu=EgIIAQ",
       "source": "Google Flights via SerpApi",
       "fetched_at": "2026-09-26T01:49:58+00:00",
       "params": {
@@ -43,6 +110,40 @@
         "JetBlue"
       ],
       "price_level": "typical",
+      "itinerary": {
+        "total_duration_min": 679,
+        "flights": [
+          {
+            "airline": "JetBlue",
+            "flight_number": "B6 520",
+            "from": "ATL",
+            "to": "JFK",
+            "departs": "2027-01-15 17:11",
+            "arrives": "2027-01-15 19:28",
+            "duration_min": 137,
+            "travel_class": "Economy",
+            "airplane": "Airbus A220-300 Passenger"
+          },
+          {
+            "airline": "JetBlue",
+            "flight_number": "B6 7",
+            "from": "JFK",
+            "to": "LHR",
+            "departs": "2027-01-15 21:10",
+            "arrives": "2027-01-16 09:30",
+            "duration_min": 440,
+            "travel_class": "Economy",
+            "airplane": "Airbus A321neo"
+          }
+        ],
+        "layovers": [
+          {
+            "airport": "JFK",
+            "duration_min": 102
+          }
+        ]
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI3LTAxLTE1agcIARIDQVRMcgcIARIDTEhSQAFIAXABmAEC&tfu=EgIIAQ",
       "source": "Google Flights via SerpApi",
       "fetched_at": "2026-09-26T01:49:58+00:00",
       "params": {
@@ -62,6 +163,55 @@
         "Finnair"
       ],
       "price_level": "high",
+      "itinerary": {
+        "total_duration_min": 1807,
+        "flights": [
+          {
+            "airline": "American",
+            "flight_number": "AA 2333",
+            "from": "ATL",
+            "to": "DFW",
+            "departs": "2027-03-12 13:28",
+            "arrives": "2027-03-12 15:07",
+            "duration_min": 159,
+            "travel_class": "Business Class",
+            "airplane": "Boeing 737"
+          },
+          {
+            "airline": "Finnair",
+            "flight_number": "AY 20",
+            "from": "DFW",
+            "to": "HEL",
+            "departs": "2027-03-12 17:35",
+            "arrives": "2027-03-13 11:40",
+            "duration_min": 605,
+            "travel_class": "Business Class",
+            "airplane": "Airbus A350"
+          },
+          {
+            "airline": "Finnair",
+            "flight_number": "AY 121",
+            "from": "HEL",
+            "to": "DEL",
+            "departs": "2027-03-13 18:00",
+            "arrives": "2027-03-14 06:05",
+            "duration_min": 515,
+            "travel_class": "Business Class",
+            "airplane": "Airbus A330"
+          }
+        ],
+        "layovers": [
+          {
+            "airport": "DFW",
+            "duration_min": 148
+          },
+          {
+            "airport": "HEL",
+            "duration_min": 380
+          }
+        ]
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI3LTAzLTEyagcIARIDQVRMcgcIARIDREVMQAFIA3ABmAEC&tfu=EgIIAQ",
       "source": "Google Flights via SerpApi",
       "fetched_at": "2026-09-26T01:49:58+00:00",
       "params": {
@@ -80,6 +230,40 @@
         "Ethiopian"
       ],
       "price_level": "high",
+      "itinerary": {
+        "total_duration_min": 1730,
+        "flights": [
+          {
+            "airline": "Ethiopian",
+            "flight_number": "ET 519",
+            "from": "ATL",
+            "to": "ADD",
+            "departs": "2027-03-12 09:35",
+            "arrives": "2027-03-13 07:50",
+            "duration_min": 855,
+            "travel_class": "Economy",
+            "airplane": "Boeing 787"
+          },
+          {
+            "airline": "Ethiopian",
+            "flight_number": "ET 688",
+            "from": "ADD",
+            "to": "DEL",
+            "departs": "2027-03-13 16:30",
+            "arrives": "2027-03-14 00:55",
+            "duration_min": 355,
+            "travel_class": "Economy",
+            "airplane": "Boeing 777"
+          }
+        ],
+        "layovers": [
+          {
+            "airport": "ADD",
+            "duration_min": 520
+          }
+        ]
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI3LTAzLTEyagcIARIDQVRMcgcIARIDREVMQAFIAXABmAEC&tfu=EgIIAQ",
       "source": "Google Flights via SerpApi",
       "fetched_at": "2026-09-26T01:49:58+00:00",
       "params": {
@@ -98,6 +282,40 @@
         "Air Canada"
       ],
       "price_level": "typical",
+      "itinerary": {
+        "total_duration_min": 1045,
+        "flights": [
+          {
+            "airline": "Air Canada",
+            "flight_number": "AC 8568",
+            "from": "ATL",
+            "to": "YUL",
+            "departs": "2027-05-14 09:00",
+            "arrives": "2027-05-14 11:47",
+            "duration_min": 167,
+            "travel_class": "Business Class",
+            "airplane": "Embraer 175"
+          },
+          {
+            "airline": "Air Canada",
+            "flight_number": "AC 5",
+            "from": "YUL",
+            "to": "NRT",
+            "departs": "2027-05-14 13:05",
+            "arrives": "2027-05-15 15:25",
+            "duration_min": 800,
+            "travel_class": "Business Class",
+            "airplane": "Boeing 777"
+          }
+        ],
+        "layovers": [
+          {
+            "airport": "YUL",
+            "duration_min": 78
+          }
+        ]
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI3LTA1LTE0agcIARIDQVRMcgcIARIDTlJUQAFIA3ABmAEC&tfu=EgIIAQ",
       "source": "Google Flights via SerpApi",
       "fetched_at": "2026-09-26T01:49:58+00:00",
       "params": {
@@ -117,6 +335,55 @@
         "WestJet"
       ],
       "price_level": "typical",
+      "itinerary": {
+        "total_duration_min": 2400,
+        "flights": [
+          {
+            "airline": "WestJet",
+            "flight_number": "WS 1601",
+            "from": "ATL",
+            "to": "YVR",
+            "departs": "2027-05-14 08:15",
+            "arrives": "2027-05-14 10:45",
+            "duration_min": 330,
+            "travel_class": "Economy",
+            "airplane": "Boeing 737"
+          },
+          {
+            "airline": "China Airlines",
+            "flight_number": "CI 31",
+            "from": "YVR",
+            "to": "TPE",
+            "departs": "2027-05-15 02:00",
+            "arrives": "2027-05-16 05:30",
+            "duration_min": 750,
+            "travel_class": "Economy",
+            "airplane": "Boeing 777"
+          },
+          {
+            "airline": "China Airlines",
+            "flight_number": "CI 100",
+            "from": "TPE",
+            "to": "NRT",
+            "departs": "2027-05-16 08:50",
+            "arrives": "2027-05-16 13:15",
+            "duration_min": 205,
+            "travel_class": "Economy",
+            "airplane": "Airbus A350"
+          }
+        ],
+        "layovers": [
+          {
+            "airport": "YVR",
+            "duration_min": 915
+          },
+          {
+            "airport": "TPE",
+            "duration_min": 200
+          }
+        ]
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI3LTA1LTE0agcIARIDQVRMcgcIARIDTlJUQAFIAXABmAEC&tfu=EgIIAQ",
       "source": "Google Flights via SerpApi",
       "fetched_at": "2026-09-26T01:49:58+00:00",
       "params": {
@@ -125,6 +392,42 @@
         "arrival_id": "NRT",
         "outbound_date": "2027-05-14",
         "travel_class": 1,
+        "currency": "USD",
+        "type": 2
+      }
+    },
+    "lhr:premium_economy": {
+      "price": 1023,
+      "airlines": [
+        "Virgin Atlantic"
+      ],
+      "price_level": null,
+      "itinerary": {
+        "total_duration_min": 475,
+        "flights": [
+          {
+            "airline": "Virgin Atlantic",
+            "flight_number": "VS 104",
+            "from": "ATL",
+            "to": "LHR",
+            "departs": "2027-01-15 17:30",
+            "arrives": "2027-01-16 06:25",
+            "duration_min": 475,
+            "travel_class": "Premium Economy",
+            "airplane": "Airbus A350"
+          }
+        ],
+        "layovers": []
+      },
+      "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI3LTAxLTE1agcIARIDQVRMcgcIARIDTEhSQAFIAnABmAEC&tfu=EgIIAQ",
+      "source": "Google Flights via SerpApi",
+      "fetched_at": "2026-09-26T02:22:37+00:00",
+      "params": {
+        "engine": "google_flights",
+        "departure_id": "ATL",
+        "arrival_id": "LHR",
+        "outbound_date": "2027-01-15",
+        "travel_class": 2,
         "currency": "USD",
         "type": 2
       }
