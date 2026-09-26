@@ -140,6 +140,8 @@ class FakeElevenLabs:
             return {"status": "succeeded"}
         if path == "/v1/convai/tools":
             return {"id": f"tool_{body['tool_config']['name']}"}
+        if path == "/v1/pronunciation-dictionaries/add-from-rules":
+            return {"id": "dict_test", "version_id": "v1"}
         if path == "/v1/convai/agents/create":
             return {"agent_id": "agent_test"}
         if method == "PATCH" and path.startswith("/v1/convai/agents/"):

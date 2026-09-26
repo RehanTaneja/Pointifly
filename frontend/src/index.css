@@ -395,3 +395,5 @@ input[type='date'] { color-scheme: dark; }
 @keyframes moment-out { to { opacity: 0; transform: translateY(-10px) scale(0.97); } }
 @media (prefers-reduced-motion: reduce) { .visa-moment, .visa-moment * { animation-duration: 0.01ms !important; animation-delay: 0s !important; } }
 .plan-skipped { margin-top: 12px; }
+.splash { flex-direction: column; }
+.splash-tap { position: absolute; bottom: 14%; left: 0; right: 0; text-align: center; color: #dfe3ff; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; animation: fade 0.6s ease both, breathe 2.4s ease-in-out 0.6s infinite; }

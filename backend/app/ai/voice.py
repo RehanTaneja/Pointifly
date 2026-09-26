@@ -241,10 +241,23 @@ ASR_KEYWORDS = [
 ]
 
 
-def agent_body(tool_ids: list[str], docs: list[dict]) -> dict:
+# How the voice says the name: "Point-ih-fly" (like simplify), not "Pointy-fly" or "Pointify".
+PRONUNCIATION_RULES = [
+    {"type": "alias", "string_to_replace": "Pointifly", "alias": "Point-ih-fly", "case_sensitive": False, "word_boundaries": True}
+]
+
+
+def agent_body(tool_ids: list[str], docs: list[dict], pronunciation: dict | None = None) -> dict:
     return {
         "name": "Pointifly",
         "conversation_config": {
+            "tts": {
+                "pronunciation_dictionary_locators": (
+                    [{"pronunciation_dictionary_id": pronunciation["id"], "version_id": pronunciation["version_id"]}]
+                    if pronunciation
+                    else []
+                )
+            },
             "conversation": {"client_events": CLIENT_EVENTS},
             "turn": {"turn_eagerness": "patient"},
             "asr": {"keywords": ASR_KEYWORDS},
@@ -298,7 +311,14 @@ def setup() -> dict:
         if tool["name"] not in tools:
             tools[tool["name"]] = _request("POST", "/v1/convai/tools", {"tool_config": tool})["id"]
             _save_state(state)
-    body = agent_body(list(tools.values()), [{"id": i, "name": n} for n, i in docs.items()])
+    if state.get("pronunciation", {}).get("rules") != PRONUNCIATION_RULES:
+        try:
+            d = _request("POST", "/v1/pronunciation-dictionaries/add-from-rules", {"name": "Pointifly names", "rules": PRONUNCIATION_RULES})
+            state["pronunciation"] = {"id": d["id"], "version_id": d["version_id"], "rules": PRONUNCIATION_RULES}
+            _save_state(state)
+        except VoiceUnavailable as e:  # e.g. the key lacks the pronunciation_dictionaries_write permission
+            print(f"  pronunciation dictionary skipped ({str(e)[:120]}...): add the permission to the key and re-run")
+    body = agent_body(list(tools.values()), [{"id": i, "name": n} for n, i in docs.items()], state.get("pronunciation"))
     fingerprint = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
     if "agent_id" not in state:
         state["agent_id"] = _request("POST", "/v1/convai/agents/create", body)["agent_id"]

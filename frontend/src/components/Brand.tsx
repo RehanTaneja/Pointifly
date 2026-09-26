@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { playTakeoff } from '../takeoffSound'
 
 type GlyphProps = { className?: string; dot?: boolean; width?: number; height?: number }
 
@@ -32,24 +33,49 @@ export function Logo({ size = 'header' }: { size?: 'header' | 'hero' }) {
 
 const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
-// Opening splash: the logo on the world map, then a fade into the app. Click to skip.
+// Opening splash: the logo on the world map with a jet takeoff sound, then a fade into the app.
+// Where the browser blocks sound until a first click, it waits for a tap, which plays the sound.
 export function Splash({ onDone }: { onDone: () => void }) {
   const [leaving, setLeaving] = useState(false)
-  useEffect(() => {
-    const hold = reduceMotion() ? 600 : 2100
-    const t1 = setTimeout(() => setLeaving(true), hold)
-    const t2 = setTimeout(onDone, hold + 650)
-    return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-    }
+  const [needsTap, setNeedsTap] = useState(false)
+  const leave = useCallback(() => {
+    setLeaving(true)
+    setTimeout(onDone, 650)
   }, [onDone])
+
+  useEffect(() => {
+    let cancelled = false
+    let timer = 0
+    playTakeoff().then((played) => {
+      if (cancelled) return
+      if (played) timer = window.setTimeout(leave, reduceMotion() ? 900 : 2600)
+      else setNeedsTap(true)
+    })
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [leave])
+
+  const takeOff = useCallback(() => {
+    if (leaving) return
+    if (!needsTap) return leave()
+    setNeedsTap(false)
+    void playTakeoff() // inside the tap, so the browser allows it
+    window.setTimeout(leave, 1500)
+  }, [leaving, needsTap, leave])
+
+  useEffect(() => {
+    if (!needsTap) return
+    const onKey = (e: KeyboardEvent) => (e.key === 'Enter' || e.key === ' ') && takeOff()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [needsTap, takeOff])
+
   return (
-    <div className={`splash ${leaving ? 'leaving' : ''}`} onClick={() => {
-        setLeaving(true)
-        setTimeout(onDone, 650)
-      }}>
+    <div className={`splash ${leaving ? 'leaving' : ''}`} onClick={takeOff}>
       <Logo size="hero" />
+      {needsTap && <div className="splash-tap">Tap to take off</div>}
     </div>
   )
 }
