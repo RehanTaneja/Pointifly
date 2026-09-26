@@ -66,6 +66,7 @@ class SankeyLink(BaseModel):
 class OptimizeResponse(BaseModel):
     mock: bool
     plan_id: str | None = None  # server-side record of the plan's cash legs (payments use it)
+    skipped: list[str] = []  # trips left out because they couldn't be priced, with the reason
     greedy: StrategyResult
     portfolio: StrategyResult
     points_saved: int

@@ -74,7 +74,8 @@ Rules:
 - Balances: map each program mentioned to one of these ids; "100k" means 100000. Only include
   programs the traveler states a number for. Programs:
 {programs}
-- Trips: one entry per destination. Use the main international airport's IATA code (New York -> JFK,
+- Trips: one entry for every flight they state, including flights between two cities that aren't
+  their home (e.g. "New Delhi to Mumbai" is a trip from DEL to BOM), even several from the same city. Use the main international airport's IATA code (New York -> JFK,
   London -> LHR, Tokyo -> NRT, Paris -> CDG, Shanghai -> PVG, Beijing -> PEK, Chicago -> ORD), never a
   city code such as NYC, LON, TYO or PAR. Origin is
   {home_airport} unless they say otherwise. Dates must be after today and within {MAX_DAYS_AHEAD} days:

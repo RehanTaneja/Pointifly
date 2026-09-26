@@ -118,3 +118,14 @@ def test_no_saved_fare_with_search_off_says_so(fake_serpapi, monkeypatch):
     r = api.post("/api/optimize", json=body({"origin": "DEL", "destination": "BOM", "date": DAY, "cabin": "business"}))
     assert r.status_code == 422 and "live flight search is off" in r.json()["detail"]
     assert fake_serpapi.calls == []
+
+
+def test_a_trip_that_cant_be_priced_is_skipped_not_fatal(fake_serpapi):
+    fake_serpapi.add("ATL", "CDG", DAY, 1, 640)  # Paris has a fare; Mumbai's search finds nothing
+    fake_serpapi.responses[("DEL", "BOM", DAY, 3)] = {"best_flights": [], "other_flights": []}
+    mumbai = {"origin": "DEL", "destination": "BOM", "date": DAY, "cabin": "business"}
+    r = api.post("/api/optimize", json=body(paris("economy"), mumbai))
+    assert r.status_code == 200
+    j = r.json()
+    assert [a["trip_label"] for a in j["portfolio"]["allocations"]] == ["Paris"]
+    assert len(j["skipped"]) == 1 and "Mumbai" in j["skipped"][0]

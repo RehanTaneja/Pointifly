@@ -101,6 +101,8 @@ export function Dashboard({ result, holdingNames, currencies, cardIds, onReset, 
           : 'Sample data: award and cash prices are placeholders, not live quotes.'}
       </div>
 
+      {result.skipped?.length ? <div className="banner">Left out of this plan: {result.skipped.join(' ')}</div> : null}
+
       <section className="card headline">
         <Headline r={result} />
       </section>

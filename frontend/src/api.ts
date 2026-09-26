@@ -198,6 +198,7 @@ export type StrategyResult = {
 }
 
 export type OptimizeResponse = {
+  skipped?: string[] // trips left out because they couldn't be priced, with the reason
   mock: boolean
   plan_id: string | null
   greedy: StrategyResult
