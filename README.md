@@ -4,6 +4,12 @@ Award tools optimize one flight. Pointifly optimizes your whole year of points.
 
 Connect your cards, enter your point balances and trips, and Pointifly decides for every trip whether to pay cash or which points to transfer where, so the whole year gets the most value. It shows the result next to a trip-by-trip ("greedy") plan to make the difference visible.
 
+## AI and privacy
+
+- **Gemini** turns a typed or spoken sentence into balances and trips (JSON schema). Every trip is then validated like a hand-entered one.
+- **ElevenLabs** is the voice orchestrator. Its tools are *client tools* that run in the browser against the local backend (`fill_trip_plan`, `run_optimizer`, `explain_trip`), so balances, cards and trips never live on ElevenLabs; the agent only receives short summaries. The API key stays on the server; the browser gets a 15-minute signed URL.
+- **Knowledge base (RAG):** public reference data only (official transfer ratios, award charts, card earn rates, how the optimizer decides). A test fails if any key or user data appears in it. Credentials never go into the knowledge base.
+
 ## How the optimizer works
 
 Not ML or AI. It's a **mathematical optimization model** (an integer program) solved exactly with Google OR-Tools CP-SAT:
@@ -56,6 +62,8 @@ See `backend/.env.example`. Never commit `.env`; certificates and keys go in `ba
 - **SerpApi:** `SERPAPI_KEY` (free plan). `SERPAPI_DAILY_LIMIT` caps live searches the app makes per day (default 20). Refresh the sample fares with `.venv/bin/python -m app.sources.refresh --fares` (skips fares fetched in the last 3 days; `--dry-run` shows the searches; `--reparse` re-reads saved responses without API calls).
 - **Plaid:** `PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV=sandbox` from https://dashboard.plaid.com. The demo profile connects American Express, Chase and Capital One (Plaid's own institution records) with cards named after real products. `PRESENTATION_MODE=1` shows a single Connect with Plaid button with no environment tags or developer controls.
 - **Cybersource:** a free sandbox account (https://developer.cybersource.com/hello-world/sandbox.html). In the Business Center, create a **REST – Shared Secret** key and set `CYBERSOURCE_MERCHANT_ID`, `CYBERSOURCE_KEY_ID`, `CYBERSOURCE_SECRET_KEY`. Sandbox only by design.
+- **Gemini:** `GEMINI_API_KEY` (and optionally `GEMINI_MODEL`, default `gemini-3.5-flash-lite`). Only the sentence is sent; results are cached per sentence.
+- **ElevenLabs:** `ELEVENLABS_API_KEY`, then run `.venv/bin/python -m app.ai.voice --dry-run` (no calls) and `.venv/bin/python -m app.ai.voice --setup` (creates the knowledge documents, RAG indexes, tools and agent once; ids are remembered in `app/data/raw/elevenlabs_setup.json`). Put the printed `ELEVENLABS_AGENT_ID` in `.env`.
 - **Visa:** a Visa Developer project with Foreign Exchange Rates and Merchant Offers Resource Center. Two-way SSL: download the certificate and private key to `backend/secrets/`, then set `VISA_USER_ID`, `VISA_PASSWORD` (the project's Two-Way SSL credentials, not your account password), `VISA_CERT_PATH`, `VISA_KEY_PATH`.
 
 ### API usage limits
@@ -87,5 +95,5 @@ The live Plaid Sandbox test runs when Plaid keys are set; all other external API
 | Visa cards in the optimizer | Built: best-earning Visa card per cash leg, earned points fund later trips |
 | Visa checkout for cash legs | Built on the Cybersource Sandbox (needs sandbox keys); test transactions only |
 | Custom trips | Built: any airport pair, date (within 330 days) and cabin, up to 8 trips; award prices from the charts |
-| Trip parsing from a sentence (LLM) | Not built (mock loads sample trips) |
-| ElevenLabs voice agent + knowledge base | Not built |
+| Trip parsing from a sentence (LLM) | Built: Gemini with a JSON schema, validated like hand-entered trips (needs `GEMINI_API_KEY`) |
+| ElevenLabs voice agent + knowledge base | Built: signed sessions, 3 client tools, RAG over public reference data, one-command setup (needs `ELEVENLABS_API_KEY`) |

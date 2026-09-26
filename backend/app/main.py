@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .data_store import holding_names, load_dataset
 from .models import OptimizeRequest, OptimizeResponse
 from .planning import Planner
+from .ai.routes import router as ai_router
 from .plaid.routes import router as plaid_router
 from .visa.routes import router as visa_router
 from . import card_rewards
@@ -13,6 +14,7 @@ from .trips import CABINS, MAX_TRIPS, FareUnavailable, custom_trip, effective_tr
 app = FastAPI(title="Pointifly API")
 app.include_router(plaid_router)
 app.include_router(visa_router)
+app.include_router(ai_router)
 
 app.add_middleware(
     CORSMiddleware,

@@ -97,3 +97,46 @@ def fake_cybersource(monkeypatch):
     for k, v in {"CYBERSOURCE_MERCHANT_ID": "test_merchant", "CYBERSOURCE_KEY_ID": "kid", "CYBERSOURCE_SECRET_KEY": "c2VjcmV0"}.items():
         monkeypatch.setenv(k, v)
     return fake
+
+
+class FakeGemini:
+    def __init__(self):
+        self.calls: list[str] = []
+        self.output: dict = {"balances": [], "trips": [], "unclear": []}
+
+    def __call__(self, text, response_schema):
+        self.calls.append(text)
+        return self.output
+
+
+class FakeElevenLabs:
+    def __init__(self):
+        self.calls: list[tuple[str, str, dict | None]] = []
+
+    def __call__(self, method, path, body=None):
+        self.calls.append((method, path, body))
+        if path.startswith("/v1/convai/conversation/get-signed-url"):
+            return {"signed_url": "wss://api.elevenlabs.io/v1/convai/conversation?agent_id=a&conversation_signature=s"}
+        if path == "/v1/convai/knowledge-base/text":
+            return {"id": f"doc{len(self.calls)}", "name": body["name"]}
+        if path.endswith("/rag-index"):
+            return {"status": "succeeded"}
+        if path == "/v1/convai/tools":
+            return {"id": f"tool_{body['tool_config']['name']}"}
+        if path == "/v1/convai/agents/create":
+            return {"agent_id": "agent_test"}
+        raise AssertionError(f"unexpected ElevenLabs call {method} {path}")
+
+
+@pytest.fixture(autouse=True)
+def fake_ai(monkeypatch, tmp_path):
+    from app.ai import parser, voice
+
+    gemini, eleven = FakeGemini(), FakeElevenLabs()
+    monkeypatch.setattr(parser, "_call", gemini)
+    monkeypatch.setattr(parser, "_CACHE", {})
+    monkeypatch.setattr(voice, "_request", eleven)
+    monkeypatch.setattr(voice, "SETUP_STATE", tmp_path / "elevenlabs_setup.json")
+    for k, v in {"GEMINI_API_KEY": "test-gemini", "ELEVENLABS_API_KEY": "test-eleven", "ELEVENLABS_AGENT_ID": "agent_test"}.items():
+        monkeypatch.setenv(k, v)
+    return gemini, eleven

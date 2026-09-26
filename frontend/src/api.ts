@@ -67,7 +67,14 @@ export type Trip = {
   cash_source?: { source: string; fetched_at: string }
   custom?: boolean // entered by the user; priced live on optimize
   custom_label?: string // a name the user typed (else the backend uses the destination city)
+  date_is_estimate?: boolean // parsed from "in March" etc.: the 15th was assumed
 }
+
+export type ParseResult = { balances: Balance[]; trips: Trip[]; warnings: string[]; model: string }
+export const parseSentence = (sentence: string, home_airport: string) =>
+  post<ParseResult>('/api/parse', { sentence, home_airport })
+export const getAiStatus = () => request<{ parser: boolean; parser_model: string; voice: boolean }>('/api/ai/status')
+export const getVoiceSession = () => request<{ signed_url: string }>('/api/voice/session')
 
 export type Airport = { code: string; name: string; city: string; country: string }
 export const searchAirports = (q: string) => request<Airport[]>(`/api/airports?q=${encodeURIComponent(q)}`)
