@@ -93,7 +93,7 @@ def solve(
     transfers: dict[str, dict[str, float]],
     reserve_cpp: dict[str, float],
     force_points: str | None = None,
-    increments: dict[str, int] | None = None,
+    increments: dict[str, dict[str, int]] | None = None,
 ) -> Plan | None:
     """Optimal plan for `trips` together. force_points=trip id disallows cash for that trip."""
     m = cp_model.CpModel()
@@ -117,7 +117,7 @@ def solve(
                 if ratio is None or balances[h] == 0:
                     continue
                 # Transfers move in fixed blocks; miles already in the program move freely.
-                inc = 1 if h == o.program else increments.get(h, 1)
+                inc = 1 if h == o.program else increments.get(h, {}).get(o.program, 1)
                 blocks = m.new_int_var(0, balances[h] // inc, f"k_{h}_{tid}_{i}")
                 v = inc * blocks
                 x[h, tid, i] = v
@@ -170,7 +170,7 @@ def greedy(
     balances: dict[str, int],
     transfers: dict[str, dict[str, float]],
     reserve_cpp: dict[str, float],
-    increments: dict[str, int] | None = None,
+    increments: dict[str, dict[str, int]] | None = None,
 ) -> Plan:
     """Same model, one trip at a time in date order: what trip-by-trip award tools do."""
     remaining = dict(balances)

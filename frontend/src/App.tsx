@@ -77,6 +77,7 @@ export default function App() {
         <Dashboard
           result={result}
           holdingNames={names}
+          currencies={dataset?.currencies ?? []}
           onReset={() => {
             setResult(null)
             setCards([])

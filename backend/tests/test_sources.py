@@ -1,7 +1,7 @@
 """Parsers and snapshot overlay. Fixtures use only the documented response fields."""
 
 from app.data_store import apply_snapshot, load_base_dataset
-from app.sources import rewardscc, serpapi_flights
+from app.sources import serpapi_flights
 
 TRIP = {"id": "del", "origin": "ATL", "destination": "DEL", "outbound_date": "2027-03-12"}
 
@@ -44,22 +44,6 @@ def test_serpapi_business_ignores_mixed_cabin_itineraries():
     assert serpapi_flights.lowest_fare(resp, "premium_economy") is None
 
 
-def test_rewardscc_ratios_map_to_our_currencies_and_ignore_bonus():
-    rows = {
-        "aeroplan": [
-            {"rewardProgramName": "American Express Membership Rewards", "transferRatio": 1.0, "totalRatio": 1.3},
-            {"rewardProgramName": "Chase Ultimate Rewards", "transferRatio": 1.0},
-            {"rewardProgramName": "Citi ThankYou Rewards", "transferRatio": 1.0},  # not a currency we model
-        ],
-        "turkish": [{"rewardProgramName": "Capital One Miles", "transferRatio": 1.0}],
-    }
-    assert rewardscc.ratios(rows) == {
-        "amex_mr": {"aeroplan": 1.0},
-        "chase_ur": {"aeroplan": 1.0},
-        "capital_one": {"turkish": 1.0},
-    }
-
-
 def test_snapshot_overrides_fetched_values_only():
     base = load_base_dataset()
     snap = {
@@ -67,17 +51,12 @@ def test_snapshot_overrides_fetched_values_only():
             "del:business": {"price": 3999, "source": "Google Flights via SerpApi", "fetched_at": "2026-09-25T00:00:00+00:00"},
             "del:economy": {"price": 812, "source": "Google Flights via SerpApi", "fetched_at": "2026-09-25T00:00:00+00:00"},
         },
-        "transfers": {"source": "RewardsCC", "fetched_at": "2026-09-25", "ratios": {"amex_mr": {"aeroplan": 1.0, "unknown_prog": 2.0}}},
     }
     ds = apply_snapshot(base, snap)
     trips = {t["id"]: t for t in ds["sample_trips"]}
     assert trips["del"]["cash_price_usd"] == 3999 and trips["del"]["cash_source"]["source"].startswith("Google")
     assert next(o for o in trips["del"]["award_options"] if o.get("cabin") == "economy")["cash_price_usd"] == 812
     assert trips["mia"]["cash_price_usd"] == next(t for t in base["sample_trips"] if t["id"] == "mia")["cash_price_usd"]
-    amex = next(c for c in ds["currencies"] if c["id"] == "amex_mr")
-    assert amex["transfers"] == {"aeroplan": 1.0}  # unknown programs dropped
-    chase = next(c for c in ds["currencies"] if c["id"] == "chase_ur")
-    assert "transfers_source" not in chase  # not fetched -> sample kept
     assert base["sample_trips"][2]["cash_price_usd"] != 3999  # base untouched
 
 
@@ -100,3 +79,21 @@ def test_recent_fares_are_not_refetched():
     assert not is_fresh({"params": params, "fetched_at": (now - timedelta(days=4)).isoformat()}, params)
     assert not is_fresh({"params": {"departure_id": "JFK"}, "fetched_at": now.isoformat()}, params)  # search changed
     assert not is_fresh(None, params)
+
+
+def test_transfer_ratios_file_is_complete_and_sourced():
+    ds = load_base_dataset()
+    programs = {p["id"] for p in ds["programs"]}
+    for cur in ds["currencies"]:
+        src = cur["transfer_source"]
+        assert src["url"].startswith("https://") and src["verified_on"]
+        assert cur["transfer_details"], cur["id"]
+        for pid, d in cur["transfer_details"].items():
+            assert pid in programs, (cur["id"], pid)
+            assert d["ratio"] > 0 and d["increment"] >= 1 and d["minimum"] >= d["increment"]
+            assert d["quoted"]  # the issuer's own wording
+    # Spot-check against the issuers' pages as verified 2026-09-26.
+    t = {c["id"]: c["transfers"] for c in ds["currencies"]}
+    assert "united" not in t["amex_mr"] and "turkish" not in t["amex_mr"]
+    assert "ana" not in t["chase_ur"] and "turkish" not in t["chase_ur"]
+    assert "united" not in t["capital_one"] and "ana" not in t["capital_one"]

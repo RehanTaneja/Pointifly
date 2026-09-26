@@ -6,11 +6,26 @@ from pathlib import Path
 DATA_DIR = Path(__file__).parent / "data"
 DATA_PATH = DATA_DIR / "redemptions.json"
 SNAPSHOT_PATH = DATA_DIR / "snapshots.json"
+RATIOS_PATH = DATA_DIR / "transfer_ratios.json"
 
 
 def load_base_dataset() -> dict:
+    """Sample dataset with each currency's official transfer partners and ratios merged in."""
     with DATA_PATH.open() as f:
-        return json.load(f)
+        ds = json.load(f)
+    with RATIOS_PATH.open() as f:
+        ratios = json.load(f)
+    for cur in ds["currencies"]:
+        issuer = ratios["issuers"][cur["id"]]
+        cur["transfers"] = {pid: d["ratio"] for pid, d in issuer["partners"].items()}
+        cur["transfer_details"] = issuer["partners"]
+        cur["transfer_source"] = {
+            "url": issuer["source_url"],
+            "title": issuer["source_title"],
+            "eligibility": issuer["eligibility"],
+            "verified_on": ratios["verified_on"],
+        }
+    return ds
 
 
 def apply_snapshot(ds: dict, snap: dict) -> dict:
@@ -32,15 +47,6 @@ def apply_snapshot(ds: dict, snap: dict) -> dict:
             other = fares.get(f"{trip['id']}:{opt['cabin']}") if "cabin" in opt else None
             if other:
                 opt["cash_price_usd"] = other["price"]
-
-    transfers = snap.get("transfers")
-    if transfers:
-        programs = {p["id"] for p in ds["programs"]}
-        for cur in ds["currencies"]:
-            fetched = transfers["ratios"].get(cur["id"])
-            if fetched is not None:
-                cur["transfers"] = {p: r for p, r in fetched.items() if p in programs}
-                cur["transfers_source"] = {"source": transfers["source"], "fetched_at": transfers["fetched_at"]}
     return ds
 
 

@@ -1,18 +1,38 @@
 import { useState } from 'react'
-import { cabinLabel, fmtPts, fmtUsd, type Allocation, type OptimizeResponse, type StrategyResult } from '../api'
+import {
+  cabinLabel,
+  fmtPts,
+  fmtUsd,
+  ratioLabel,
+  type Allocation,
+  type Currency,
+  type OptimizeResponse,
+  type StrategyResult,
+} from '../api'
 import { CheckoutModal } from './CheckoutModal'
 import { FareDetails } from './FareDetails'
 import { FlowSankey } from './FlowSankey'
 
-type Props = { result: OptimizeResponse; holdingNames: Record<string, string>; onReset: () => void }
+type Props = {
+  result: OptimizeResponse
+  holdingNames: Record<string, string>
+  currencies: Currency[]
+  onReset: () => void
+}
 
-function describe(a: Allocation, names: Record<string, string>) {
+function describe(a: Allocation, names: Record<string, string>, currencies: Currency[]) {
   if (a.method === 'cash') return `Pay cash · ${fmtUsd(a.cash_usd)}`
-  const from = a.sources.map((s) => (s.holding === a.program ? `${fmtPts(s.points)} miles` : `${names[s.holding]} ${fmtPts(s.points)}`))
+  const from = a.sources.map((s) => {
+    if (s.holding === a.program) return `${fmtPts(s.points)} miles`
+    const d = currencies.find((c) => c.id === s.holding)?.transfer_details[a.program!]
+    return `${names[s.holding]} ${fmtPts(s.points)}${d ? ` (${ratioLabel(d.ratio)}${d.via ? `, via ${d.via.split('.')[0]}` : ''})` : ''}`
+  })
   return `${names[a.program!]} ${cabinLabel(a.cabin)} · ${from.join(' + ')}`
 }
 
-function StrategyColumn({ s, names, highlight }: { s: StrategyResult; names: Record<string, string>; highlight?: boolean }) {
+type ColumnProps = { s: StrategyResult; names: Record<string, string>; currencies: Currency[]; highlight?: boolean }
+
+function StrategyColumn({ s, names, currencies, highlight }: ColumnProps) {
   return (
     <div className={`strategy ${highlight ? 'highlight' : ''}`}>
       <h3>{s.name}</h3>
@@ -37,7 +57,7 @@ function StrategyColumn({ s, names, highlight }: { s: StrategyResult; names: Rec
               <strong>{a.trip_label}</strong>
               {a.cents_per_point !== null && <span className="tag">{a.cents_per_point.toFixed(1)}¢/pt</span>}
             </div>
-            <div>{describe(a, names)}</div>
+            <div>{describe(a, names, currencies)}</div>
             <div className="muted small">{a.reason}</div>
             <FareDetails a={a} />
           </li>
@@ -47,7 +67,7 @@ function StrategyColumn({ s, names, highlight }: { s: StrategyResult; names: Rec
   )
 }
 
-export function Dashboard({ result, holdingNames, onReset }: Props) {
+export function Dashboard({ result, holdingNames, currencies, onReset }: Props) {
   const [checkout, setCheckout] = useState<Allocation | null>(null)
   const [paid, setPaid] = useState<Set<string>>(new Set())
   const cashLegs = result.portfolio.allocations.filter((a) => a.method === 'cash')
@@ -67,8 +87,8 @@ export function Dashboard({ result, holdingNames, onReset }: Props) {
       <section className="card">
         <h2>Greedy vs. Pointfolio</h2>
         <div className="compare">
-          <StrategyColumn s={result.greedy} names={holdingNames} />
-          <StrategyColumn s={result.portfolio} names={holdingNames} highlight />
+          <StrategyColumn s={result.greedy} names={holdingNames} currencies={currencies} />
+          <StrategyColumn s={result.portfolio} names={holdingNames} currencies={currencies} highlight />
         </div>
       </section>
 

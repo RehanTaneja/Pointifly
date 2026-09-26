@@ -8,6 +8,26 @@ export const cabinLabel = (c: string) => c.replace('_', ' ')
 
 export type AwardOption = { program: string; points: number; cabin: Cabin; cash_price_usd?: number }
 
+export type TransferDetail = {
+  ratio: number
+  quoted: string
+  minimum: number
+  increment: number
+  transfer_time: string | null
+  via?: string
+}
+
+export type Currency = {
+  id: string
+  name: string
+  transfers: Record<string, number>
+  transfer_details: Record<string, TransferDetail>
+  transfer_source: { url: string; title: string; eligibility: string; verified_on: string }
+}
+
+// Official ratio as "1:1", or "1,000 → 800" when not 1:1.
+export const ratioLabel = (r: number) => (r === 1 ? '1:1' : `1,000 → ${fmtPts(Math.round(1000 * r))}`)
+
 export type Flight = {
   airline: string | null
   flight_number: string | null
@@ -50,7 +70,7 @@ export type Trip = {
 export type Dataset = {
   _note: string
   reserve_value_cpp: { default: number }
-  currencies: { id: string; name: string; transfers: Record<string, number> }[]
+  currencies: Currency[]
   programs: { id: string; name: string }[]
   sample_balances: Balance[]
   sample_trips: Trip[]

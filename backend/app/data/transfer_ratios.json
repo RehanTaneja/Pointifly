@@ -1,0 +1,50 @@
+{
+  "_note": "Transfer ratios from each issuer's official US pages, verified 2026-09-26. Only the programs Pointfolio models are listed. ratio = partner points received per 1 bank point.",
+  "verified_on": "2026-09-26",
+  "issuers": {
+    "amex_mr": {
+      "source_url": "https://global.americanexpress.com/rewards/transfer?tier=MR",
+      "source_title": "American Express: Membership Rewards Transfer Partners (US)",
+      "eligibility": "Membership Rewards cards. If Amex Rewards Checking / Business Checking are your only Membership Rewards products, transfer options are limited.",
+      "partners": {
+        "aeroplan": { "ratio": 1.0, "quoted": "1,000 Points = 1,000 Aeroplan Points", "minimum": 1000, "increment": 1000, "transfer_time": "48 hours" },
+        "british_airways": { "ratio": 1.0, "quoted": "1,000 Points = 1,000 Avios", "minimum": 1000, "increment": 1000, "transfer_time": "48 hours" },
+        "flying_blue": { "ratio": 1.0, "quoted": "1,000 Points = 1,000 Flying Blue Miles", "minimum": 1000, "increment": 1000, "transfer_time": "48 hours" },
+        "virgin_atlantic": { "ratio": 1.0, "quoted": "1,000 Points = 1,000 Virgin Points", "minimum": 1000, "increment": 1000, "transfer_time": "48 hours" },
+        "ana": { "ratio": 1.0, "quoted": "1,000 Points = 1,000 ANA Mileage Club Miles", "minimum": 1000, "increment": 1000, "transfer_time": "4 days" }
+      }
+    },
+    "chase_ur": {
+      "source_url": "https://www.chase.com/sapphire-cards/personal/preferred",
+      "source_title": "Chase: Sapphire Preferred benefits (transfer rate + partner list)",
+      "increment_source_url": "https://www.chase.com/personal/credit-cards/education/basics/how-to-transfer-chase-ultimate-rewards-points",
+      "eligibility": "Transfers need Sapphire Preferred, Sapphire Reserve or Ink Business Preferred.",
+      "partners": {
+        "aeroplan": { "ratio": 1.0, "quoted": "most travel partners at a rate of 1:1", "minimum": 1000, "increment": 1000, "transfer_time": "Next business day, up to 7 business days" },
+        "united": { "ratio": 1.0, "quoted": "most travel partners at a rate of 1:1", "minimum": 1000, "increment": 1000, "transfer_time": "Next business day, up to 7 business days" },
+        "british_airways": { "ratio": 1.0, "quoted": "most travel partners at a rate of 1:1", "minimum": 1000, "increment": 1000, "transfer_time": "Next business day, up to 7 business days" },
+        "flying_blue": { "ratio": 1.0, "quoted": "most travel partners at a rate of 1:1", "minimum": 1000, "increment": 1000, "transfer_time": "Next business day, up to 7 business days" },
+        "virgin_atlantic": { "ratio": 1.0, "quoted": "most travel partners at a rate of 1:1", "minimum": 1000, "increment": 1000, "transfer_time": "Next business day, up to 7 business days" }
+      }
+    },
+    "capital_one": {
+      "source_url": "https://www.capitalone.com/learn-grow/money-management/venture-miles-transfer-partnerships/",
+      "source_title": "Capital One: Miles Transfer Partners guide (dated 2026-01-29)",
+      "eligibility": "At least 1,000 miles; name must match the loyalty account. Increments not published: modeled as 1,000 (never plans a transfer the bank won't allow).",
+      "partners": {
+        "aeroplan": { "ratio": 1.0, "quoted": "most offer a 1:1 conversion ratio", "minimum": 1000, "increment": 1000, "transfer_time": null },
+        "british_airways": { "ratio": 1.0, "quoted": "most offer a 1:1 conversion ratio", "minimum": 1000, "increment": 1000, "transfer_time": null },
+        "flying_blue": { "ratio": 1.0, "quoted": "most offer a 1:1 conversion ratio", "minimum": 1000, "increment": 1000, "transfer_time": null },
+        "turkish": { "ratio": 1.0, "quoted": "most offer a 1:1 conversion ratio", "minimum": 1000, "increment": 1000, "transfer_time": null },
+        "virgin_atlantic": {
+          "ratio": 1.0,
+          "quoted": "Virgin Red: most offer a 1:1 conversion ratio",
+          "minimum": 1000,
+          "increment": 1000,
+          "transfer_time": null,
+          "via": "Virgin Red. Virgin Points in Virgin Red buy Virgin Atlantic reward seats (https://www.virgin.com/en-us/virgin-red/spend-virgin-points/new-virgin-atlantic-reward-seats-17990); partner-airline awards not confirmed."
+        }
+      }
+    }
+  }
+}

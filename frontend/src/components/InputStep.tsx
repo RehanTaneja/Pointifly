@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { TransferPartners } from './TransferPartners'
 import { CABINS, cabinLabel, fmtUsd, type Balance, type Cabin, type Dataset, type Trip } from '../api'
 
 const EXAMPLE_SENTENCE =
@@ -50,6 +51,9 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize }:
           </label>
         ))}
       </div>
+
+      <h3>Transfer partners and ratios</h3>
+      <TransferPartners dataset={dataset} holdings={balances.map((b) => b.holding)} holdingNames={holdingNames} />
 
       <h3>Trips this year</h3>
       <textarea rows={3} value={sentence} onChange={(e) => setSentence(e.target.value)} />

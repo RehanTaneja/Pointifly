@@ -1,5 +1,5 @@
 {
-  "_note": "SAMPLE DATA for development. transfer_increment (1,000) is an assumption to verify per issuer. Award prices, cash prices and balances are placeholders, not live quotes. Verify transfer partners/ratios before the demo. Trips are one-way; award prices must be one-way too.",
+  "_note": "SAMPLE DATA for development. Award prices (points) and balances are placeholders. Cash prices here are fallbacks: live Google Flights fares from snapshots.json override them. Trips are one-way; award prices must be one-way too. Transfer ratios live in transfer_ratios.json (official issuer pages).",
   "reserve_value_cpp": {
     "_note": "ASSUMPTION: what a point is worth if kept unspent (cents/point). An award only wins if it beats this.",
     "default": 1.0
@@ -7,39 +7,15 @@
   "currencies": [
     {
       "id": "amex_mr",
-      "transfer_increment": 1000,
-      "name": "Amex Membership Rewards",
-      "transfers": {
-        "aeroplan": 1.0,
-        "british_airways": 1.0,
-        "flying_blue": 1.0,
-        "virgin_atlantic": 1.0,
-        "ana": 1.0
-      }
+      "name": "Amex Membership Rewards"
     },
     {
       "id": "chase_ur",
-      "transfer_increment": 1000,
-      "name": "Chase Ultimate Rewards",
-      "transfers": {
-        "aeroplan": 1.0,
-        "united": 1.0,
-        "british_airways": 1.0,
-        "flying_blue": 1.0,
-        "virgin_atlantic": 1.0
-      }
+      "name": "Chase Ultimate Rewards"
     },
     {
       "id": "capital_one",
-      "transfer_increment": 1000,
-      "name": "Capital One Miles",
-      "transfers": {
-        "aeroplan": 1.0,
-        "british_airways": 1.0,
-        "flying_blue": 1.0,
-        "virgin_atlantic": 1.0,
-        "turkish": 1.0
-      }
+      "name": "Capital One Miles"
     }
   ],
   "programs": [

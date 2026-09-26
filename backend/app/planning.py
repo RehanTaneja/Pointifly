@@ -54,7 +54,9 @@ class Planner:
         order = list(self.names)
         self.balances = dict(sorted(balances.items(), key=lambda kv: order.index(kv[0])))
         self.transfers = {c["id"]: c["transfers"] for c in ds["currencies"]}
-        self.increments = {c["id"]: c.get("transfer_increment", 1) for c in ds["currencies"]}
+        self.increments = {
+            c["id"]: {pid: d["increment"] for pid, d in c["transfer_details"].items()} for c in ds["currencies"]
+        }
         self.reserve_default = ds["reserve_value_cpp"]["default"]
         self.reserve = {h: ds["reserve_value_cpp"].get(h, self.reserve_default) for h in balances}
 

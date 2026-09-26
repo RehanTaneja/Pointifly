@@ -29,15 +29,15 @@ cd backend && .venv/bin/python -m app.sources.refresh --dry-run
 ```
 
 ```bash
-cd backend && .venv/bin/python -m app.sources.refresh --fares --transfers
+cd backend && .venv/bin/python -m app.sources.refresh --fares
 ```
 
-Results are saved to `backend/app/data/snapshots.json` (with source + fetch time) and overlaid on the sample dataset; anything not fetched stays sample. Restart the API to pick them up.
+Results are saved to `backend/app/data/snapshots.json` (with source + fetch time) and overlaid on the sample dataset; anything not fetched stays sample. Choosing a new cabin in the UI fetches that fare once and saves it. `--reparse` re-reads saved responses without spending searches.
 
 | Data | Source | Free tier |
 |---|---|---|
 | Cash fares (live) | Google Flights via [SerpApi](https://serpapi.com/google-flights-api) | 100 searches/month; a full refresh uses 7 |
-| Transfer partners + ratios | [RewardsCC](https://rewardscc.com/docs/get-credit-card/point-transfer/transfer-program-list) via RapidAPI | Plan details not verified |
+| Transfer partners + ratios | Official issuer pages, curated in `backend/app/data/transfer_ratios.json` (verified 2026-09-26): [Amex](https://global.americanexpress.com/rewards/transfer?tier=MR), [Chase](https://www.chase.com/sapphire-cards/personal/preferred), [Capital One](https://www.capitalone.com/learn-grow/money-management/venture-miles-transfer-partnerships/) | Free; re-verify before the demo |
 | Award prices (points) | No free live source found | Still sample |
 
 Not usable: Amadeus Self-Service (shut down July 17, 2026), ITA Matrix (no public API), Seats.aero (paid Pro plan, non-commercial).
@@ -53,7 +53,7 @@ cd backend && .venv/bin/python -m pytest -q
 | Piece | State |
 |---|---|
 | Greedy vs. portfolio optimizer | Real: exact integer program (OR-Tools CP-SAT); greedy = same model, one trip at a time |
-| Redemption dataset | Sample award prices. Cash fares + transfer ratios can be refreshed from live sources. Reserve value (1.0¢/pt) and 1,000-point transfer increments are assumptions |
+| Redemption dataset | Sample award prices. Live cash fares; official transfer ratios. Reserve value (1.0¢/pt) is an assumption |
 | Plaid Link (Sandbox) | UI mock only |
 | NL trip parse (LLM) | Mock: loads sample trips |
 | ElevenLabs voice agent + RAG | Not connected |

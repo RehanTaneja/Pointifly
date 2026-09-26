@@ -62,7 +62,7 @@ def test_invariants_across_balance_mixes():
 
 # --- edge cases ---------------------------------------------------------------
 
-INC = {"amex_mr": 1000, "chase_ur": 1000, "capital_one": 1000}
+INC = {c["id"]: {p: d["increment"] for p, d in c["transfer_details"].items()} for c in DS["currencies"]}
 DELHI = [trip("del", "2027-08", 4500, [{"program": "aeroplan", "points": 90000}], cabin="business")]
 
 
@@ -139,3 +139,14 @@ def test_effective_trip_unavailable_cabin_raises(monkeypatch):
     assert T.effective_trip(base, "economy")["cash_price_usd"] == 999  # sample price for the default cabin
     with pytest.raises(T.FareUnavailable):
         T.effective_trip(base, "first")
+
+
+def test_non_one_to_one_ratio():
+    # Hypothetical 1,000 bank points -> 800 partner miles (0.8). 72,000 miles needs 90,000 bank points.
+    transfers = {"bank": {"aeroplan": 0.8}}
+    trips = [trip("t", "2027-01", 5000, [{"program": "aeroplan", "points": 72000}])]
+    inc = {"bank": {"aeroplan": 1000}}
+    ok = solve(trips, {"bank": 90000}, transfers, {"bank": 1.0}, increments=inc)
+    assert ok.trips[0].sources == {"bank": 90000}
+    short = solve(trips, {"bank": 89000}, transfers, {"bank": 1.0}, increments=inc)
+    assert short.trips[0].option.key == CASH

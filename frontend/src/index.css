@@ -84,3 +84,7 @@ select { font: inherit; padding: 4px 6px; border-radius: 6px; border: 1px solid 
 .fare summary { cursor: pointer; color: var(--accent); }
 .legs { margin: 6px 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
 a { color: var(--accent); }
+.partners { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.partner-card { border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.partner-card .table { margin-top: 6px; }
+.partner-card p { margin: 6px 0 0; }
