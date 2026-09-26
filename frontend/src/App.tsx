@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   agentPay,
   getAiStatus,
@@ -12,6 +12,7 @@ import {
   type OptimizeResponse,
   type Trip,
 } from './api'
+import { Logo, PlaneLoader, Splash } from './components/Brand'
 import { ConnectStep, type LinkedCard } from './components/ConnectStep'
 import { Dashboard } from './components/Dashboard'
 import { InputStep, type InputApi } from './components/InputStep'
@@ -27,6 +28,8 @@ export default function App() {
   const [cards, setCards] = useState<LinkedCard[]>([])
   const [result, setResult] = useState<OptimizeResponse | null>(null)
   const [voiceReady, setVoiceReady] = useState(false)
+  const [intro, setIntro] = useState(true)
+  const endIntro = useCallback(() => setIntro(false), [])
   const inputApi = useRef<InputApi | null>(null)
   const lastInputs = useRef<{ balances: Balance[]; trips: Trip[] } | null>(null)
   const resultRef = useRef<OptimizeResponse | null>(null)
@@ -89,10 +92,11 @@ export default function App() {
   }
 
   return (
+    <>
+    {intro && <Splash onDone={endIntro} />}
     <main>
       <header>
-        <h1>Pointifly</h1>
-        <p className="muted">Award tools optimize one flight. Pointifly optimizes your whole year of points.</p>
+        <Logo />
       </header>
 
       {error && <div className="banner error">{error}</div>}
@@ -120,16 +124,12 @@ export default function App() {
             linkedHoldings={[...new Set(cards.flatMap((c) => (c.holding ? [c.holding] : [])))]}
             onOptimize={runOptimize}
             registerApi={(api) => (inputApi.current = api)}
+            voiceEnabled={voiceReady}
           />
         </div>
       )}
 
-      {step === 'loading' && (
-        <section className="card center">
-          <div className="spinner" />
-          <p className="muted">Optimizing across all trips…</p>
-        </section>
-      )}
+      {step === 'loading' && <PlaneLoader label="Optimizing across all trips…" />}
 
       {step === 'dashboard' && result && (
         <Dashboard
@@ -145,5 +145,6 @@ export default function App() {
         />
       )}
     </main>
+    </>
   )
 }

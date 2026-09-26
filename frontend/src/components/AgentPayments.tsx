@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { fmtUsd, getAgentStatus, PAYMENTS_CHANGED, setMandate, type AgentStatus, type PayResult } from '../api'
 
 // The user's mandate for the agent: autopay on/off and spending limits, enforced by the server,
@@ -64,19 +65,29 @@ export function AgentPayments({ planId, onPaidChange }: { planId: string; onPaid
         <button onClick={() => save(status.autopay)} disabled={limits.per === status.max_per_payment && limits.total === status.max_total}>
           Save limits
         </button>
-        <span className="muted small">Spent {fmtUsd(status.spent)} of {fmtUsd(status.max_total)}</span>
+      </div>
+      <div className="meter small">
+        <div className="row between">
+          <span className="muted">Paid so far</span>
+          <span>
+            {fmtUsd(status.spent)} <span className="muted">of {fmtUsd(status.max_total)}</span>
+          </span>
+        </div>
+        <div className="meter-track">
+          <div className="meter-fill" style={{ width: `${Math.min(100, (status.spent / status.max_total) * 100)}%` }} />
+        </div>
       </div>
       {status.audit.length > 0 && (
         <ul className="audit small">
           {[...status.audit].reverse().map((a, i) => (
             <li key={i} className={a.decision}>
-              <span className="muted">{a.time}</span> <strong>{a.decision}</strong>
+              <span className="muted">{a.time}</span> <strong className="decision">{a.decision}</strong>
               {a.trip_id && ` · ${status.cash_legs[a.trip_id]?.label ?? a.trip_id}`} · {a.reason}
             </li>
           ))}
         </ul>
       )}
-      {toast && (
+      {toast && createPortal(
         <div className="toast" role="status">
           <svg className="checkmark small-check" viewBox="0 0 52 52" aria-hidden="true">
             <circle className="checkmark-circle" cx="26" cy="26" r="24" />
@@ -88,7 +99,8 @@ export function AgentPayments({ planId, onPaidChange }: { planId: string; onPaid
               {fmtUsd(toast.amount ?? 0)} with {toast.card} · +{(toast.earned_points ?? 0).toLocaleString()} points
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </section>
   )

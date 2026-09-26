@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { fmtPts, fmtUsd, getVisaStatus, userPay, type Allocation, type PayResult } from '../api'
 
 // Pays a cash leg through the Cybersource Sandbox (Visa's payment gateway): a test transaction
@@ -39,7 +40,7 @@ export function CheckoutModal({ allocation, holdingNames, planId, onClose, onPai
     onPaid(r)
   }
 
-  return (
+  return createPortal(
     <div className="modal-backdrop" onClick={stage === 'processing' ? undefined : onClose}>
       <div className="modal checkout" onClick={(e) => e.stopPropagation()}>
         {stage === 'done' ? (
@@ -86,7 +87,8 @@ export function CheckoutModal({ allocation, holdingNames, planId, onClose, onPai
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

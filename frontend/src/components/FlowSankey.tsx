@@ -8,7 +8,7 @@ function FlowNode({ x, y, width, height, payload }: NodeProps) {
   const isSink = payload.targetLinks.length === 0
   return (
     <g>
-      <rect x={x} y={y} width={width} height={height} fill="var(--accent)" rx={2} />
+      <rect x={x} y={y} width={width} height={height} fill="var(--accent)" rx={3} />
       <text
         x={isSink ? x - 6 : x + width + 6}
         y={y + height / 2}
@@ -28,11 +28,16 @@ export function FlowSankey({ data }: { data: OptimizeResponse['sankey'] }) {
       <Sankey
         data={data}
         nodePadding={28}
+        nodeWidth={12}
         margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
         node={(props: NodeProps) => <FlowNode {...props} />}
-        link={{ stroke: 'var(--accent)', strokeOpacity: 0.25 }}
+        link={{ stroke: '#7f89ff', strokeOpacity: 0.32 }}
       >
-        <Tooltip formatter={(v) => `${fmtPts(Number(v))} pts`} />
+        <Tooltip
+          formatter={(v) => `${fmtPts(Number(v))} pts`}
+          contentStyle={{ background: '#0a1036', border: '1px solid rgba(150,160,255,0.26)', borderRadius: 10, color: '#eef0ff' }}
+          itemStyle={{ color: '#eef0ff' }}
+        />
       </Sankey>
     </ResponsiveContainer>
   )

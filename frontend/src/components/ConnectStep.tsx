@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { usePlaidLink } from 'react-plaid-link'
 import { plaid, type LinkedCard, type PlaidStatus } from '../api'
 
@@ -83,6 +84,7 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
       {error && <div className="banner error small">{error}</div>}
 
       {cards.length > 0 && (
+        <div className="table-wrap">
         <table className="table">
           <thead>
             <tr>
@@ -107,11 +109,12 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
             ))}
           </tbody>
         </table>
+        </div>
       )}
 
       <div className="row end">
         <button className="primary" disabled={mapped.length === 0} onClick={() => onDone(mapped)}>
-          Continue
+          Continue<span className="arrow">→</span>
         </button>
       </div>
     </section>
@@ -159,7 +162,7 @@ function MockConnect(props: { disabled: boolean; linked: Set<string>; onCards: (
         </button>
         <span className="muted small">Plaid keys not set on the server: using a mock.</span>
       </div>
-      {open && (
+      {open && createPortal(
         <div className="modal-backdrop" onClick={() => setOpen(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Select your institution</h3>
@@ -179,7 +182,8 @@ function MockConnect(props: { disabled: boolean; linked: Set<string>; onCards: (
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   )

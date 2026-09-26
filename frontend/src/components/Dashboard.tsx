@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   cabinLabel,
   fmtMoney,
@@ -49,15 +49,15 @@ function StrategyColumn({ s, names, currencies, highlight }: ColumnProps) {
       <h3>{s.name}</h3>
       <div className="stats">
         <div>
-          <div className="stat">{fmtPts(s.total_points)}</div>
+          <div className="stat"><CountUp value={s.total_points} format={fmtPts} /></div>
           <div className="muted small">points spent</div>
         </div>
         <div>
-          <div className="stat">{fmtUsd(s.total_value_usd)}</div>
+          <div className="stat"><CountUp value={s.total_value_usd} format={fmtUsd} /></div>
           <div className="muted small">travel value from points</div>
         </div>
         <div>
-          <div className="stat">{fmtUsd(s.cash_out_of_pocket_usd)}</div>
+          <div className="stat"><CountUp value={s.cash_out_of_pocket_usd} format={fmtUsd} /></div>
           <div className="muted small">cash</div>
         </div>
       </div>
@@ -90,8 +90,8 @@ export function Dashboard({ result, holdingNames, currencies, cardIds, onReset }
   const cashLegs = result.portfolio.allocations.filter((a) => a.method === 'cash')
 
   return (
-    <>
-      <div className="banner">
+    <div className="dashboard">
+      <div className="banner info">
         {result.portfolio.allocations.some((a) => a.fare)
           ? 'Cash fares are live from Google Flights. Aeroplan and ANA award prices come from their official published charts (availability not checked); other programs use sample prices. Currency conversions use Visa FX Sandbox rates: sample data, not live market rates.'
           : 'Sample data: award and cash prices are placeholders, not live quotes.'}
@@ -112,7 +112,9 @@ export function Dashboard({ result, holdingNames, currencies, cardIds, onReset }
       <section className="card">
         <h2>Where your points flow</h2>
         <p className="muted small">Pointifly plan, in points. Cash legs are paid separately below.</p>
-        <FlowSankey data={result.sankey} />
+        <div className="flow-chart">
+          <FlowSankey data={result.sankey} />
+        </div>
       </section>
 
       {cashLegs.length > 0 && (
@@ -125,7 +127,7 @@ export function Dashboard({ result, holdingNames, currencies, cardIds, onReset }
                 {a.local_fx && <LocalRate fx={a.local_fx} />}
               </span>
               {paid.has(a.trip_id) ? (
-                <span className="tag ok">✓ Paid</span>
+                <span className="tag ok pop">✓ Paid</span>
               ) : (
                 <button className="primary" onClick={() => setCheckout(a)} disabled={!a.payment_card}>
                   Pay with Visa
@@ -156,8 +158,27 @@ export function Dashboard({ result, holdingNames, currencies, cardIds, onReset }
           }}
         />
       )}
-    </>
+    </div>
   )
+}
+
+// Numbers ease up from zero when the dashboard appears.
+function CountUp({ value, format }: { value: number; format: (n: number) => string }) {
+  const [reduced] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
+  const [shown, setShown] = useState(0)
+  const raf = useRef(0)
+  useEffect(() => {
+    if (reduced) return
+    const start = performance.now()
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / 900)
+      setShown(value * (1 - Math.pow(1 - t, 3)))
+      if (t < 1) raf.current = requestAnimationFrame(tick)
+    }
+    raf.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf.current)
+  }, [value, reduced])
+  return <>{format(Math.round(reduced ? value : shown))}</>
 }
 
 const cpp = (s: StrategyResult) => (s.total_points ? (s.total_value_usd / s.total_points) * 100 : 0)

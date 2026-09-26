@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AddTripForm } from './AddTripForm'
 import { TransferPartners } from './TransferPartners'
 import { parseSummary } from '../summaries'
+import { MicIcon, TALK_TO_AGENT } from './VoiceAgent'
 import {
   CABINS,
   cabinLabel,
@@ -29,9 +30,10 @@ type Props = {
   linkedHoldings: string[]
   onOptimize: (balances: Balance[], trips: Trip[]) => void
   registerApi?: (api: InputApi | null) => void
+  voiceEnabled?: boolean
 }
 
-export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize, registerApi }: Props) {
+export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize, registerApi, voiceEnabled }: Props) {
   // Balances stay manual: no aggregator exposes points balances.
   const [balances, setBalances] = useState<Balance[]>(() =>
     linkedHoldings.map((h) => ({
@@ -126,10 +128,16 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize, r
           From
           <input value={home} maxLength={3} onChange={(e) => setHome(e.target.value.toUpperCase())} />
         </label>
-        <button className="primary" onClick={() => fill(sentence)} disabled={parsing || !sentence.trim()}>
+        <button className="pay-button" onClick={() => fill(sentence)} disabled={parsing || !sentence.trim()}>
+          {parsing && <span className="button-spinner light" />}
           {parsing ? 'Reading…' : 'Parse trips'}
         </button>
         <button onClick={loadSampleYear}>Load sample year</button>
+        {voiceEnabled && (
+          <button className="icon" onClick={() => window.dispatchEvent(new Event(TALK_TO_AGENT))}>
+            <MicIcon /> Talk to agent
+          </button>
+        )}
       </div>
       {parseError && <div className="banner error small">{parseError}</div>}
       {notes.length > 0 && (
@@ -143,6 +151,7 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize, r
       <AddTripForm existing={trips} max={8} onAdd={(t) => setTrips((prev) => [...prev, t])} />
 
       {trips.length > 0 && (
+        <div className="table-wrap">
         <table className="table">
           <thead>
             <tr>
@@ -185,11 +194,12 @@ export function InputStep({ dataset, holdingNames, linkedHoldings, onOptimize, r
             ))}
           </tbody>
         </table>
+        </div>
       )}
 
       <div className="row end">
         <button className="primary" disabled={trips.length === 0} onClick={() => onOptimize(balances, trips)}>
-          Optimize my year
+          Optimize my year<span className="arrow">→</span>
         </button>
       </div>
     </section>

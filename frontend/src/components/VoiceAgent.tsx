@@ -13,11 +13,16 @@ export type VoiceTools = {
 
 type Line = { role: 'user' | 'agent' | 'tool'; text: string }
 
+// Fired by other parts of the page (e.g. the trip form's "Talk to agent") to start a voice session.
+export const TALK_TO_AGENT = 'pointifly:talk'
+
 function Agent({ tools, enabled }: { tools: VoiceTools; enabled: boolean }) {
   const [lines, setLines] = useState<Line[]>([])
   const [error, setError] = useState<string | null>(null)
   const [textMode, setTextMode] = useState(false)
   const [draft, setDraft] = useState('')
+  const [flash, setFlash] = useState(false)
+  const panel = useRef<HTMLDivElement>(null)
   const log = (l: Line) => setLines((prev) => [...prev.slice(-7), l])
   const textModeRef = useRef(false)
   useEffect(() => {
@@ -64,6 +69,21 @@ function Agent({ tools, enabled }: { tools: VoiceTools; enabled: boolean }) {
     }
   }
 
+  const startRef = useRef(start)
+  useEffect(() => {
+    startRef.current = start
+  })
+  useEffect(() => {
+    const onTalk = () => {
+      panel.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setFlash(true)
+      setTimeout(() => setFlash(false), 1000)
+      if (enabled && !live) startRef.current(false)
+    }
+    window.addEventListener(TALK_TO_AGENT, onTalk)
+    return () => window.removeEventListener(TALK_TO_AGENT, onTalk)
+  }, [enabled, live])
+
   const send = () => {
     const text = draft.trim()
     if (!text) return
@@ -73,7 +93,7 @@ function Agent({ tools, enabled }: { tools: VoiceTools; enabled: boolean }) {
   }
 
   return (
-    <div className="voice">
+    <div ref={panel} className={`voice ${live ? 'live' : ''} ${flash ? 'flash' : ''}`}>
       <div className="row between">
         <div className="voice-status small">
           <span className={`voice-dot ${live ? (conversation.isSpeaking ? 'speaking' : 'listening') : ''}`} />
@@ -94,8 +114,8 @@ function Agent({ tools, enabled }: { tools: VoiceTools; enabled: boolean }) {
             <button disabled={!enabled} onClick={() => start(true)}>
               Type instead
             </button>
-            <button className="primary" onClick={() => start(false)} disabled={!enabled} title={enabled ? '' : 'Voice needs ElevenLabs keys'}>
-              🎙 Talk
+            <button className="primary icon" onClick={() => start(false)} disabled={!enabled} title={enabled ? '' : 'Voice needs ElevenLabs keys'}>
+              <MicIcon /> Talk
             </button>
           </div>
         )}
@@ -125,6 +145,15 @@ function Agent({ tools, enabled }: { tools: VoiceTools; enabled: boolean }) {
         </ul>
       )}
     </div>
+  )
+}
+
+export function MicIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+    </svg>
   )
 }
 
