@@ -7,7 +7,7 @@ import re
 RULES: list[tuple[str, str | None, str | None]] = [
     # Co-branded cards earn the partner's own currency, not the issuer's transferable points.
     (r"\b(delta|skymiles|hilton|marriott|bonvoy|hyatt|ihg|southwest|british airways|jetblue)\b", None,
-     "Co-branded card: earns a program Pointfolio doesn't model yet."),
+     "Co-branded card: earns a program Pointifly doesn't model yet."),
     (r"\baeroplan\b", "aeroplan", None),
     (r"\bunited\b", "united", None),
     (r"\bsapphire (preferred|reserve)\b|\bink business preferred\b", "chase_ur", None),

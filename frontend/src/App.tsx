@@ -36,8 +36,8 @@ export default function App() {
   return (
     <main>
       <header>
-        <h1>Pointfolio</h1>
-        <p className="muted">Award tools optimize one flight. Pointfolio optimizes your whole year of points.</p>
+        <h1>Pointifly</h1>
+        <p className="muted">Award tools optimize one flight. Pointifly optimizes your whole year of points.</p>
       </header>
 
       {error && <div className="banner error">{error}</div>}

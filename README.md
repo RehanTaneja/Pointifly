@@ -1,8 +1,8 @@
-# Pointfolio (HackGT 13)
+# Pointifly (HackGT 13)
 
-Award tools optimize one flight. Pointfolio optimizes your whole year of points.
+Award tools optimize one flight. Pointifly optimizes your whole year of points.
 
-Connect your cards, enter your point balances and trips, and Pointfolio decides for every trip whether to pay cash or which points to transfer where, so the whole year gets the most value. It shows the result next to a trip-by-trip ("greedy") plan to make the difference visible.
+Connect your cards, enter your point balances and trips, and Pointifly decides for every trip whether to pay cash or which points to transfer where, so the whole year gets the most value. It shows the result next to a trip-by-trip ("greedy") plan to make the difference visible.
 
 ## How the optimizer works
 
@@ -19,7 +19,7 @@ Code: `backend/app/optimizer.py` (model), `backend/app/planning.py` (explanation
 ## Layout
 
 - `backend/`: FastAPI + OR-Tools. Data in `backend/app/data/`, integrations in `app/plaid/`, `app/visa/`, `app/sources/`.
-- `frontend/`: Vite + React + TypeScript. Flow: connect cards (Plaid) → balances + trips (cabin per trip) → optimize → Greedy vs. Pointfolio dashboard, Sankey, flight details, Visa travel benefits → Visa checkout for cash legs.
+- `frontend/`: Vite + React + TypeScript. Flow: connect cards (Plaid) → balances + trips (cabin per trip) → optimize → Greedy vs. Pointifly dashboard, Sankey, flight details, Visa travel benefits → Visa checkout for cash legs.
 
 ## Run locally
 

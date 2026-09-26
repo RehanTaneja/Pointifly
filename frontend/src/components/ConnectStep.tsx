@@ -100,7 +100,7 @@ export function ConnectStep({ holdingNames, onDone }: Props) {
                   {c.mask && <span className="muted"> ···{c.mask}</span>}
                 </td>
                 <td>
-                  {c.holding ? holdingNames[c.holding] : 'Not a program Pointfolio models'}
+                  {c.holding ? holdingNames[c.holding] : 'Not a program Pointifly models'}
                   {c.note && <div className="muted small">{c.note}</div>}
                 </td>
               </tr>

@@ -90,7 +90,7 @@ export function Dashboard({ result, holdingNames, currencies, onReset }: Props) 
       </section>
 
       <section className="card">
-        <h2>Greedy vs. Pointfolio</h2>
+        <h2>Greedy vs. Pointifly</h2>
         <div className="compare">
           <StrategyColumn s={result.greedy} names={holdingNames} currencies={currencies} />
           <StrategyColumn s={result.portfolio} names={holdingNames} currencies={currencies} highlight />
@@ -99,7 +99,7 @@ export function Dashboard({ result, holdingNames, currencies, onReset }: Props) 
 
       <section className="card">
         <h2>Where your points flow</h2>
-        <p className="muted small">Pointfolio plan, in points. Cash legs are paid separately below.</p>
+        <p className="muted small">Pointifly plan, in points. Cash legs are paid separately below.</p>
         <FlowSankey data={result.sankey} />
       </section>
 
@@ -162,7 +162,7 @@ function Headline({ r }: { r: OptimizeResponse }) {
   }
   return (
     <p>
-      Optimizing trip-by-trip gets {value} than optimizing the portfolio. Pointfolio spends{' '}
+      Optimizing trip-by-trip gets {value} than optimizing the portfolio. Pointifly spends{' '}
       {fmtPts(-r.points_saved)} more points, but each goes further: <strong>{cpp(r.portfolio).toFixed(1)}¢</strong>{' '}
       vs {cpp(r.greedy).toFixed(1)}¢ per point.
     </p>

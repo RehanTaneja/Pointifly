@@ -8,7 +8,7 @@ from .plaid.routes import router as plaid_router
 from .visa.routes import router as visa_router
 from .trips import CABINS, FareUnavailable, effective_trip
 
-app = FastAPI(title="Pointfolio API")
+app = FastAPI(title="Pointifly API")
 app.include_router(plaid_router)
 app.include_router(visa_router)
 

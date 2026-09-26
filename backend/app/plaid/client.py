@@ -47,7 +47,7 @@ def create_link_token(client_user_id: str) -> str:
     return post(
         "/link/token/create",
         {
-            "client_name": "Pointfolio",
+            "client_name": "Pointifly",
             "language": "en",
             "country_codes": ["US"],
             "user": {"client_user_id": client_user_id},

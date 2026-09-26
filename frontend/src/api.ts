@@ -95,7 +95,7 @@ export type Allocation = {
   local_fx: FxRate | null
 }
 
-// Visa FX rate; `date` is when Pointfolio retrieved it from Visa.
+// Visa FX rate; `date` is when Pointifly retrieved it from Visa.
 export type FxRate = { currency?: string; rate: number; date: string; source: string }
 
 export type Fee = { amount: number; currency: string; per: string; source_url: string; usd: (FxRate & { amount: number }) | null }

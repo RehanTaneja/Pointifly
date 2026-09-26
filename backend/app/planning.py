@@ -68,7 +68,7 @@ class Planner:
         p = self._solve(self.trips, self.balances)
         assert p is not None  # paying cash for everything is always feasible
         greedy_res = self._result("Greedy (trip-by-trip)", g, self._greedy_reason)
-        portfolio_res = self._result("Pointfolio (whole year)", p, lambda tp: self._portfolio_reason(tp, p))
+        portfolio_res = self._result("Pointifly (whole year)", p, lambda tp: self._portfolio_reason(tp, p))
         return OptimizeResponse(
             mock=False,
             greedy=greedy_res,
