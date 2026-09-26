@@ -70,6 +70,12 @@ def travel_offers(raw_offers: list[dict], country: str = "United States of Ameri
     return out
 
 
+def eligible(offers: list[dict], tiers: set[str]) -> list[dict]:
+    """Offers the user can use: no card restriction, or restricted to a card tier they hold
+    (e.g. Visa Infinite benefits only show for a Visa Infinite card)."""
+    return [o for o in offers if not o.get("cards") or set(o["cards"]) & tiers]
+
+
 def get_travel_offers() -> dict:
     """{offers, date, source}. At most one VMORC call per day; falls back to the cached list."""
     cached = json.loads(CACHE_PATH.read_text()) if CACHE_PATH.exists() else None

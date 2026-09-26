@@ -46,7 +46,7 @@ Open http://localhost:5173 (Vite proxies `/api` to `:8000`). Copy `backend/.env.
 | Exchange rates | [Visa Foreign Exchange Rates](https://developer.visa.com/capabilities/foreign_exchange) (Sandbox) | Converts Aeroplan's $39 CAD partner booking fee; shows destination-currency rates. **Sandbox rates are sample data (7–44% off ECB reference rates on 2026-09-25), labelled "not live" in the UI** |
 | Card earn rates | Official issuer pages in `app/data/card_rewards.json` (verified 2026-09-26): [Sapphire Preferred](https://www.chase.com/sapphire-cards/personal/preferred), [United Explorer](https://creditcards.chase.com/travel-credit-cards/united/united-explorer), [Venture](https://www.capitalone.com/credit-cards/venture/) | Card's own airfare earning only; network and tier included |
 | Visa checkout | [Cybersource](https://developer.cybersource.com/hello-world/testing-guide.html) Sandbox via the official Python SDK (JWT, shared secret) | Test transactions with Cybersource's test Visa card; no money moves |
-| Travel benefits | [Visa Merchant Offers Resource Center](https://developer.visa.com/capabilities/vmorc) (Sandbox) | Display only (card benefits, not flight prices) |
+| Travel benefits | [Visa Merchant Offers Resource Center](https://developer.visa.com/capabilities/vmorc) (Sandbox) | Display only (card benefits, not flight prices). Shown only when the user holds an eligible card tier (the Sandbox travel offers are Visa Infinite only, so the demo's Visa Signature cards don't show them) |
 | Airports | [OurAirports](https://ourairports.com/data/) (public domain) | Airport search, city names, great-circle distance and zones for the award charts |
 
 ## Keys (`backend/.env`)

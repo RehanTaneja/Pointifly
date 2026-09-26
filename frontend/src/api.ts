@@ -149,7 +149,10 @@ export type VisaBenefit = {
   image: string | null
 }
 
-export const getVisaBenefits = () => request<{ offers: VisaBenefit[]; date: string | null; source: string }>('/api/visa/benefits')
+export const getVisaBenefits = (cardIds: string[]) =>
+  request<{ offers: VisaBenefit[]; date: string | null; source: string; card_tiers: string[] }>(
+    `/api/visa/benefits?cards=${encodeURIComponent(cardIds.join(','))}`,
+  )
 
 export const fmtMoney = (amount: number, currency: string) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: amount >= 100 ? 0 : 2 }).format(amount)

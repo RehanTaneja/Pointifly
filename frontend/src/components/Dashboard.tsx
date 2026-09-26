@@ -20,6 +20,7 @@ type Props = {
   result: OptimizeResponse
   holdingNames: Record<string, string>
   currencies: Currency[]
+  cardIds: string[]
   onReset: () => void
 }
 
@@ -80,7 +81,7 @@ function StrategyColumn({ s, names, currencies, highlight }: ColumnProps) {
   )
 }
 
-export function Dashboard({ result, holdingNames, currencies, onReset }: Props) {
+export function Dashboard({ result, holdingNames, currencies, cardIds, onReset }: Props) {
   const [checkout, setCheckout] = useState<Allocation | null>(null)
   const [paid, setPaid] = useState<Set<string>>(new Set())
   const cashLegs = result.portfolio.allocations.filter((a) => a.method === 'cash')
@@ -132,7 +133,7 @@ export function Dashboard({ result, holdingNames, currencies, onReset }: Props) 
         </section>
       )}
 
-      <VisaBenefits />
+      <VisaBenefits cardIds={cardIds} />
 
       <div className="row end">
         <button onClick={onReset}>Start over</button>

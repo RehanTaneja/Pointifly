@@ -34,8 +34,12 @@ def pay(req: CheckoutRequest) -> dict:
 
 
 @router.get("/benefits")
-def benefits() -> dict:
-    return offers.get_travel_offers()
+def benefits(cards: str = "") -> dict:
+    """Travel benefits for the user's Visa cards (comma-separated card product ids)."""
+    ids = [c for c in cards.split(",") if c]
+    tiers = {card_rewards.cards()[c]["tier"] for c in card_rewards.visa_card_ids(ids) if card_rewards.cards()[c].get("tier")}
+    data = offers.get_travel_offers()
+    return {**data, "offers": offers.eligible(data["offers"], tiers), "card_tiers": sorted(tiers)}
 
 
 @router.get("/fx")

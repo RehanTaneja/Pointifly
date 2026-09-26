@@ -80,11 +80,30 @@ def test_offer_filter_keeps_real_travel_offers_only():
     assert out[0]["url"] == "https://www.visainfinitehotels.com" and out[0]["cards"] == ["Visa Infinite"]
 
 
-def test_benefits_endpoint_calls_vmorc_once_per_day(fake_visa):
+def test_benefits_endpoint_calls_vmorc_once_per_day(fake_visa, monkeypatch):
+    from app import card_rewards
+
+    infinite = {**card_rewards.cards()["chase_sapphire_preferred"], "tier": "Visa Infinite"}
+    monkeypatch.setitem(card_rewards.cards(), "test_infinite", infinite)
     fake_visa.offers = [REAL]
-    assert [o["title"] for o in api.get("/api/visa/benefits").json()["offers"]] == ["$250 Airline Fee Credit"]
-    api.get("/api/visa/benefits")
+    r = api.get("/api/visa/benefits?cards=test_infinite").json()
+    assert [o["title"] for o in r["offers"]] == ["$250 Airline Fee Credit"] and r["card_tiers"] == ["Visa Infinite"]
+    api.get("/api/visa/benefits?cards=test_infinite")
     assert fake_visa.calls.count(("GET", "/vmorc/offers/v1/all")) == 1
+
+
+def test_visa_infinite_offers_hidden_without_an_infinite_card(fake_visa):
+    fake_visa.offers = [REAL]  # restricted to Visa Infinite
+    demo = "chase_sapphire_preferred,united_explorer,capital_one_venture,amex_gold"  # Visa Signature + Amex
+    r = api.get(f"/api/visa/benefits?cards={demo}").json()
+    assert r["offers"] == [] and r["card_tiers"] == ["Visa Signature"]
+    assert api.get("/api/visa/benefits").json()["offers"] == []  # no cards, no restricted offers
+
+
+def test_unrestricted_offers_show_for_any_visa_card():
+    open_offer = {"id": 9, "title": "Hotel perk", "cards": []}
+    infinite_only = {"id": 1, "title": "Airline credit", "cards": ["Visa Infinite"]}
+    assert [o["id"] for o in offers.eligible([open_offer, infinite_only], {"Visa Signature"})] == [9]
 
 
 def test_optimize_includes_fee_and_local_fx(fake_visa):

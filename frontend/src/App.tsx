@@ -78,6 +78,7 @@ export default function App() {
           result={result}
           holdingNames={names}
           currencies={dataset?.currencies ?? []}
+          cardIds={cards.flatMap((c) => (c.product_id ? [c.product_id] : []))}
           onReset={() => {
             setResult(null)
             setCards([])

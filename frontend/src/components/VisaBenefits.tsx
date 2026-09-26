@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react'
 import { getVisaBenefits, type VisaBenefit } from '../api'
 
-// Travel benefits from Visa Merchant Offers Resource Center. Display only: they're card
-// program benefits, not flight prices, so they don't change the plan.
-export function VisaBenefits() {
+// Travel benefits from Visa Merchant Offers Resource Center, only for card tiers the user holds
+// (e.g. Visa Infinite benefits need a Visa Infinite card). Display only: they're card program
+// benefits, not flight prices, so they don't change the plan.
+export function VisaBenefits({ cardIds }: { cardIds: string[] }) {
   const [offers, setOffers] = useState<VisaBenefit[] | null>(null)
+  const key = cardIds.join(',')
 
   useEffect(() => {
-    getVisaBenefits()
+    getVisaBenefits(key ? key.split(',') : [])
       .then((r) => setOffers(r.offers))
       .catch(() => setOffers([]))
-  }, [])
+  }, [key])
 
   if (!offers?.length) return null
   return (
     <section className="card">
-      <h2>Visa travel benefits</h2>
+      <h2>Your Visa travel benefits</h2>
       <div className="benefits">
         {offers.map((o) => (
           <div key={o.id} className="benefit">
