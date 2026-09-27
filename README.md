@@ -59,7 +59,7 @@ Open http://localhost:5173 (Vite proxies `/api` to `:8000`). Copy `backend/.env.
 ## Deploy (Vultr or any Ubuntu 24.04 server)
 
 ```bash
-./deploy/deploy.sh root@SERVER_IP                            # https://SERVER_IP.sslip.io
+[./deploy/deploy.sh root@SERVER_IP](https://64.177.41.28.sslip.io/)                            # https://SERVER_IP.sslip.io
 ACCESS_PASSWORD=choose-one ./deploy/deploy.sh root@SERVER_IP  # same, behind a password (user "demo")
 ```
 
