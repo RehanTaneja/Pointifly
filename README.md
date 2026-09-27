@@ -1,101 +1,198 @@
-# Pointifly (HackGT 13)
+<div align="center">
 
-Award tools optimize one flight. Pointifly optimizes your whole year of points.
+<img src="docs/images/hero.jpg" alt="Pointifly: an AI agent that plans your whole year of points and pays with Visa" width="100%">
 
-Connect your cards, enter your point balances and trips, and Pointifly decides for every trip whether to pay cash or which points to transfer where, so the whole year gets the most value. It shows the result next to a trip-by-trip ("greedy") plan to make the difference visible.
+# Pointifly
 
-## AI and privacy
+**Your points have commitment issues.** They go to the first flight that asks.
+Pointifly is an AI travel agent that plans your **whole year** of points, then pays the cash flights **with Visa**, inside limits you control.
 
-- **Gemini** turns a typed or spoken sentence into balances and trips (JSON schema). Every trip is then validated like a hand-entered one.
-- **ElevenLabs** is the voice orchestrator (voice, or "Type instead" for a text chat with the same agent, tools and knowledge base). Its tools are *client tools* that run in the browser against the local backend (`fill_trip_plan`, `run_optimizer`, `explain_trip`), so balances, cards and trips never live on ElevenLabs; the agent only receives short summaries. The API key stays on the server; the browser gets a 15-minute signed URL.
-- **Knowledge base (RAG):** public reference data only (official transfer ratios, award charts, card earn rates, how the optimizer decides). A test fails if any key or user data appears in it. Credentials never go into the knowledge base.
+**[▶ Try it live](https://64.177.41.28.sslip.io)** · **[Devpost](https://devpost.com/software/pointifly)** · Built at **HackGT 13** for the **Visa** challenge *Reimagine Shopping with Generative AI*
 
-## Agent payments and guardrails
+</div>
 
-The agent can pay the plan's cash trips on its own ("book it"), but only inside a mandate the **server** enforces, so a tampered request or a prompt injection can't get around it:
+---
 
-- **Autopay toggle:** the user can turn agent payments off at any time (the agent then tells them to tap Pay).
-- **Spending limits:** per payment and total, set by the user.
-- **Fixed by the plan:** the agent only names a trip; the amount and Visa card come from the server's copy of the plan. Only cash trips of the current plan can be paid.
-- **No double charging, and a cap on attempts per minute** (stops runaway loops).
-- **Two paths:** `/api/agent/pay` (the agent's only payment tool; toggle and limits always apply) and `/api/pay` (the user's own tap). The agent has no tool that reaches the user path.
-- **Strict inputs:** unknown fields are rejected (the agent can't send an amount or card), ids and trip names are limited to safe characters, limits are bounded. Pointifly has no SQL database, and no request data is used to build a query or command.
-- **Audit log:** every attempt (paid, blocked and why, and the gateway's real answer) is shown to the user.
-- **Card data:** Pointifly never stores or handles card numbers. Plaid returns card names and masks; checkout uses Cybersource's test card server-side. A production build would use Cybersource tokenization so card numbers never touch our servers.
+## ✈️ The receipt
 
-`backend/tests/test_agent_payments.py` attacks each rule (SQL-injection payloads in every field, prompt-injection phrasing, tampered amounts and cards, limits, the toggle, double charging, loops) and checks that nothing reaches the payment gateway when a rule blocks it. Tests can't reach real APIs: `conftest.py` blocks network access unless `RUN_LIVE_TESTS=1`.
+Our real travel year: two international students, four flights, the same points in both columns.
 
-## How the optimizer works
+| | Booking trip by trip | **Pointifly** | |
+|---|---:|---:|---|
+| Points spent | 96,000 | **93,000** | **3,000 fewer** |
+| Flights covered by points | $2,949 | **$3,919** | **+$970** |
+| Cash out of pocket | $3,430 | **$2,460** | **$970 less** |
 
-Not ML or AI. It's a **mathematical optimization model** (an integer program) solved exactly with Google OR-Tools CP-SAT:
+Booking one flight at a time spends 68,000 miles on the first long-haul flight (Delhi → New York, 3.6¢ a mile), leaving too few for Shanghai in business. Pointifly pays for New York on Visa instead and saves those miles for Shanghai, where each one is worth **5.2¢**.
 
-- **Choices:** each trip is paid in cash or with one award option; each award is funded by points from one or more cards.
-- **Rules:** one payment per trip; transferred points (after the transfer ratio, in the bank's transfer blocks) must cover the award; no balance is overdrawn.
-- **Score:** value of the awards booked, minus award fees, minus a 1.0¢ "reserve value" for every point spent (an award only wins if it beats keeping the points), plus points earned paying cash legs with a Visa card.
-- **Visa cards:** each cash trip is paid with the user's best-earning Visa card (official airfare earn rates in `app/data/card_rewards.json`). Earned points can fund trips at least 30 days later, once they've posted; greedy follows the same rule.
-- The solver searches all combinations but proves whole groups of them can't win and skips them, so the answer is **provably the best** plan under these rules.
-- **Greedy** is the same model solved one trip at a time in date order, which is what per-flight tools do.
+<sub>Live Google Flights fares, official transfer ratios and award charts. Cash includes $29 of award fees.</sub>
 
-Code: `backend/app/optimizer.py` (model), `backend/app/planning.py` (explanations, API response).
+## 🧪 Try it in 30 seconds
 
-## Layout
+1. Open **[Pointifly](https://64.177.41.28.sslip.io)**, tap **Connect with Plaid**, then **Continue**.
+2. The agent greets you. Allow the microphone and say (or type):
 
-- `backend/`: FastAPI + OR-Tools. Data in `backend/app/data/`, integrations in `app/plaid/`, `app/visa/`, `app/sources/`.
-- `frontend/`: Vite + React + TypeScript. Flow: connect cards (Plaid) → the agent page (the voice agent starts on its own: it asks for balances and trips, explains the transfer ratios, optimizes, and pays cash trips with Visa after one confirmation; an Autonomous payments switch, on by default, hands payment back to the user's Pay with Visa button) → or Manual mode (type or parse balances and trips, add your own route, date and cabin) → Greedy vs. Pointifly dashboard, Sankey, flight details, Visa travel benefits, agent payment limits and audit log.
+> I have 90,000 Amex points, 50,000 Chase Sapphire Preferred points, 35,000 United miles and nothing in Capital One. Delhi to New York in business on December 3, 2026. New York to San Francisco in economy on November 12, 2026. New York to Shanghai in business on January 12, 2027. New Delhi to Mumbai in business on February 2, 2027.
 
-## Run locally
+**Watch for** the gold **Visa** labels as it calls Visa's APIs, the plan above rebuilt live, and a **guardrail**: New York costs $2,431, over the agent's $1,000 per-payment limit, so it won't pay on its own. No mic? Type into the box under the circle, or use **Manual mode**.
+
+---
+
+## What it does
+
+**Talk → plan → pay.**
+
+1. **Talk.** Connect your cards, then tell the agent your balances and trips in one sentence, by voice or text. It asks only for what's missing.
+2. **Plan.** It finds live fares, explains how your points transfer, and optimizes **the whole year at once**, side by side with booking trip by trip.
+3. **Pay.** For flights that are better paid in cash, it picks the Visa card that earns the most, asks you once, and pays through **Visa's Cybersource gateway**, within spending limits you control.
+
+<img src="docs/images/plan-card.jpg" alt="The plan: 93,000 points for $3,919 of flights, $970 more than trip by trip, with What Visa does in this plan" width="100%">
+
+| Stage of the shopping journey | What Pointifly does |
+|---|---|
+| **Discovery** | Finds the cheapest live fare for every trip on Google Flights |
+| **Decision-making** | Points (which program, which transfers) or cash, for every trip |
+| **Personalization** | Your cards, your balances, your dates |
+| **Loyalty & rewards** | Gets the most from your points across the year, and earns more on every cash trip |
+| **Checkout & payments** | The agent pays with your best Visa card through Cybersource, after one confirmation |
+| **Post-purchase** | An audit log of every payment attempt: paid, blocked, and why |
+
+## 💳 Built on Visa
+
+You can **see** Visa working: a gold label appears each time the agent calls a Visa service.
+
+<img src="docs/images/visa-moments.jpg" alt="Visa labels: Foreign Exchange Rates API, best Visa card for each cash trip, points earned with Visa" width="100%">
+
+| Visa service | What it does in Pointifly |
+|---|---|
+| **Cybersource Payments API** (REST, official SDK) | The agent's checkout: pays each cash trip at the plan's amount with the plan's Visa card (Sandbox) |
+| **Visa Foreign Exchange Rates API** (two-way SSL) | Local prices for international trips; fetched at most once per currency pair per day, labelled as Sandbox sample rates |
+| **Visa Merchant Offers Resource Center** | Real Visa travel benefits, shown only to cardholders whose card tier qualifies (e.g. Visa Infinite) |
+| **Visa card rewards in the optimizer** | For every cash trip, the Visa card that earns the most, from issuers' official earn rates; earned points fund later trips |
+
+## 🛡️ Trusted agentic payments
+
+**The agent can ask; only the server decides.**
+
+- **You're in control:** an **Autonomous payments** switch plus per-payment and total **spending limits**. Switch it off and only you can pay.
+- **One approval before money moves.** Planning is free and reversible, so it runs without interruptions.
+- **The agent can't change the amount or the card.** It names a trip; the amount and card come from the server's copy of the plan. Requests with extra fields like `amount` or `card` are rejected.
+- **No double charges, no runaway loops:** one payment per trip, and a cap on attempts per minute.
+- **An audit log** records every attempt with the reason, and the gateway's real reply.
+- **Card data stays out of the AI.** Plaid returns card names and last four digits only; payments run server-side.
+- **Tested against attacks:** SQL-injection strings, prompt-injection phrasing and tampered payment requests are fired at every payment endpoint, and the tests check that **nothing reaches the gateway**. There's no SQL database to inject into, and every input is validated.
+
+## 🎙️ The voice agent (ElevenLabs)
+
+**AI where flexibility helps; math where money is at stake.** The agent understands you and runs the steps. The numbers come from a deterministic optimizer, never from the model.
+
+- **Five client tools:**
+  - `fill_trip_plan`: Gemini turns your words into trips and balances, which are then validated.
+  - `describe_programs`: the official transfer ratios for your cards.
+  - `run_optimizer`: the whole-year plan.
+  - `explain_trip`: why a trip is points or cash.
+  - `pay_cash_leg`: asks the server to pay.
+- **RAG knowledge base:** official transfer ratios, award charts, Visa earn rates and how Pointifly decides. Public reference data only, never user data.
+- **Guardrails in the prompt, and enforced again by the server:** it never asks for card data, takes every number from the tools, ignores instructions that try to change amounts or limits, and is told live when you flip the switch or change a limit.
+- **Built for real rooms:**
+  - It greets you in about a second.
+  - Interruptions are off and turn-taking is patient, so background voices can't take over.
+  - Recognition keywords cover program and airport names.
+  - A pronunciation dictionary makes it say "Point-ih-fly".
+  - It switches to typing when there's no microphone.
+- **Private by design:** the API key stays on the server, the browser gets a 15-minute signed URL, and your balances and cards never live on ElevenLabs.
+
+## 🛠️ How it works
+
+```text
+You (voice or text)
+   ▼
+ElevenLabs agent ◀── RAG: official ratios · award charts · Visa earn rates
+   ▼  client tools
+Gemini ──▶ trips & balances, checked against ~4,500 airports and real dates
+   ▼
+Google Flights (SerpApi) + Visa FX Rates API ──▶ live fares, local currencies
+   ▼
+OR-Tools CP-SAT optimizer ──▶ best whole-year plan (and the trip-by-trip plan to compare)
+   ▼
+Server-side guardrails ──▶ your switch · your limits · amount & card fixed · audit log
+   ▼
+Cybersource Payments API ──▶ paid with your best Visa card
+```
+
+### The optimizer
+
+An integer program over trips $t$, payment options $o$ (cash, or an award in program $p_o$), holdings $h$ and Visa cards $k$:
+
+$$\max\;\sum_{t,o}\big(V_o - F_o\big)\,y_{t,o}\;-\;\sum_{h,t,o}\rho_h\,x_{h,t,o}\;+\;\sum_{t,k}\rho_{k}\,E_{t,k}\,z_{t,k}$$
+
+subject to
+
+$$\sum_o y_{t,o} = 1 \qquad \sum_h r_{h,p_o}\,x_{h,t,o} \ge P_o\,y_{t,o} \qquad x_{h,t,o} \in b_h\,\mathbb{Z}_{\ge 0} \qquad \sum_{t' \le t}\sum_o x_{h,t',o} \le B_h + \text{earned}_h(t)$$
+
+- **The decisions:**
+  - $y_{t,o}$: which option pays for trip $t$.
+  - $x_{h,t,o}$: how many points move out of holding $h$, in official transfer blocks $b_h$.
+  - $z_{t,k}$: which Visa card pays a cash trip.
+- **The data:** $V_o$ is the cash fare an award replaces, $F_o$ its fees, $P_o$ its price in miles, $r$ the official transfer ratio, and $B_h$ your balance.
+- **Reserve value:** $\rho_h$ is what a point is worth if you keep it (1¢), so an award only wins if it beats saving the points.
+- **Earned points:** $E_{t,k}$ is the points card $k$ earns on trip $t$, usable 30 days later.
+- **A fair comparison:** booking trip by trip is the **same model** run one trip at a time in date order. The only difference is scope.
+- **Exact, not a guess:** OR-Tools CP-SAT proves the plan is optimal. On our travel year that took **21 ms**, with a 10-second safety cap.
+
+<img src="docs/images/greedy-vs-pointifly.jpg" alt="Greedy (trip by trip) vs Pointifly (whole year), side by side" width="100%">
+
+---
+
+## Data sources
+
+| Data | Source | Status |
+|---|---|---|
+| Cash fares | Google Flights via [SerpApi](https://serpapi.com/google-flights-api) | **Live**; saved after the first search (`app/data/snapshots.json`) |
+| Award prices | Official charts: [Aeroplan 2026-08](https://www.aircanada.com/content/dam/aircanada/loyalty-content/documents/flight-rewards-chart-en.pdf) and [ANA partner chart](https://www.ana.co.jp/en/jp/guide/amc/award/tk/zone/) | **Official**; seat availability not checked. We never invent a price |
+| Transfer ratios | [Amex](https://global.americanexpress.com/rewards/transfer?tier=MR), [Chase](https://www.chase.com/sapphire-cards/personal/preferred), [Capital One](https://www.capitalone.com/learn-grow/money-management/venture-miles-transfer-partnerships/) official pages | **Official**, verified 2026-09-26, with minimums, blocks and transfer times |
+| Card earn rates | [Sapphire Preferred](https://www.chase.com/sapphire-cards/personal/preferred), [United Explorer](https://creditcards.chase.com/travel-credit-cards/united/united-explorer), [Venture](https://www.capitalone.com/credit-cards/venture/) | **Official**, verified 2026-09-26 |
+| Currency conversion | [Visa Foreign Exchange Rates](https://developer.visa.com/capabilities/foreign_exchange) | **Visa Sandbox**: sample rates (7–44% off ECB reference rates), labelled "not live" in the app |
+| Card benefits | [Visa Merchant Offers Resource Center](https://developer.visa.com/capabilities/vmorc) | **Visa Sandbox**; shown only for eligible card tiers |
+| Payments | [Cybersource](https://developer.cybersource.com/hello-world/testing-guide.html) via the official Python SDK | **Sandbox**, test card, no money moves |
+| Linked cards | [Plaid](https://plaid.com/docs/) | **Sandbox** institutions (Amex, Chase, Capital One) |
+| Airports | [OurAirports](https://ourairports.com/data/) | Public domain |
+| Trip parsing · voice | Gemini · ElevenLabs Agents | **Live** |
+
+## Tech stack
+
+**Backend:** Python, FastAPI, Pydantic, OR-Tools CP-SAT, pytest · **Frontend:** React, TypeScript, Vite, Recharts, Web Audio API · **AI:** ElevenLabs Agents (tools + RAG), Gemini · **APIs:** Visa (Cybersource, FX Rates, VMORC), Plaid, SerpApi · **Deploy:** Vultr (Ubuntu), Caddy (HTTPS), uv
+
+## Run it locally
 
 ```bash
 cd backend && uv venv .venv && uv pip install --python .venv/bin/python -r requirements-dev.txt
-.venv/bin/uvicorn app.main:app --reload --port 8000
+.venv/bin/uvicorn app.main:app --port 8000
 ```
 
 ```bash
 cd frontend && npm install && npm run dev
 ```
 
-Open http://localhost:5173 (Vite proxies `/api` to `:8000`). Copy `backend/.env.example` to `backend/.env` for the integrations below; everything falls back to cached or sample data without keys.
+Open http://localhost:5173 (Vite proxies `/api` to `:8000`). Copy `backend/.env.example` to `backend/.env` for the integrations; without keys, everything falls back to cached or sample data.
 
-## Deploy (Vultr or any Ubuntu 24.04 server)
+### Keys (`backend/.env`)
 
-```bash
-./deploy/deploy.sh root@SERVER_IP                            # https://SERVER_IP.sslip.io
-ACCESS_PASSWORD=choose-one ./deploy/deploy.sh root@SERVER_IP  # same, behind a password (user "demo")
-```
+Never commit `.env`; certificates go in `backend/secrets/` (git-ignored). See `backend/.env.example`.
 
-Builds the frontend, copies the code plus `backend/.env` and `backend/secrets/` over SSH, and runs the API as a single uvicorn process (plans and payment mandates are in memory) behind Caddy, which serves the frontend, proxies `/api` and gets an HTTPS certificate (browsers only allow the microphone over HTTPS). Presentation mode is on for the server. Re-run to update; the server keeps its own caches and API usage counters.
+- **SerpApi:** `SERPAPI_KEY`. `SERPAPI_DAILY_LIMIT` caps live searches per day (default 20); saved fares always work.
+- **Plaid:** `PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV=sandbox`. `PRESENTATION_MODE=1` hides environment tags and developer controls.
+- **Visa:** a Visa Developer project with Foreign Exchange Rates and Merchant Offers Resource Center. For two-way SSL, put the certificate and key in `backend/secrets/`, then set `VISA_USER_ID`, `VISA_PASSWORD` (the project's two-way SSL credentials), `VISA_CERT_PATH` and `VISA_KEY_PATH`.
+- **Cybersource:** a Sandbox account with a **REST – Shared Secret** key: `CYBERSOURCE_MERCHANT_ID`, `CYBERSOURCE_KEY_ID`, `CYBERSOURCE_SECRET_KEY`.
+- **Gemini:** `GEMINI_API_KEY` (optional `GEMINI_MODEL`, default `gemini-3.5-flash-lite`).
+- **ElevenLabs:** `ELEVENLABS_API_KEY`, then `.venv/bin/python -m app.ai.voice --setup`. It creates the knowledge base, tools, pronunciation dictionary and agent once, and updates only what changed. Put the printed `ELEVENLABS_AGENT_ID` in `.env`. The key needs the convai, knowledge base and pronunciation dictionary permissions.
 
-## Data sources
+### API usage
 
-| Data | Source | Notes |
-|---|---|---|
-| Cash fares | Google Flights via [SerpApi](https://serpapi.com/google-flights-api) | Live. Snapshot in `app/data/snapshots.json`; only full-cabin itineraries count. A new cabin choice is fetched once and saved |
-| Award prices | Official charts in `app/data/award_charts.json`: [Aeroplan 2026-08](https://www.aircanada.com/content/dam/aircanada/loyalty-content/documents/flight-rewards-chart-en.pdf) ("all other partners") and [ANA one-way partner chart](https://www.ana.co.jp/en/jp/guide/amc/award/tk/zone/) | Published prices: award seat availability isn't checked. Other programs use sample prices |
-| Transfer partners + ratios | Official issuer pages in `app/data/transfer_ratios.json` (verified 2026-09-26): [Amex](https://global.americanexpress.com/rewards/transfer?tier=MR), [Chase](https://www.chase.com/sapphire-cards/personal/preferred), [Capital One](https://www.capitalone.com/learn-grow/money-management/venture-miles-transfer-partnerships/) | Includes minimums, transfer blocks, transfer times |
-| Card detection | [Plaid](https://plaid.com/docs/) (Sandbox) | Card names map to points programs; balances stay manual (Plaid doesn't expose rewards points) |
-| Exchange rates | [Visa Foreign Exchange Rates](https://developer.visa.com/capabilities/foreign_exchange) (Sandbox) | Converts Aeroplan's $39 CAD partner booking fee; shows destination-currency rates. **Sandbox rates are sample data (7–44% off ECB reference rates on 2026-09-25), labelled "not live" in the UI** |
-| Card earn rates | Official issuer pages in `app/data/card_rewards.json` (verified 2026-09-26): [Sapphire Preferred](https://www.chase.com/sapphire-cards/personal/preferred), [United Explorer](https://creditcards.chase.com/travel-credit-cards/united/united-explorer), [Venture](https://www.capitalone.com/credit-cards/venture/) | Card's own airfare earning only; network and tier included |
-| Visa checkout | [Cybersource](https://developer.cybersource.com/hello-world/testing-guide.html) Sandbox via the official Python SDK (JWT, shared secret) | Test transactions with Cybersource's test Visa card; no money moves |
-| Travel benefits | [Visa Merchant Offers Resource Center](https://developer.visa.com/capabilities/vmorc) (Sandbox) | Display only (card benefits, not flight prices). Shown only when the user holds an eligible card tier (the Sandbox travel offers are Visa Infinite only, so the demo's Visa Signature cards don't show them) |
-| Airports | [OurAirports](https://ourairports.com/data/) (public domain) | Airport search, city names, great-circle distance and zones for the award charts |
-
-## Keys (`backend/.env`)
-
-See `backend/.env.example`. Never commit `.env`; certificates and keys go in `backend/secrets/` (git-ignored).
-
-- **SerpApi:** `SERPAPI_KEY` (free plan). `SERPAPI_DAILY_LIMIT` caps live searches the app makes per day (default 20). Refresh the sample fares with `.venv/bin/python -m app.sources.refresh --fares` (skips fares fetched in the last 3 days; `--dry-run` shows the searches; `--reparse` re-reads saved responses without API calls).
-- **Plaid:** `PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV=sandbox` from https://dashboard.plaid.com. The demo profile connects American Express, Chase and Capital One (Plaid's own institution records) with cards named after real products. `PRESENTATION_MODE=1` shows a single Connect with Plaid button with no environment tags or developer controls.
-- **Cybersource:** a free sandbox account (https://developer.cybersource.com/hello-world/sandbox.html). In the Business Center, create a **REST – Shared Secret** key and set `CYBERSOURCE_MERCHANT_ID`, `CYBERSOURCE_KEY_ID`, `CYBERSOURCE_SECRET_KEY`. Sandbox only by design.
-- **Gemini:** `GEMINI_API_KEY` (and optionally `GEMINI_MODEL`, default `gemini-3.5-flash-lite`). Only the sentence is sent; results are cached per sentence.
-- **ElevenLabs:** `ELEVENLABS_API_KEY`, then run `.venv/bin/python -m app.ai.voice --dry-run` (no calls) and `.venv/bin/python -m app.ai.voice --setup` (creates the knowledge documents, RAG indexes, tools and agent once; ids are remembered in `app/data/raw/elevenlabs_setup.json`). Put the printed `ELEVENLABS_AGENT_ID` in `.env`.
-- **Visa:** a Visa Developer project with Foreign Exchange Rates and Merchant Offers Resource Center. Two-way SSL: download the certificate and private key to `backend/secrets/`, then set `VISA_USER_ID`, `VISA_PASSWORD` (the project's Two-Way SSL credentials, not your account password), `VISA_CERT_PATH`, `VISA_KEY_PATH`.
-
-### API usage limits
-
-- **SerpApi:** 250 searches/month on the free plan; a full refresh of the sample trips uses 7. A custom trip costs 1 search per route + date + cabin, once: its fare is saved (the trip id comes from route + date), so repeats are free. The app stops live searches at `SERPAPI_DAILY_LIMIT` per day; saved fares keep working.
-- **Visa:** at most one FX call per currency pair per day and one offers call per day, cached in `app/data/visa_fx_rates.json` and `app/data/visa_offers.json` (committed, so the demo works offline). If Visa is unreachable the last cached value is used, with its date. Sandbox FX rates appear to be sample values, not current market rates.
-- **Cybersource:** one gateway call per checkout click; a trip that's already authorized isn't charged again. The checkout always completes in the UI: if the sandbox gateway fails, the same confirmation is shown, gateway ids are never invented, and the real gateway result appears (outside `PRESENTATION_MODE`) as a small developer note. As of 2026-09-26 this sandbox account returns `502 SERVER_ERROR "General system failure"` (authentication succeeds; account-side issue). Sandbox amounts $7,001–$7,145 may return canned test responses (legacy test tables).
-- **Tests never call Visa, SerpApi or Cybersource:** `backend/tests/conftest.py` fakes all three for every test and writes to temporary copies of the data files.
+- **SerpApi:** free plan, 250 searches a month. Each new route + date + cabin is searched once, then saved. An identical search saved under another trip is reused.
+- **Visa:** at most one FX call per currency pair and one offers call per day. Both are cached, so the demo works offline.
+- **Cybersource:** one gateway call per payment, and no trip is charged twice. As of 2026-09-26 our Sandbox account returns `502 SERVER_ERROR` (authentication succeeds; the processor isn't enabled on the account). Checkout completes in demo mode, and the audit log records the gateway's real reply. Gateway IDs are never invented.
+- **Tests never call real APIs:** `backend/tests/conftest.py` fakes Visa, SerpApi, Cybersource, Gemini and ElevenLabs, and blocks network access unless `RUN_LIVE_TESTS=1`.
 
 ## Tests
 
@@ -103,21 +200,49 @@ See `backend/.env.example`. Never commit `.env`; certificates and keys go in `ba
 cd backend && .venv/bin/python -m pytest -q
 ```
 
-The live Plaid Sandbox test runs when Plaid keys are set; all other external APIs are faked.
+141 tests: the optimizer, award charts, custom trips, Visa FX and offers, checkout, Plaid, AI parsing and agent setup, plus `test_agent_payments.py`, which attacks every payment guardrail.
 
-## Status
+## Deploy (Vultr or any Ubuntu 24.04 / 26.04 server)
 
-| Piece | State |
-|---|---|
-| Greedy vs. portfolio optimizer | Built (exact integer program, OR-Tools CP-SAT) |
-| Cash fares, cabin choice, flight details + Google Flights links | Built (SerpApi) |
-| Award prices | Aeroplan + ANA from official charts; other programs sample |
-| Transfer ratios | Built (official issuer pages) |
-| Plaid card detection | Built (Sandbox), presentation mode for the pitch |
-| Visa FX | Built (Sandbox): fee conversion in the plan, destination rates in the UI |
-| Visa travel benefits (VMORC) | Built (Sandbox), display only |
-| Visa cards in the optimizer | Built: best-earning Visa card per cash leg, earned points fund later trips |
-| Visa checkout for cash legs | Built on the Cybersource Sandbox (needs sandbox keys); test transactions only |
-| Custom trips | Built: any airport pair, date (within 330 days) and cabin, up to 8 trips; award prices from the charts |
-| Trip parsing from a sentence (LLM) | Built: Gemini with a JSON schema, validated like hand-entered trips (needs `GEMINI_API_KEY`) |
-| ElevenLabs voice agent + knowledge base | Built: signed sessions, 3 client tools, RAG over public reference data, one-command setup (needs `ELEVENLABS_API_KEY`) |
+```bash
+./deploy/deploy.sh root@SERVER_IP                            # https://SERVER_IP.sslip.io
+ACCESS_PASSWORD=choose-one ./deploy/deploy.sh root@SERVER_IP  # same, behind a password (user "demo")
+```
+
+The script:
+- builds the frontend;
+- copies the code, `backend/.env` and `backend/secrets/` over SSH;
+- installs Python 3.12 (via uv) and Caddy;
+- runs the API as one always-on service (plans and payment limits live in memory), with presentation mode on;
+- serves everything over automatic HTTPS, which browsers require for the microphone.
+
+Re-run it to update; the server keeps its own caches and usage counters.
+
+## Project layout
+
+```text
+backend/
+  app/optimizer.py      the integer program (whole year and trip by trip)
+  app/planning.py       plans, explanations, API response
+  app/agentpay.py       agent payment guardrails and audit log
+  app/ai/               Gemini parser, ElevenLabs agent setup (tools, RAG, pronunciation)
+  app/visa/             Visa FX Rates and Merchant Offers (two-way SSL)
+  app/cybersource/      checkout through the Cybersource SDK
+  app/plaid/            card linking
+  app/data/             official ratios, award charts, earn rates, saved fares
+  tests/                141 tests, all external APIs faked
+frontend/src/
+  components/VoiceAgent.tsx    the agent page and speaking circle
+  components/VisaMoments.tsx   the gold Visa labels
+  components/Dashboard.tsx     trip by trip vs Pointifly
+deploy/                 one-command Vultr deploy
+```
+
+---
+
+<div align="center">
+
+Built at **HackGT 13** by two international students who fly home every year.
+**Same wallet. Same trips. Planned as a year.**
+
+</div>
